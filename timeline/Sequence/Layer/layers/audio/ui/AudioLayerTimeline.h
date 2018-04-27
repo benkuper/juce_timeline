@@ -11,10 +11,6 @@
 #ifndef AUDIOLAYERTIMELINE_H_INCLUDED
 #define AUDIOLAYERTIMELINE_H_INCLUDED
 
-#include "../../../ui/SequenceLayerTimeline.h"
-#include "AudioLayerClipManagerUI.h"
-#include "../AudioLayer.h"
-
 class AudioLayerTimeline :
 	public SequenceLayerTimeline
 {

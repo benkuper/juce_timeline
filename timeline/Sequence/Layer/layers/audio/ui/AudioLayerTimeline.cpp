@@ -8,8 +8,6 @@
   ==============================================================================
 */
 
-#include "AudioLayerTimeline.h"
-
 AudioLayerTimeline::AudioLayerTimeline(AudioLayer * layer) :
 	SequenceLayerTimeline(layer),
 	audioLayer(layer)

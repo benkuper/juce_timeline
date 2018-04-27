@@ -15,14 +15,15 @@ class AudioLayerProcessor;
 
 class AudioLayer :
 	public SequenceLayer
-    //public AudioModule::AudioModuleListener
 {
 public:
 	AudioLayer(Sequence * sequence, var params);
 	~AudioLayer();
 	
 	AudioLayerClipManager clipManager;
-	//AudioModule * audioModule;
+	
+	AudioProcessorGraph * currentGraph;
+
 	WeakReference<AudioLayerClip> currentClip;
 	AudioLayerProcessor * currentProcessor;
 
@@ -35,14 +36,13 @@ public:
 	int numActiveOutputs;
 
 	AudioProcessorGraph::NodeID graphID;
+	static int graphIDIncrement;
+	int audioOutputGraphID;
 
-	//void setAudioModule(AudioModule * newModule);
+	void setAudioProcessorGraph(AudioProcessorGraph * graph, int audioOutputGraphID = 2);
 	void updateCurrentClip();
 
-	//void itemAdded(Module * m) override;
-	//void itemRemoved(Module * m) override;
-
-	//void updateSelectedOutChannels();
+	void updateSelectedOutChannels();
 
 	void onContainerParameterChangedInternal(Parameter * p) override;
 
@@ -51,8 +51,6 @@ public:
 
 	virtual SequenceLayerPanel * getPanel() override;
 	virtual SequenceLayerTimeline * getTimelineUI() override;
-
-   // void audioSetupChanged() override;
 	
 	void sequenceCurrentTimeChanged(Sequence *, float prevTime, bool evaluatedSkippedData) override;
 	void sequencePlayStateChanged(Sequence *) override;

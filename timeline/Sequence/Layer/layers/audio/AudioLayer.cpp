@@ -8,35 +8,23 @@
   ==============================================================================
 */
 
+int AudioLayer::graphIDIncrement = 10;
+
 AudioLayer::AudioLayer(Sequence * _sequence, var params) :
 	SequenceLayer(_sequence, "New Audio Layer"),
-	//audioModule(nullptr),
+	currentGraph(nullptr),
 	currentProcessor(nullptr),
 	numActiveOutputs(0), 
     graphID(0) //was -1 but since 5.2.1, generated warning. Should do otherwise ?
 {
-//	ModuleManager::getInstance()->addBaseManagerListener(this);
 
-    
+	
     volume = addFloatParameter("Volume","Volume multiplier for the layer",1,0,10);
     
 	enveloppe = addFloatParameter("Enveloppe", "Enveloppe", 0, 0, 1);
 	enveloppe->isControllableFeedbackOnly = true;
 
 	addChildControllableContainer(&clipManager);
-
-	//if already an audio module, assign it
-	/*
-	for (auto &i : ModuleManager::getInstance()->items)
-	{
-		AudioModule * a = dynamic_cast<AudioModule *>(i);
-		if (a != nullptr)
-		{
-			setAudioModule(a);
-			break;
-		}
-	}
-	*/
 
 	helpID = "AudioLayer";
 
@@ -46,15 +34,14 @@ AudioLayer::~AudioLayer()
 {
 	//if (ModuleManager::getInstanceWithoutCreating() != nullptr) ModuleManager::getInstance()->removeBaseManagerListener(this);
 	//setAudioModule(nullptr);
+	setAudioProcessorGraph(nullptr);
 }
 
-/*
-void AudioLayer::setAudioModule(AudioModule * newModule)
+void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph * graph, int outputGraphID)
 {
-	if (audioModule != nullptr)
+	if (currentGraph != nullptr)
 	{
-        audioModule->removeAudioModuleListener(this);
-		audioModule->graph.removeNode(graphID);
+		currentGraph->removeNode(graphID);
 		currentProcessor->clear();
 		currentProcessor = nullptr;
 
@@ -62,35 +49,31 @@ void AudioLayer::setAudioModule(AudioModule * newModule)
 		outChannels.clear();
 	}
 
-	audioModule = newModule;
+	currentGraph = graph;
 
-	if (audioModule != nullptr)
+	if (currentGraph != nullptr)
 	{
         
 		currentProcessor = new AudioLayerProcessor(this);
 		
-		graphID = audioModule->uidIncrement++;
-		audioModule->graph.addNode(currentProcessor, graphID);
+		graphID = AudioLayer::graphIDIncrement++;
+		currentGraph->addNode(currentProcessor, graphID);
 		
-		int numChannels = audioModule->graph.getMainBusNumOutputChannels();
-		AudioChannelSet channelSet = audioModule->graph.getChannelLayoutOfBus(false, 0);
+		int numChannels = currentGraph->getMainBusNumOutputChannels();
+		AudioChannelSet channelSet = currentGraph->getChannelLayoutOfBus(false, 0);
 		for (int i = 0; i < numChannels; i++)
 		{
 			String channelName = AudioChannelSet::getChannelTypeName(channelSet.getTypeOfChannel(i));
 			BoolParameter * b = addBoolParameter("Channel Out : " + channelName, "If enabled, sends audio from this layer to this channel", i < 2);
 			outChannels.add(b);
 		}
-		
-        audioModule->addAudioModuleListener(this);
-
 	}
 
-	updateSelectedOutChannels();
+	audioOutputGraphID = outputGraphID;
 
-	//DBG("AudioLayer audio Module > " << (audioModule != nullptr ? audioModule->niceName : "null"));
-	//audioLayerListeners.call(&AudioLayerListener::targetAudioModuleChanged, this);
+	updateSelectedOutChannels();
 }
-*/
+
 
 void AudioLayer::updateCurrentClip()
 {
@@ -120,36 +103,21 @@ void AudioLayer::updateCurrentClip()
 
 }
 
-/*
-void AudioLayer::itemAdded(Module * m)
-{
-	AudioModule * am = dynamic_cast<AudioModule *>(m);
-	if (audioModule == nullptr &&  am != nullptr) setAudioModule(am);
-}
-
-void AudioLayer::itemRemoved(Module * m)
-{
-	if (audioModule == m)
-	{
-		setAudioModule(nullptr);
-	}
-}
-
 void AudioLayer::updateSelectedOutChannels()
 {
 	
 	selectedOutChannels.clear();
 
-	if (audioModule == nullptr) return;
+	if (currentGraph == nullptr) return;
 
-	audioModule->graph.disconnectNode(graphID);
+	currentGraph->disconnectNode(graphID);
 
 	numActiveOutputs = 0;
 	for (int i = 0; i < outChannels.size(); i++) if (outChannels[i]) numActiveOutputs++;
 
 
-	currentProcessor->setPlayConfigDetails(0, numActiveOutputs, audioModule->currentSampleRate, audioModule->currentBufferSize);
-	currentProcessor->prepareToPlay(audioModule->currentSampleRate, audioModule->currentBufferSize);
+	currentProcessor->setPlayConfigDetails(0, numActiveOutputs, currentGraph->getSampleRate(), currentGraph->getBlockSize());
+	currentProcessor->prepareToPlay(currentGraph->getSampleRate(), currentGraph->getBlockSize());
 
 	int index = 0;
 	for (int i = 0; i < outChannels.size(); i++)
@@ -157,7 +125,7 @@ void AudioLayer::updateSelectedOutChannels()
 		if (outChannels[i]->boolValue())
 		{
 			selectedOutChannels.add(i);
-			audioModule->graph.addConnection({{graphID, index }, { AUDIO_OUTPUT_GRAPH_ID, i } });
+			currentGraph->addConnection({{graphID, index }, { (AudioProcessorGraph::NodeID)audioOutputGraphID, i } });
 			index++;
 			DBG("Send out to channel : " << outChannels[i]->niceName);
 		}
@@ -169,25 +137,16 @@ void AudioLayer::updateSelectedOutChannels()
 
 }
 
-void AudioLayer::audioSetupChanged()
-{
-    setAudioModule(audioModule); //force recreate out channels
-}
-*/
-
 
 void AudioLayer::onContainerParameterChangedInternal(Parameter * p)
 {
 	SequenceLayer::onContainerParameterChangedInternal(p);
 
-	//DBG("audio layer container parameter changed internal " << p->niceName);
-
-	/*
 	if (p->type == Controllable::BOOL && outChannels.indexOf((BoolParameter *)p) > -1)
 	{
 		updateSelectedOutChannels();
 	}
-	*/
+	
 }
 
 var AudioLayer::getJSONData()

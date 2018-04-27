@@ -59,6 +59,7 @@ using namespace juce;
 
 #include "timeline/Sequence/Layer/SequenceLayer.h"
 
+
 #include "timeline/Sequence/Layer/layers/audio/AudioLayerClip.h"
 #include "timeline/Sequence/Layer/layers/audio/AudioLayerClipManager.h"
 #include "timeline/Sequence/Layer/layers/audio/AudioLayer.h"
@@ -66,20 +67,22 @@ using namespace juce;
 #include "timeline/Sequence/Layer/SequenceLayerFactory.h"
 #include "timeline/Sequence/Layer/SequenceLayerManager.h"
 
-
 #include "timeline/Sequence/Cue/TimeCue.h"
 #include "timeline/Sequence/Cue/TimeCueManager.h"
 
+
 //ui
-#include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerClipUI.h"
-#include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerClipManagerUI.h"
-#include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerPanel.h"
-#include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerTimeline.h"
 
 #include "timeline/Sequence/Layer/ui/SequenceLayerPanel.h"
 #include "timeline/Sequence/Layer/ui/SequenceLayerPanelManagerUI.h"
 #include "timeline/Sequence/Layer/ui/SequenceLayerTimeline.h"
 #include "timeline/Sequence/Layer/ui/SequenceLayerTimelineManagerUI.h"
+
+
+#include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerClipUI.h"
+#include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerClipManagerUI.h"
+#include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerPanel.h"
+#include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerTimeline.h"
 
 #include "timeline/Sequence/Cue/ui/TimeCueUI.h"
 #include "timeline/Sequence/Cue/ui/TimeCueManagerUI.h"

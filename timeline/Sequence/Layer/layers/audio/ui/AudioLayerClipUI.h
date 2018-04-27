@@ -11,9 +11,6 @@
 #ifndef AUDIOLAYERCLIPUI_H_INCLUDED
 #define AUDIOLAYERCLIPUI_H_INCLUDED
 
-#include "../AudioLayerClip.h"
-
-
 class AudioLayerClipUI :
 	public BaseItemUI<AudioLayerClip>,
 	public AudioLayerClip::AsyncListener

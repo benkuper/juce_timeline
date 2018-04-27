@@ -43,16 +43,7 @@ public:
 
 	void buildPopupMenu();
 
-	SequenceLayer * showCreateMenu(Sequence * sequence)
-	{
-		int result = menu.show();
-		if (result == 0) return nullptr;
-		else
-		{
-			SequenceLayerDefinition * d = layerDefs[result - 1];//result 0 is no result
-			return d->createFunc(sequence,d->params);
-		}
-	}
+	SequenceLayer * showCreateMenu(Sequence * sequence);
 
 	SequenceLayer * createSequenceLayer(Sequence * sequence, const String &inputType)
 	{

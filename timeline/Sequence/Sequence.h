@@ -45,8 +45,6 @@ public:
 
 	BoolParameter * isPlaying;
 
-	//AudioModule * masterAudioModule; //TO REPLACE
-
 	double hiResAudioTime;
 
 
@@ -65,7 +63,8 @@ public:
 
 	virtual bool paste() override;
 
-	//void setMasterAudioModule(AudioModule * module); -> to replace
+	AudioDeviceManager * currentManager;
+	void setAudioDeviceManager(AudioDeviceManager * am);
 
 	// Inherited via AudioIODeviceCallback
 	virtual void audioDeviceIOCallback(const float ** inputChannelData, int numInputChannels, float ** outputChannelData, int numOutputChannels, int numSamples) override;
@@ -80,7 +79,6 @@ public:
 
 	void onContainerParameterChangedInternal(Parameter *) override;
 	void onContainerTriggerTriggered(Trigger *) override;
-	void onExternalParameterChanged(Parameter *) override;
 
 	virtual void hiResTimerCallback() override;
 

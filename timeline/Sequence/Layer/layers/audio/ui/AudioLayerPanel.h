@@ -12,11 +12,6 @@
 #define AUDIOLAYERPANEL_H_INCLUDED
 
 
-#include "../../../ui/SequenceLayerPanel.h"
-#include "../AudioLayer.h"
-//#include "Module/ui/ModuleChooserUI.h"
-//#include "Module/ModuleManager.h"
-
 class AudioLayerPanel :
 	public SequenceLayerPanel,
 	//public ModuleChooserUI::ChooserListener,

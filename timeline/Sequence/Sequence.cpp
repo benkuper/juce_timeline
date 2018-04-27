@@ -1,3 +1,4 @@
+#include "Sequence.h"
 /*
   ==============================================================================
 
@@ -9,7 +10,7 @@
 */
 Sequence::Sequence() :
 	BaseItem("Sequence",true),
-	//masterAudioModule(nullptr),
+	currentManager(nullptr),
 	hiResAudioTime(0),
 	isBeingEdited(false)
 {
@@ -69,7 +70,7 @@ Sequence::~Sequence()
 {
 	stopTimer();
 	stopTrigger->trigger();
-	//setMasterAudioModule(nullptr);
+	setAudioDeviceManager(nullptr);
 
 	if (Engine::mainEngine != nullptr) Engine::mainEngine->removeEngineListener(this);
 }
@@ -91,32 +92,30 @@ bool Sequence::paste()
 	return true;
 }
 
-/*
-void Sequence::setMasterAudioModule(AudioModule * module)
+void Sequence::setAudioDeviceManager(AudioDeviceManager * manager)
 {
-	if (masterAudioModule == module) return;
+	if (currentManager == manager) return;
 
-	if (masterAudioModule != nullptr)
+	if (currentManager != nullptr)
 	{
-		masterAudioModule->enabled->removeParameterListener(this);
-		masterAudioModule->am.removeAudioCallback(this);
+		//masterAudioModule->enabled->removeParameterListener(this);
+		currentManager->removeAudioCallback(this);
 	}
 
-	masterAudioModule = module;
+	currentManager = manager;
 
-	if (masterAudioModule != nullptr)
+	if (currentManager != nullptr)
 	{
-		masterAudioModule->enabled->addParameterListener(this);
-		masterAudioModule->am.addAudioCallback(this);
+		//masterAudioModule->enabled->addParameterListener(this);
+		currentManager->addAudioCallback(this);
 	}
 
 	sequenceListeners.call(&SequenceListener::sequenceMasterAudioModuleChanged, this);
 }
-*/
 
 bool Sequence::timeIsDrivenByAudio()
 {
-	return false;// masterAudioModule != nullptr && masterAudioModule->enabled->boolValue();
+	return currentManager != nullptr;
 }
 
 var Sequence::getJSONData()
@@ -225,11 +224,6 @@ void Sequence::onContainerTriggerTriggered(Trigger * t)
 	}
 }
 
-void Sequence::onExternalParameterChanged(Parameter * p)
-{
-	//if(masterAudioModule != nullptr && p == masterAudioModule->enabled) sequenceListeners.call(&SequenceListener::sequenceMasterAudioModuleChanged, this);
-}
-
 void Sequence::hiResTimerCallback()
 {
 	jassert(isPlaying->boolValue());
@@ -274,7 +268,7 @@ void Sequence::audioDeviceIOCallback(const float ** , int , float ** outputChann
 	for(int i=0;i<numOutputChannels;i++) FloatVectorOperations::clear(outputChannelData[i], numSamples);
 
 	AudioDeviceManager::AudioDeviceSetup s;
-	//masterAudioModule->am.getAudioDeviceSetup(s);
+	
 	double sRate = s.sampleRate == 0 ? 44100 : s.sampleRate;
 	if (isPlaying->boolValue()) hiResAudioTime += (numSamples / sRate)*playSpeed->floatValue();
 }

@@ -11,6 +11,8 @@
 AudioLayerClipManager::AudioLayerClipManager() :
 	BaseManager("Clip Manager")
 {
+	itemDataType = "AudioClip";
+
 }
 
 AudioLayerClipManager::~AudioLayerClipManager()

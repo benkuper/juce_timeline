@@ -8,8 +8,6 @@
   ==============================================================================
 */
 
-#include "AudioLayerClipManagerUI.h"
-#include "AudioLayerTimeline.h"
 
 AudioLayerClipManagerUI::AudioLayerClipManagerUI(AudioLayerTimeline * _timeline, AudioLayerClipManager * manager) :
 	BaseManagerUI("Clip Manager", manager, false),

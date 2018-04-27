@@ -11,9 +11,6 @@
 #ifndef AUDIOLAYERCLIPMANAGERUI_H_INCLUDED
 #define AUDIOLAYERCLIPMANAGERUI_H_INCLUDED
 
-#include "../AudioLayerClipManager.h"
-#include "AudioLayerClipUI.h"
-
 class AudioLayerTimeline;
 
 class AudioLayerClipManagerUI :

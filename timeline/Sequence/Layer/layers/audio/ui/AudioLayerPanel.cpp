@@ -8,8 +8,6 @@
   ==============================================================================
 */
 
-#include "AudioLayerPanel.h"
-
 AudioLayerPanel::AudioLayerPanel(AudioLayer * layer) :
 	SequenceLayerPanel(layer),
 	audioLayer(layer)

@@ -18,7 +18,9 @@ AudioLayerClip::AudioLayerClip(float _time) :
 	isLoading(false),
 	audioClipAsyncNotifier(10)
 {
-	filePath = new FileParameter("File Path", "File Path", "");
+	itemDataType = "AudioClip";
+
+	filePath = new FileParameter("File Path", "File Path", ""); 
 	addParameter(filePath);
 
 	time = addFloatParameter("Start Time", "Time of the start of the clip", _time, 0, 3600);
