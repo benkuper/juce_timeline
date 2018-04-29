@@ -50,7 +50,6 @@ void AudioLayerClipUI::paint(Graphics & g)
 		
 	} else
 	{
-		DBG("paint here");
 		thumbnail.drawChannels(g, getLocalBounds(), 0, item->clipDuration, item->volume->floatValue());
 	}
 }
