@@ -45,6 +45,8 @@ public:
 
 	BoolParameter * isPlaying;
 
+    AudioDeviceManager * currentManager;
+    
 	double hiResAudioTime;
 
 
@@ -63,7 +65,6 @@ public:
 
 	virtual bool paste() override;
 
-	AudioDeviceManager * currentManager;
 	void setAudioDeviceManager(AudioDeviceManager * am);
 
 	// Inherited via AudioIODeviceCallback
