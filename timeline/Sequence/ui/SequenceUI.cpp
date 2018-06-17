@@ -14,7 +14,6 @@ SequenceUI::SequenceUI(Sequence * sequence) :
 	minContentHeight = 20; //To fix : need to pass in constructor of BaseItemUI
 
 	timeUI = item->currentTime->createSlider();
-	timeUI->setForceFeedbackOnly(true);
 	timeUI->showLabel = false;
 	timeUI->showValue = false;
 	timeUI->bgColor = BG_COLOR.darker(.1f);

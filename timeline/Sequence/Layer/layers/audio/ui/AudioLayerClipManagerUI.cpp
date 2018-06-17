@@ -71,7 +71,7 @@ void AudioLayerClipManagerUI::removeItemUIInternal(AudioLayerClipUI * cui)
 
 void AudioLayerClipManagerUI::addClipWithFileChooserAt(float position)
 {
-	FileChooser chooser("Load a carrot", File::nonexistent, "*.wav;*.mp3");
+	FileChooser chooser("Load an audio file", File(), "*.wav;*.mp3");
 	bool result = chooser.browseForFileToOpen();
 	if (result)
 	{

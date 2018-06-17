@@ -17,8 +17,7 @@ Sequence::Sequence() :
 	itemDataType = "Sequence";
 
 	isPlaying = addBoolParameter("Is Playing", "Is the sequence playing ?", false);
-	isPlaying->isControllableFeedbackOnly = true;
-	isPlaying->isEditable = false; 
+	isPlaying->setControllableFeedbackOnly(true);
 	isPlaying->isSavable = false;
 	
 	playTrigger = addTrigger("Play", "Play the sequence");
@@ -136,11 +135,7 @@ void Sequence::loadJSONDataInternal(var data)
 	cueManager->loadJSONData(data.getProperty("cueManager", var()));
 	isBeingEdited = data.getProperty("editing", false);
 
-	if (Engine::mainEngine->isLoadingFile)
-	{
-		Engine::mainEngine->addEngineListener(this);
-	}
-	
+	if (Engine::mainEngine != nullptr && Engine::mainEngine->isLoadingFile) Engine::mainEngine->addEngineListener(this);	
 }
 
 void Sequence::onContainerParameterChangedInternal(Parameter * p)
@@ -253,7 +248,8 @@ void Sequence::hiResTimerCallback()
 
 void Sequence::endLoadFile()
 {
-	Engine::mainEngine->removeEngineListener(this);
+	if (Engine::mainEngine != nullptr) Engine::mainEngine->removeEngineListener(this);
+
 	if (isBeingEdited) selectThis();
 
 	if (startAtLoad->boolValue())
