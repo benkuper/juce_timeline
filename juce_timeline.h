@@ -44,6 +44,7 @@
 //Somehow, we need to include specifically the templace class headers
 #include <juce_organicui/undo/UndoMaster.h>
 #include <juce_organicui/manager/BaseItem.h>
+#include <juce_organicui/manager/ui/BaseItemEditor.h>
 #include <juce_organicui/manager/ui/GenericManagerEditor.h>
 #include <juce_organicui/manager/BaseManager.h>
 #include <juce_organicui/manager/ui/BaseItemMinimalUI.h>
