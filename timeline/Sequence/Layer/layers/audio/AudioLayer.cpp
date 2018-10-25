@@ -56,7 +56,7 @@ void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph * graph, int outputG
         
 		currentProcessor = new AudioLayerProcessor(this);
 		
-        graphID = AudioProcessorGraph::NodeID(AudioLayer::graphIDIncrement++);
+		graphID = AudioProcessorGraph::NodeID(AudioLayer::graphIDIncrement++);
 		currentGraph->addNode(currentProcessor, graphID);
 		
 		int numChannels = currentGraph->getMainBusNumOutputChannels();

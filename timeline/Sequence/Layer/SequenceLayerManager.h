@@ -21,8 +21,6 @@ public:
 
 	Sequence * sequence;
 	AudioLayer * masterAudioLayer;
-
-	SequenceLayerFactory factory;
 	
 	SequenceLayer * createItem() override;
 	SequenceLayer * addItemFromData(var data, bool fromUndoableAction = false) override;

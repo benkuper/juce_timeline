@@ -8,8 +8,7 @@
   ==============================================================================
 */
 
-#include "SequenceLayerFactory.h"
-
+juce_ImplementSingleton(SequenceLayerFactory)
 
 SequenceLayerFactory::SequenceLayerFactory() {
 }

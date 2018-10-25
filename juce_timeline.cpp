@@ -22,6 +22,7 @@
 #include "resources/BinaryData.cpp"
 
 #include "timeline/Sequence/Sequence.cpp"
+#include "timeline/SequenceManager.cpp"
 
 
 #include "timeline/Sequence/Layer/layers/audio/AudioLayerClip.cpp"
@@ -59,5 +60,5 @@
 #include "timeline/Sequence/Cue/ui/TimeCueManagerUI.cpp"
 
 #include "timeline/ui/TimeMachineView.cpp"
-
+#include "timeline/ui/SequenceManagerUI.cpp"
 

@@ -32,6 +32,6 @@ void SequenceLayerTimelineManagerUI::resized()
 
 void SequenceLayerTimelineManagerUI::showMenuAndAddItem(bool, Point<int>)
 {
-	SequenceLayer * i = manager->factory.showCreateMenu(manager->sequence);
+	SequenceLayer * i = SequenceLayerFactory::getInstance()->showCreateMenu(manager->sequence);
 	if (i != nullptr) manager->addItem(i);
 }

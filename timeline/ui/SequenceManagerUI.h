@@ -8,9 +8,7 @@
   ==============================================================================
 */
 
-#ifndef SEQUENCEMANAGERUI_H_INCLUDED
-#define SEQUENCEMANAGERUI_H_INCLUDED
-
+#pragma once
 
 class SequenceManagerUI :
 	public BaseManagerShapeShifterUI<SequenceManager, Sequence, SequenceUI>
@@ -24,9 +22,3 @@ public:
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceManagerUI)
 };
-
-
-
-
-
-#endif  // SEQUENCEMANAGERUI_H_INCLUDED

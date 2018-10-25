@@ -8,11 +8,7 @@
   ==============================================================================
 */
 
-#ifndef SEQUENCELAYERFACTORY_H_INCLUDED
-#define SEQUENCELAYERFACTORY_H_INCLUDED
-
-
-#include "SequenceLayer.h"
+#pragma once
 
 class SequenceLayerDefinition
 {
@@ -35,6 +31,8 @@ public:
 class SequenceLayerFactory
 {
 public:
+	juce_DeclareSingleton(SequenceLayerFactory,true)
+
 	OwnedArray<SequenceLayerDefinition> layerDefs;
 	PopupMenu menu;
 
@@ -53,7 +51,3 @@ public:
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceLayerFactory)
 };
-
-
-
-#endif  // SEQUENCELAYERFACTORY_H_INCLUDED

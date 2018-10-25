@@ -57,8 +57,8 @@ void SequenceTimelineSeeker::mouseDown(const MouseEvent & e)
 		sequence->viewEndTime->setValue(sequence->totalTime->floatValue());
 	}
 
-	e.source.enableUnboundedMouseMovement(true, false);
-
+	//e.source.enableUnboundedMouseMovement(true, true);
+	setMouseCursor(MouseCursor::NoCursor);
 	//DBG("viewStartAtMouseDown : " << viewStartAtMouseDown << "/ viewEndAtMouseDown : " << viewEndAtMouseDown << "/ timeAnchorAtMouseDown : " << timeAnchorAtMouseDown);
 }
 
@@ -71,32 +71,32 @@ void SequenceTimelineSeeker::mouseDrag(const MouseEvent & e)
 		if (e.originalComponent == &handle)
 		{
 
-			float offsetX = e.getOffsetFromDragStart().x;
-			float offsetY = e.getOffsetFromDragStart().y;
+			if (e.getScreenPosition().x == 0 || e.getScreenPosition().y == 0) return;
 
-			offsetX = offsetX < 0 ? jmin<int>(offsetX + minActionDistX, 0) : jmax<int>(offsetX - minActionDistX, 0);
-			offsetY = offsetY< 0 ? jmin<int>(offsetY + minActionDistY, 0) : jmax<int>(offsetY - minActionDistY, 0);
+			Point<int> offset = e.getScreenPosition() - e.getMouseDownScreenPosition();
+			//float offsetY = e.getEventRelativeTo(this).getOffsetFromDragStart().y;
 
-			offsetY *= sequence->totalTime->floatValue();
-			if (e.mods.isShiftDown()) offsetY *= 2;
-			if (e.mods.isAltDown()) offsetY /= 2;
-			offsetY *= zoomSensitivity;
+			offset.x = offset.x < 0 ? jmin<int>(offset.x + minActionDistX, 0) : jmax<int>(offset.x - minActionDistX, 0);
+			offset.y = offset.y< 0 ? jmin<int>(offset.y + minActionDistY, 0) : jmax<int>(offset.y - minActionDistY, 0);
 
-			float viewTimeFactor = ((viewTimeAtMouseDown - offsetY) / viewTimeAtMouseDown);
+			offset.y *= sequence->totalTime->floatValue();
+			if (e.mods.isShiftDown()) offset.y *= 2;
+			if (e.mods.isAltDown()) offset.y /= 2;
+			offset.y *= zoomSensitivity;
+
+			float viewTimeFactor = ((viewTimeAtMouseDown - offset.y) / viewTimeAtMouseDown);
 
 			if (viewTimeFactor == 0) return;
 
 			float startDist = timeAnchorAtMouseDown - viewStartAtMouseDown;
 			float endDist = timeAnchorAtMouseDown - viewEndAtMouseDown;
-			float newViewStart = timeAnchorAtMouseDown - startDist*viewTimeFactor + getTimeForX(offsetX);
-			float newViewEnd = timeAnchorAtMouseDown - endDist*viewTimeFactor + getTimeForX(offsetX);
+			float newViewStart = timeAnchorAtMouseDown - startDist*viewTimeFactor + getTimeForX(offset.x);
+			float newViewEnd = timeAnchorAtMouseDown - endDist*viewTimeFactor + getTimeForX(offset.x);
 
 			//newViewEnd = jmax<float>(newViewEnd, newViewStart + 1);
 
 			sequence->viewStartTime->setValue(newViewStart);
 			sequence->viewEndTime->setValue(newViewEnd);
-			
-			
 		}
 		else
 		{
@@ -109,7 +109,8 @@ void SequenceTimelineSeeker::mouseDrag(const MouseEvent & e)
 
 void SequenceTimelineSeeker::mouseUp(const MouseEvent & e)
 {
-	e.source.enableUnboundedMouseMovement(false, true);
+	//e.source.enableUnboundedMouseMovement(false, true);
+	setMouseCursor(MouseCursor::NormalCursor);
 }
 
 

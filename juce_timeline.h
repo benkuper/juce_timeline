@@ -59,6 +59,7 @@ using namespace juce;
 #include "resources/BinaryData.h"
 
 #include "timeline/Sequence/Sequence.h"
+#include "timeline/SequenceManager.h"
 
 #include "timeline/Sequence/Layer/SequenceLayer.h"
 
@@ -98,3 +99,4 @@ using namespace juce;
 #include "timeline/Sequence/ui/SequenceEditorView.h"
 
 #include "timeline/ui/TimeMachineView.h"
+#include "timeline/ui/SequenceManagerUI.h"
