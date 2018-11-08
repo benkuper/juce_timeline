@@ -1,4 +1,3 @@
-#include "Sequence.h"
 /*
   ==============================================================================
 
@@ -8,11 +7,13 @@
 
   ==============================================================================
 */
+
 Sequence::Sequence() :
 	BaseItem("Sequence",true),
 	currentManager(nullptr),
 	hiResAudioTime(0),
-	isBeingEdited(false)
+	isBeingEdited(false),
+	sequenceNotifier(10)
 {
 	itemDataType = "Sequence";
 
@@ -35,22 +36,22 @@ Sequence::Sequence() :
 	currentTime->defaultUI = FloatParameter::TIME;
 	currentTime->isSavable = false;
 
-	totalTime = addFloatParameter("Total Time", "Total time of this sequence, in seconds", initTotalTime, 1, 3600); //max 1h
+	totalTime = addFloatParameter("Total Time", "Total time of this sequence, in seconds", initTotalTime, minSequenceTime);
 	totalTime->defaultUI = FloatParameter::TIME;
 
 	loopParam = addBoolParameter("Loop", "Whether the sequence plays again from the start when reached the end while playing", false);
-	playSpeed = addFloatParameter("Play Speed", "Playing speed factor, 1 is normal speed, 2 is double speed and 0.5 is half speed",1,0,10);
+	playSpeed = addFloatParameter("Play Speed", "Playing speed factor, 1 is normal speed, 2 is double speed and 0.5 is half speed",1,0,100);
 	fps = addIntParameter("FPS", "Frame Per Second.\nDefines the number of times per seconds the sequence is evaluated, the higher the value is, the more previse the calculation will be.\n \
-									This setting also sets how many messages per seconds are sent from layer with automations.", 50, 1, 100);
+									This setting also sets how many messages per seconds are sent from layer with automations.", 50, 1,500);
 	
 	
 	prevCue = addTrigger("Prev Cue", "Jump to previous cue, if previous cue is less than 1 sec before, jump to the one before that.");
 	nextCue = addTrigger("Next Cue", "Jump to the next cue");
 
-	viewStartTime = addFloatParameter("View start time", "Start time of the view", 0, 0, initTotalTime - minViewTime);
+	viewStartTime = addFloatParameter("View start time", "Start time of the view", 0, 0, initTotalTime - minSequenceTime);
 	viewStartTime->hideInEditor = true;
 
-	viewEndTime = addFloatParameter("View end time", "End time of the view", initTotalTime, minViewTime, initTotalTime);
+	viewEndTime = addFloatParameter("View end time", "End time of the view", initTotalTime, minSequenceTime, initTotalTime);
 	viewEndTime->hideInEditor = true;
 
 	layerManager = new SequenceLayerManager(this);
@@ -76,12 +77,22 @@ Sequence::~Sequence()
 
 void Sequence::setCurrentTime(float time, bool forceOverPlaying)
 {
+	time = jlimit<float>(0, totalTime->floatValue(), time);
+
 	if (isPlaying->boolValue() && !forceOverPlaying) return;
 	if (timeIsDrivenByAudio())
 	{
 		hiResAudioTime = time;
 		if (!isPlaying->boolValue()) currentTime->setValue(time);
 	}else currentTime->setValue(time);
+}
+
+void Sequence::setBeingEdited(bool value)
+{
+	if (isBeingEdited == value) return;
+	isBeingEdited = value;
+	sequenceListeners.call(&SequenceListener::sequenceEditingStateChanged, this);
+	sequenceNotifier.addMessage(new SequenceEvent(SequenceEvent::EDITING_STATE_CHANGED, this));
 }
 
 bool Sequence::paste()
@@ -135,7 +146,11 @@ void Sequence::loadJSONDataInternal(var data)
 	cueManager->loadJSONData(data.getProperty("cueManager", var()));
 	isBeingEdited = data.getProperty("editing", false);
 
-	if (Engine::mainEngine != nullptr && Engine::mainEngine->isLoadingFile) Engine::mainEngine->addEngineListener(this);	
+	if (Engine::mainEngine->isLoadingFile)
+	{
+		Engine::mainEngine->addEngineListener(this);
+	}
+	
 }
 
 void Sequence::onContainerParameterChangedInternal(Parameter * p)
@@ -146,15 +161,17 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 	}
 	else if (p == currentTime)
 	{
-		sequenceListeners.call(&SequenceListener::sequenceCurrentTimeChanged, this, prevTime, isPlaying->boolValue());
+		sequenceListeners.call(&SequenceListener::sequenceCurrentTimeChanged, this, (float)prevTime, isPlaying->boolValue());
 		prevTime = currentTime->floatValue();
 		if (!isPlaying->boolValue() && timeIsDrivenByAudio()) hiResAudioTime = currentTime->floatValue();
 	}
 	else if (p == totalTime)
 	{
+		float minViewTime = jmax(minSequenceTime, totalTime->floatValue() / 100.f); //small hack to avoid UI hang when zooming too much
+
 		currentTime->setRange(0, totalTime->floatValue());
 		viewStartTime->setRange(0, totalTime->floatValue() - minViewTime);
-		viewEndTime->setRange(viewStartTime->floatValue()+minViewTime, totalTime->floatValue());
+		viewEndTime->setRange(viewStartTime->floatValue()+ minViewTime, totalTime->floatValue());
 		sequenceListeners.call(&SequenceListener::sequenceTotalTimeChanged, this);
 	} else if (p == playSpeed)
 	{
@@ -163,7 +180,7 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 	{
 		if (isPlaying->boolValue())
 		{
-			prevMillis = Time::getMillisecondCounter();
+			prevMillis = Time::getMillisecondCounterHiRes();
 			prevTime = currentTime->floatValue();
 			startTimer(1000/fps->intValue());
 		}
@@ -185,6 +202,7 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 	}
 	else if (p == viewStartTime)
 	{
+		float minViewTime = jmax(minSequenceTime, totalTime->floatValue() / 100.f); //small hack to avoid UI hang when zooming too much
 		viewEndTime->setRange(viewStartTime->floatValue() + minViewTime, totalTime->floatValue()); //Should be a range value
 	}
 }
@@ -221,26 +239,35 @@ void Sequence::onContainerTriggerTriggered(Trigger * t)
 
 void Sequence::hiResTimerCallback()
 {
-	jassert(isPlaying->boolValue());
+	if (!isPlaying->boolValue()) return;
 
-	if (timeIsDrivenByAudio())
+	double targetTime = 0;
+    
+    //DBG("Hi res callback here");
+    
+    if (timeIsDrivenByAudio())
 	{
-		currentTime->setValue(hiResAudioTime);
+		targetTime = hiResAudioTime;
+        currentTime->setValue(hiResAudioTime);
 	}
 	else
 	{
-		uint32 millis = Time::getMillisecondCounter();
-		float deltaTime = (millis - prevMillis) / 1000.f;
-		currentTime->setValue(currentTime->floatValue() + deltaTime * playSpeed->floatValue());
+		double millis = Time::getMillisecondCounterHiRes();
+		double deltaTime = (millis - prevMillis) / 1000;
+		targetTime = currentTime->floatValue() + deltaTime * playSpeed->floatValue();
+		currentTime->setValue(targetTime);
 		prevMillis = millis;
 	}
 
-	if (currentTime->floatValue() >= (float)currentTime->maximumValue)
+	if (targetTime >= totalTime->floatValue())
 	{
 		if (loopParam->boolValue())
 		{
+			float offset = targetTime - totalTime->floatValue();
 			sequenceListeners.call(&SequenceListener::sequenceLooped, this);
-			setCurrentTime(0);
+			//setCurrentTime(0); //to change in trigger layer to avoid doing that
+			prevTime = 0;
+			setCurrentTime(offset);
 		}
 		else finishTrigger->trigger();
 	}
@@ -248,8 +275,7 @@ void Sequence::hiResTimerCallback()
 
 void Sequence::endLoadFile()
 {
-	if (Engine::mainEngine != nullptr) Engine::mainEngine->removeEngineListener(this);
-
+	Engine::mainEngine->removeEngineListener(this);
 	if (isBeingEdited) selectThis();
 
 	if (startAtLoad->boolValue())

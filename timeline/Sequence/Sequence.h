@@ -8,8 +8,7 @@
   ==============================================================================
 */
 
-#ifndef SEQUENCE_H_INCLUDED
-#define SEQUENCE_H_INCLUDED
+#pragma once
 
 class SequenceLayerManager;
 class TimeCueManager;
@@ -51,17 +50,19 @@ public:
 
 
 	//Temp variables
-	uint32 prevMillis; 
-	float prevTime;
+	double prevMillis; 
+	double prevTime;
 
 	//UI
-	const float minViewTime = 1; //in seconds
+	const float minSequenceTime = 1; //in seconds
 	FloatParameter * viewStartTime;
 	FloatParameter * viewEndTime;
 	bool isBeingEdited;
 
 
 	void setCurrentTime(float time, bool forceOverPlaying = true);
+
+	void setBeingEdited(bool value);
 
 	virtual bool paste() override;
 
@@ -94,6 +95,7 @@ public:
 		virtual void sequenceLooped(Sequence *) {}
 		virtual void sequenceTotalTimeChanged(Sequence *) {}
 		virtual void sequenceMasterAudioModuleChanged(Sequence *) {}
+		virtual void sequenceEditingStateChanged(Sequence *) {}
 	};
 
 	ListenerList<SequenceListener> sequenceListeners;
@@ -101,10 +103,26 @@ public:
 	void removeSequenceListener(SequenceListener* listener) { sequenceListeners.remove(listener); }
 
 
+	class SequenceEvent {
+	public:
+		enum Type { EDITING_STATE_CHANGED };
+		SequenceEvent(Type type, Sequence * s) : type(type), sequence(s) {}
+		Type type;
+		Sequence * sequence;
+	};
+
+	QueuedNotifier<SequenceEvent> sequenceNotifier;
+	typedef QueuedNotifier<SequenceEvent>::Listener AsyncListener;
+
+	void addAsyncSequenceListener(AsyncListener* newListener) { sequenceNotifier.addListener(newListener); }
+	void addAsyncCoalescedSequenceListener(AsyncListener* newListener) { sequenceNotifier.addAsyncCoalescedListener(newListener); }
+	void removeAsyncSequenceListener(AsyncListener* listener) { sequenceNotifier.removeListener(listener); }
+
+
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Sequence)
+
+		
+
+	
+
 };
-
-
-
-
-#endif  // SEQUENCE_H_INCLUDED

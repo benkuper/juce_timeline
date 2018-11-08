@@ -8,29 +8,26 @@
   ==============================================================================
 */
 
-#ifndef SEQUENCEUI_H_INCLUDED
-#define SEQUENCEUI_H_INCLUDED
+#pragma once
 
 class SequenceUI :
 	public BaseItemUI<Sequence>,
-	public Sequence::SequenceListener
+	public Sequence::AsyncListener
 {
 public:
 	SequenceUI(Sequence * output);
 	virtual ~SequenceUI();
 
 	ScopedPointer<FloatSliderUI> timeUI;
+	ScopedPointer<TriggerImageUI> togglePlayUI;
+	ScopedPointer<TriggerImageUI> stopUI;
 
+	void resizedInternalHeader(Rectangle<int> &r) override;
 	void resizedInternalContent(Rectangle<int> &r) override;
 
 	void controllableFeedbackUpdateInternal(Controllable *) override;
 
+	void newMessage(const Sequence::SequenceEvent &e) override;
+
 	JUCE_DECLARE_NON_COPYABLE(SequenceUI)
 };
-
-
-
-
-
-
-#endif  // SEQUENCEUI_H_INCLUDED

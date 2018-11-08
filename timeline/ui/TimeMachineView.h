@@ -8,8 +8,7 @@
   ==============================================================================
 */
 
-#ifndef TIMEMACHINEVIEW_H_INCLUDED
-#define TIMEMACHINEVIEW_H_INCLUDED
+#pragma once
 
 
 class TimeMachineView :
@@ -39,4 +38,3 @@ public:
 };
 
 
-#endif  // TIMEMACHINEVIEW_H_INCLUDED
