@@ -52,6 +52,7 @@
 #include <juce_organicui/manager/ui/BaseManagerUI.h>
 #include <juce_organicui/manager/ui/BaseManagerViewUI.h>
 #include <juce_organicui/manager/ui/BaseManagerShapeShifterUI.h>
+#include <juce_organicui/ui/shapeshifter/GapGrabber.h>
 
 
 using namespace juce;

@@ -8,13 +8,13 @@
   ==============================================================================
 */
 
-#ifndef SEQUENCEEDITOR_H_INCLUDED
-#define SEQUENCEEDITOR_H_INCLUDED
+#pragma once
 
 class SequenceEditorView :
 	public Component,
 	public Sequence::SequenceListener,
-	public ScrollBar::Listener
+	public ScrollBar::Listener,
+	public GapGrabber::Listener
 {
 public:
 	SequenceEditorView(Sequence * _sequence);
@@ -32,6 +32,8 @@ public:
 	SequenceLayerTimelineManagerUI timelineManagerUI;
 	ScopedPointer<SequenceTransportUI> transportUI;
 
+	GapGrabber grabber;
+
 	//layout
 	const float headerHeight = 50;
 	float panelWidth;
@@ -45,10 +47,12 @@ public:
 	void mouseWheelMove(const MouseEvent &e, const MouseWheelDetails &) override;
 	bool keyPressed(const KeyPress &key) override;
 
+	// Inherited via Listener
+	virtual void grabberGrabUpdate(GapGrabber *, int relativeDist) override;
+
+
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceEditorView)
 
 		
+
 };
-
-
-#endif  // SEQUENCEEDITOR_H_INCLUDED

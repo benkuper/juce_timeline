@@ -1,3 +1,4 @@
+#include "SequenceEditorView.h"
 /*
   ==============================================================================
 
@@ -15,7 +16,8 @@ SequenceEditorView::SequenceEditorView(Sequence * _sequence) :
 	panelManagerUI(_sequence->layerManager),
 	timelineManagerUI(_sequence->layerManager),
 	transportUI(new SequenceTransportUI(_sequence)),
-	panelWidth(200)
+	panelWidth(250),
+	grabber(GapGrabber::HORIZONTAL)
 {
 	addAndMakeVisible(panelContainer);
 	addAndMakeVisible(timelineContainer);
@@ -34,6 +36,9 @@ SequenceEditorView::SequenceEditorView(Sequence * _sequence) :
 	addMouseListener(this, true);
 
 	sequence->isBeingEdited = true;
+
+	addAndMakeVisible(&grabber);
+	grabber.addGrabberListener(this);
 }
 
 SequenceEditorView::~SequenceEditorView()
@@ -53,7 +58,7 @@ void SequenceEditorView::resized()
 	Rectangle<int> r = getLocalBounds();
 
 	panelContainer.setBounds(r.removeFromLeft(panelWidth));
-	r.removeFromLeft(3);
+	grabber.setBounds(r.removeFromLeft(6));
 	timelineContainer.setBounds(r);
 
 	Rectangle<int> panelR = panelContainer.getLocalBounds();
@@ -110,3 +115,8 @@ bool SequenceEditorView::keyPressed(const KeyPress & key)
 	return false;
 }
 
+void SequenceEditorView::grabberGrabUpdate(GapGrabber *, int relativeDist)
+{
+	panelWidth += relativeDist;
+	resized();
+}
