@@ -24,9 +24,11 @@ void SequenceLayerFactory::buildPopupMenu()
 
 }
 
-inline SequenceLayer * SequenceLayerFactory::showCreateMenu(Sequence * sequence)
+SequenceLayer * SequenceLayerFactory::showCreateMenu(Sequence * sequence)
 {
 	if (layerDefs.size() == 1) return layerDefs[0]->createFunc(sequence, layerDefs[0]->params);
+
+	if (menu.getNumItems() != layerDefs.size()) buildPopupMenu();
 
 	int result = menu.show();
 	if (result == 0) return nullptr;

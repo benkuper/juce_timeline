@@ -1,3 +1,4 @@
+#include "SequenceLayerTimeline.h"
 /*
   ==============================================================================
 
@@ -44,7 +45,6 @@ float SequenceLayerTimeline::getTimeForX(int tx, bool offsetStart)
 }
 
 
-
 void SequenceLayerTimeline::paintOverChildren(Graphics & g)
 {
 
@@ -63,6 +63,24 @@ void SequenceLayerTimeline::mouseDown(const MouseEvent &e)
 	{
 		item->selectThis();
 	}
+}
+
+SequenceLayerPanel * SequenceLayerTimeline::getRelatedPanel()
+{
+	TimeMachineView * tmv = dynamic_cast<TimeMachineView *>(ShapeShifterManager::getInstance()->getContentForName("Sequence Editor"));
+	if (tmv == nullptr)
+	{
+		DBG("TimeMachineView not found");
+		return nullptr;
+	}
+
+	if (tmv->editor == nullptr)
+	{
+		DBG("No editor in tmv");
+		return nullptr;
+	}
+
+	return tmv->editor->panelManagerUI.getUIForItem(item);
 }
 
 void SequenceLayerTimeline::controllableFeedbackUpdateInternal(Controllable * c)

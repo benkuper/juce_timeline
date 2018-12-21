@@ -8,9 +8,7 @@
   ==============================================================================
 */
 
-#ifndef AUDIOLAYERPANEL_H_INCLUDED
-#define AUDIOLAYERPANEL_H_INCLUDED
-
+#pragma once
 
 class AudioLayerPanel :
 	public SequenceLayerPanel,
@@ -37,8 +35,3 @@ public:
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioLayerPanel)
 };
-
-
-
-
-#endif  // AUDIOLAYERPANEL_H_INCLUDED

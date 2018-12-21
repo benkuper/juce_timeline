@@ -27,9 +27,11 @@ public:
 	virtual void paintOverChildren(Graphics & g) override;
 	virtual void mouseDown(const MouseEvent &e) override;
 
+	SequenceLayerPanel * getRelatedPanel();
+
 	void controllableFeedbackUpdateInternal(Controllable * c) override;
 
-
+	
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceLayerTimeline)
 };

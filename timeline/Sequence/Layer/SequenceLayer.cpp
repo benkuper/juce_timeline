@@ -16,7 +16,7 @@ SequenceLayer::SequenceLayer(Sequence * _sequence, const String &name) :
 
 	itemDataType = "SequenceLayer";
 
-	uiHeight = addIntParameter("UI Height", "Height of the layer in the editor", 60, 30, 300);
+	uiHeight = addIntParameter("UI Height", "Height of the layer in the editor", 60, 30, 5000);
 	color = new ColorParameter("Layer Color", "Color of the layer", Colours::grey);
 	addParameter(color);
 

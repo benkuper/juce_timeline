@@ -8,8 +8,7 @@
   ==============================================================================
 */
 
-#ifndef AUDIOLAYERCLIPUI_H_INCLUDED
-#define AUDIOLAYERCLIPUI_H_INCLUDED
+#pragma once
 
 class AudioLayerClipUI :
 	public BaseItemUI<AudioLayerClip>,
@@ -54,8 +53,3 @@ public:
 	void removeClipUIListener(ClipUIListener* listener) { clipUIListeners.remove(listener); }
 
 };
-
-
-
-
-#endif  // AUDIOLAYERCLIPUI_H_INCLUDED
