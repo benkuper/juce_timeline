@@ -12,6 +12,7 @@
 SequenceLayerTimelineManagerUI::SequenceLayerTimelineManagerUI(SequenceLayerManager * _manager) :
 	BaseManagerUI<SequenceLayerManager, SequenceLayer, SequenceLayerTimeline>("Layers", _manager)
 {
+	animateItemOnAdd = false;
 	addExistingItems();
 }
 
