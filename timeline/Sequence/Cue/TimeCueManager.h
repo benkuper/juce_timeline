@@ -8,8 +8,7 @@
   ==============================================================================
 */
 
-#ifndef TIMECUEMANAGER_H_INCLUDED
-#define TIMECUEMANAGER_H_INCLUDED
+#pragma once
 
 class TimeCueComparator
 {
@@ -42,6 +41,3 @@ public:
 
     void onControllableFeedbackUpdate(ControllableContainer * cc, Controllable * c) override;
 };
-
-
-#endif  // TIMECUEMANAGER_H_INCLUDED
