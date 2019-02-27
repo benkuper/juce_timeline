@@ -89,6 +89,11 @@ using namespace juce;
 #include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerPanel.h"
 #include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerTimeline.h"
 
+#include "timeline/Sequence/Layer/layers/Block/LayerBlock.h"
+#include "timeline/Sequence/Layer/layers/Block/LayerBlockManager.h"
+#include "timeline/Sequence/Layer/layers/Block/ui/LayerBlockUI.h"
+#include "timeline/Sequence/Layer/layers/Block/ui/LayerBlockManagerUI.h"
+
 #include "timeline/Sequence/Cue/ui/TimeCueUI.h"
 #include "timeline/Sequence/Cue/ui/TimeCueManagerUI.h"
 

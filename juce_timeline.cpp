@@ -29,6 +29,11 @@
 #include "timeline/Sequence/Layer/layers/audio/AudioLayerClipManager.cpp"
 #include "timeline/Sequence/Layer/layers/audio/AudioLayer.cpp"
 
+#include "timeline/Sequence/Layer/layers/Block/LayerBlock.cpp"
+#include "timeline/Sequence/Layer/layers/Block/LayerBlockManager.cpp"
+#include "timeline/Sequence/Layer/layers/Block/ui/LayerBlockUI.cpp"
+#include "timeline/Sequence/Layer/layers/Block/ui/LayerBlockManagerUI.cpp"
+
 #include "timeline/Sequence/Layer/SequenceLayer.cpp"
 #include "timeline/Sequence/Layer/SequenceLayerFactory.cpp"
 #include "timeline/Sequence/Layer/SequenceLayerManager.cpp"
