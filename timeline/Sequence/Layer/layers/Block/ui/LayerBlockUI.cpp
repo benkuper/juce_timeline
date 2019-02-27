@@ -1,3 +1,4 @@
+#include "LayerBlockUI.h"
 /*
   ==============================================================================
 
@@ -146,6 +147,11 @@ void LayerBlockUI::controllableFeedbackUpdateInternal(Controllable * c)
 	{
 		bgColor = BG_COLOR.brighter(item->isActive->boolValue() ? .1f : .05f);
 	}
+}
+
+Rectangle<int> LayerBlockUI::getCoreBounds()
+{
+	return getLocalBounds().withWidth(getCoreWidth());
 }
 
 int LayerBlockUI::getCoreWidth()

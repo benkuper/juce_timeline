@@ -1,3 +1,4 @@
+#include "LayerBlock.h"
 /*
   ==============================================================================
 
@@ -64,4 +65,10 @@ void LayerBlock::setStartTime(float newStart, bool keepCoreEnd, bool stickToCore
 	float timeDiff = newStart - time->floatValue();
 	time->setValue(newStart);
 	if (keepCoreEnd) setCoreLength(coreLength->floatValue() - timeDiff, false, stickToCoreEnd);
+}
+
+double LayerBlock::getRelativeTime(double t, bool timeIsAbsolute)
+{
+	if (timeIsAbsolute) t -= time->floatValue();
+	return fmod(t, coreLength->floatValue());
 }

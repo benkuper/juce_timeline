@@ -42,6 +42,7 @@ public:
 	
 	virtual void controllableFeedbackUpdateInternal(Controllable *) override;
 
+	Rectangle<int> getCoreBounds();
 	int getCoreWidth();
 
 	void setViewRange(float relativeStart, float relativeEnd);

@@ -32,5 +32,6 @@ public:
 	virtual void setCoreLength(float newLength, bool stretch, bool stickToCoreEnd = false);
 	virtual void setLoopLength(float newLength);
 	virtual void setStartTime(float newStart, bool keepCoreEnd = false, bool stickToCoreEnd = false);
-
+	
+	virtual double getRelativeTime(double t, bool timeIsAbsolute = false);
 };
