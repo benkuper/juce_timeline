@@ -45,7 +45,6 @@ void LayerBlockManagerUI::placeBlockUI(LayerBlockUI * cui)
 	int tx = timeline->getXForTime(cui->item->time->floatValue());
 	int tx2 = timeline->getXForTime(cui->item->time->floatValue() + cui->item->getTotalLength());
 
-
 	cui->setViewRange(timeline->item->sequence->viewStartTime->floatValue() - cui->item->time->floatValue(), timeline->item->sequence->viewEndTime->floatValue() - cui->item->time->floatValue());
 	cui->setBounds(tx, 0, tx2 - tx, getHeight());
 }
@@ -81,6 +80,7 @@ void LayerBlockManagerUI::blockUIDragged(LayerBlockUI * cui, const MouseEvent & 
 {
 	float targetTime = cui->timeAtMouseDown + timeline->getTimeForX(e.getOffsetFromDragStart().x, false);
 	manager->placeBlockAt(cui->item, targetTime);
+	
 	cui->setViewRange(timeline->item->sequence->viewStartTime->floatValue() - cui->item->time->floatValue(), timeline->item->sequence->viewEndTime->floatValue() - cui->item->time->floatValue());
 	cui->resized(); //force resize because changing time will not resize it, just move it
 }

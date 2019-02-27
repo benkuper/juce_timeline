@@ -11,7 +11,7 @@
 #pragma once
 
 class LayerBlockUI :
-	public BaseItemUI<LayerBlock>
+	public BaseItemMinimalUI<LayerBlock>
 {
 public:
 	LayerBlockUI(LayerBlock * block);
@@ -22,16 +22,22 @@ public:
 	float coreLengthAtMouseDown;
 	float loopLengthAtMouseDown;
 
+	bool isDragging;
 	int posAtMouseDown;
 
 	float viewStart;
 	float viewEnd;
 	float viewCoreEnd;
 
+
+	Grabber grabber;
+	Grabber coreGrabber;
+	Grabber loopGrabber;
+
 	virtual void paint(Graphics &g) override;
 
-	virtual void resizedInternalHeader(Rectangle<int> &r) override;
-	virtual void resizedInternalContent(Rectangle<int> &r) override;
+	virtual void resized() override;
+	virtual void resizedBlockInternal() {};
 
 	virtual void mouseEnter(const MouseEvent &e) override;
 	virtual void mouseExit(const MouseEvent &e) override;
@@ -39,7 +45,9 @@ public:
 	virtual void mouseDrag(const MouseEvent &e) override;
 	virtual void mouseUp(const MouseEvent &e) override;
 
-	
+	virtual Rectangle<int> getDragBounds();
+	virtual Rectangle<int> getGrabberBounds();
+
 	virtual void controllableFeedbackUpdateInternal(Controllable *) override;
 
 	Rectangle<int> getCoreBounds();
@@ -48,25 +56,6 @@ public:
 	void setViewRange(float relativeStart, float relativeEnd);
 	virtual void setViewRangeInternal() {}
 
-	/*
-	class StretchHandle :
-		public Component
-	{
-	public:
-		StretchHandle(const Colour & c);
-		~StretchHandle();
-		
-		Colour color;
-		void paint(Graphics &g) override;
-	};
-	
-	StretchHandle startHandle;
-	StretchHandle coreHandle;
-	StretchHandle loopHandle;
-	*/
-
-	Grabber coreGrabber;
-	Grabber loopGrabber;
 
 	class BlockUIListener
 	{
