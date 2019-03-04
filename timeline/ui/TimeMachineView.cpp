@@ -14,6 +14,8 @@ TimeMachineView::TimeMachineView(const String &contentName) :
 	contentIsFlexible = true;
 	InspectableSelectionManager::mainSelectionManager->addSelectionListener(this);
 
+	Sequence * s = InspectableSelectionManager::mainSelectionManager->getInspectableAs<Sequence>();
+	if (s != nullptr) setSequence(s);
 
 	helpID = "SequenceEditor";
 
