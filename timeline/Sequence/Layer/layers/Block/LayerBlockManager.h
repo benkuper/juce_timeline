@@ -36,7 +36,6 @@ public:
 
 	 Array<Point<float>> computeEmptySpaces(LayerBlock * exludeBlock);
 
-	void onControllableFeedbackUpdate(ControllableContainer * cc, Controllable * c) override;
 
 	LayerBlock * addBlockAt(float time);
 	LayerBlock * getBlockAtTime(float time, bool returnClosestPreviousIfNotFound = false, bool includeDisabled = true);

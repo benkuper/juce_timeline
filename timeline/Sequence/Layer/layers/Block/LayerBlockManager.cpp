@@ -47,15 +47,6 @@ Array<Point<float>> LayerBlockManager::computeEmptySpaces(LayerBlock * excludeBl
 	return result;
 }
 
-void LayerBlockManager::onControllableFeedbackUpdate(ControllableContainer *, Controllable * c)
-{
-	LayerBlock * b = dynamic_cast<LayerBlock *>(c->parentContainer);
-	if (b != nullptr)
-	{
-		//if (c == b->time) reorderItems();
-	}
-}
-
 LayerBlock * LayerBlockManager::addBlockAt(float time)
 {
 	LayerBlock * t = createItem();

@@ -47,6 +47,7 @@ float SequenceLayerTimeline::getTimeForX(int tx, bool offsetStart)
 
 void SequenceLayerTimeline::paintOverChildren(Graphics & g)
 {
+	BaseItemMinimalUI::paintOverChildren(g);
 
 	g.setColour(timeBarColor);
 	g.drawVerticalLine(getXForTime(item->sequence->currentTime->floatValue()), 0, (float)getHeight());
@@ -59,6 +60,7 @@ void SequenceLayerTimeline::paintOverChildren(Graphics & g)
 
 void SequenceLayerTimeline::mouseDown(const MouseEvent &e)
 {
+	BaseItemMinimalUI::mouseDown(e);
 	if (e.mods.isLeftButtonDown() && e.eventComponent->getParentComponent() == this)
 	{
 		item->selectThis();

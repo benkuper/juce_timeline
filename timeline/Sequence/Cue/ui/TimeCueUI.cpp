@@ -13,7 +13,7 @@ TimeCueUI::TimeCueUI(TimeCue * timeCue) :
 {
 	bgColor = bgColor.brighter();
 	setRepaintsOnMouseActivity(true);
-	autoDrawHighlightWhenSelected = false;
+	autoDrawContourWhenSelected = false;
 	setSize(10, 20);
 }
 

@@ -91,7 +91,7 @@ void LayerBlockManagerUI::blockUIStartDragged(LayerBlockUI * cui, const MouseEve
 	float targetTime = cui->timeAtMouseDown + timeDiff;
 
 	int itemIndex = manager->items.indexOf(cui->item);
-	float minTime = itemIndex > 0 ? manager->items[itemIndex - 1]->getEndTime() : 0;
+	float minTime = (itemIndex > 0 && !manager->blocksCanOverlap) ? manager->items[itemIndex - 1]->getEndTime() : 0;
 	targetTime = jmax<float>(minTime, targetTime);
 
 	manager->placeBlockAt(cui->item, targetTime);
