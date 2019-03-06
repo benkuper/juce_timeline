@@ -11,7 +11,8 @@
 LayerBlockComparator LayerBlockManager::comparator;
 
 LayerBlockManager::LayerBlockManager(StringRef name) :
-	BaseManager(name)
+	BaseManager(name),
+	blocksCanOverlap(true)
 {
 	hideInEditor = true;
 }
