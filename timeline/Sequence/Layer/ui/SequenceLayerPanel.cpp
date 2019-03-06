@@ -9,7 +9,7 @@
 */
 
 SequenceLayerPanel::SequenceLayerPanel(SequenceLayer * layer) :
-	BaseItemUI<SequenceLayer>(layer,ResizeMode::VERTICAL)
+	BaseItemUI<SequenceLayer>(layer,Direction::VERTICAL)
 {
 	colorUI = item->color->createColorParamUI();
 
