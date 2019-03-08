@@ -9,7 +9,8 @@
 */
 
 TimeMachineView::TimeMachineView(const String &contentName) :
-	ShapeShifterContentComponent(contentName)
+	ShapeShifterContentComponent(contentName),
+	autoSelectOnSequenceSelected(true)
 {
 	contentIsFlexible = true;
 	InspectableSelectionManager::mainSelectionManager->addSelectionListener(this);
@@ -70,6 +71,7 @@ void TimeMachineView::setSequence(Sequence * sequence)
 
 void TimeMachineView::inspectablesSelectionChanged()
 {
+	if (!autoSelectOnSequenceSelected) return;
 	if (InspectableSelectionManager::mainSelectionManager->isEmpty()) return;
 	
 	Sequence * s = InspectableSelectionManager::mainSelectionManager->getInspectableAs<Sequence>();

@@ -144,7 +144,7 @@ void Sequence::loadJSONDataInternal(var data)
 	BaseItem::loadJSONDataInternal(data);
 	layerManager->loadJSONData(data.getProperty("layerManager", var()));
 	cueManager->loadJSONData(data.getProperty("cueManager", var()));
-	isBeingEdited = data.getProperty("editing", false);
+	setBeingEdited(data.getProperty("editing", false));
 
 	if (Engine::mainEngine->isLoadingFile)
 	{
@@ -276,7 +276,6 @@ void Sequence::hiResTimerCallback()
 void Sequence::endLoadFile()
 {
 	Engine::mainEngine->removeEngineListener(this);
-	if (isBeingEdited) selectThis();
 
 	if (startAtLoad->boolValue())
 	{

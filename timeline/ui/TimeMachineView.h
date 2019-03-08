@@ -22,11 +22,12 @@ public:
 	~TimeMachineView();
 
 	ScopedPointer<SequenceEditorView> editor;
-	
+
+	bool autoSelectOnSequenceSelected;
 	void paint(Graphics &g) override;
 	void resized() override;
 
-	void setSequence(Sequence * sequence);
+	virtual void setSequence(Sequence * sequence);
 	virtual void inspectablesSelectionChanged() override;
 	void inspectableDestroyed(Inspectable * i) override;
 
