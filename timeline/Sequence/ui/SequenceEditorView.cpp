@@ -16,8 +16,8 @@ SequenceEditorView::SequenceEditorView(Sequence * _sequence) :
 	panelManagerUI(_sequence->layerManager),
 	timelineManagerUI(_sequence->layerManager),
 	transportUI(new SequenceTransportUI(_sequence)),
-	panelWidth(250),
-	grabber(GapGrabber::HORIZONTAL)
+    grabber(GapGrabber::HORIZONTAL),
+	panelWidth(250)
 {
 	addAndMakeVisible(panelContainer);
 	addAndMakeVisible(timelineContainer);
