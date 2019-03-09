@@ -20,9 +20,9 @@ LayerBlockUI::LayerBlockUI(LayerBlock * block) :
 {
 	bgColor = BG_COLOR.brighter(item->isActive->boolValue() ? .1f : .05f);
 
-	addAndMakeVisible(&grabber);
-	addAndMakeVisible(&coreGrabber);
-	addAndMakeVisible(&loopGrabber);
+	addChildComponent(&grabber);
+	addChildComponent(&coreGrabber);
+	addChildComponent(&loopGrabber);
 }
 
 LayerBlockUI::~LayerBlockUI()
@@ -67,6 +67,12 @@ void LayerBlockUI::mouseExit(const MouseEvent & e)
 	grabber.setVisible(isMouseOverOrDragging());
 	coreGrabber.setVisible(isMouseOverOrDragging());
 	loopGrabber.setVisible(isMouseOverOrDragging() && item->loopLength->floatValue() > 0);
+	if (isMouseOverOrDragging())
+	{
+		grabber.toFront(false);
+		coreGrabber.toFront(false);
+		loopGrabber.toFront(false);
+	}
 }
 
 
