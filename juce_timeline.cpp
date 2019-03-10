@@ -31,8 +31,10 @@
 
 #include "timeline/Sequence/Layer/layers/Block/LayerBlock.cpp"
 #include "timeline/Sequence/Layer/layers/Block/LayerBlockManager.cpp"
-#include "timeline/Sequence/Layer/layers/Block/ui/LayerBlockUI.cpp"
-#include "timeline/Sequence/Layer/layers/Block/ui/LayerBlockManagerUI.cpp"
+
+#include "timeline/Sequence/Layer/layers/Trigger/TimeTrigger.cpp"
+#include "timeline/Sequence/Layer/layers/Trigger/TimeTriggerManager.cpp"
+#include "timeline/Sequence/Layer/layers/Trigger/TriggerLayer.cpp"
 
 #include "timeline/Sequence/Layer/SequenceLayer.cpp"
 #include "timeline/Sequence/Layer/SequenceLayerFactory.cpp"
@@ -41,6 +43,7 @@
 #include "timeline/Sequence/Cue/TimeCue.cpp"
 #include "timeline/Sequence/Cue/TimeCueManager.cpp"
  
+
 //ui
 
 #include "timeline/Sequence/Layer/ui/SequenceLayerPanel.cpp"
@@ -48,11 +51,19 @@
 #include "timeline/Sequence/Layer/ui/SequenceLayerTimeline.cpp"
 #include "timeline/Sequence/Layer/ui/SequenceLayerTimelineManagerUI.cpp"
 
-
 #include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerClipUI.cpp"
 #include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerClipManagerUI.cpp"
 #include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerPanel.cpp"
 #include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerTimeline.cpp"
+
+#include "timeline/Sequence/Layer/layers/Block/ui/LayerBlockUI.cpp"
+#include "timeline/Sequence/Layer/layers/Block/ui/LayerBlockManagerUI.cpp"
+
+#include "timeline/Sequence/Layer/layers/Trigger/ui/TimeTriggerUI.cpp"
+#include "timeline/Sequence/Layer/layers/Trigger/ui/TImeTriggerMultiTransformer.cpp"
+#include "timeline/Sequence/Layer/layers/Trigger/ui/TriggerLayerPanel.cpp"
+#include "timeline/Sequence/Layer/layers/Trigger/ui/TriggerLayerTimeline.cpp"
+#include "timeline/Sequence/Layer/layers/Trigger/ui/TimeTriggerManagerUI.cpp"
 
 #include "timeline/Sequence/ui/SequenceUI.cpp"
 #include "timeline/Sequence/ui/SequenceTransportUI.cpp"

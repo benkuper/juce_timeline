@@ -94,6 +94,15 @@ using namespace juce;
 #include "timeline/Sequence/Layer/layers/Block/ui/LayerBlockUI.h"
 #include "timeline/Sequence/Layer/layers/Block/ui/LayerBlockManagerUI.h"
 
+#include "timeline/Sequence/Layer/layers/Trigger/TimeTrigger.h"
+#include "timeline/Sequence/Layer/layers/Trigger/TimeTriggerManager.h"
+#include "timeline/Sequence/Layer/layers/Trigger/TriggerLayer.h"
+#include "timeline/Sequence/Layer/layers/Trigger/ui/TimeTriggerUI.h"
+#include "timeline/Sequence/Layer/layers/Trigger/ui/TImeTriggerMultiTransformer.h"
+#include "timeline/Sequence/Layer/layers/Trigger/ui/TriggerLayerPanel.h"
+#include "timeline/Sequence/Layer/layers/Trigger/ui/TriggerLayerTimeline.h"
+#include "timeline/Sequence/Layer/layers/Trigger/ui/TimeTriggerManagerUI.h"
+
 #include "timeline/Sequence/Cue/ui/TimeCueUI.h"
 #include "timeline/Sequence/Cue/ui/TimeCueManagerUI.h"
 
