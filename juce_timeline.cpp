@@ -60,7 +60,7 @@
 #include "timeline/Sequence/Layer/layers/Block/ui/LayerBlockManagerUI.cpp"
 
 #include "timeline/Sequence/Layer/layers/Trigger/ui/TimeTriggerUI.cpp"
-#include "timeline/Sequence/Layer/layers/Trigger/ui/TImeTriggerMultiTransformer.cpp"
+#include "timeline/Sequence/Layer/layers/Trigger/ui/TimeTriggerMultiTransformer.cpp"
 #include "timeline/Sequence/Layer/layers/Trigger/ui/TriggerLayerPanel.cpp"
 #include "timeline/Sequence/Layer/layers/Trigger/ui/TriggerLayerTimeline.cpp"
 #include "timeline/Sequence/Layer/layers/Trigger/ui/TimeTriggerManagerUI.cpp"
