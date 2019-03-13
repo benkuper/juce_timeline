@@ -29,6 +29,7 @@ public:
 	float viewEnd;
 	float viewCoreEnd;
 
+	bool canBeGrabbed;
 
 	Grabber grabber;
 	Grabber coreGrabber;

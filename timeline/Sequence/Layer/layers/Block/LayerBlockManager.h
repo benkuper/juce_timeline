@@ -10,17 +10,6 @@
 
 #pragma once
 
-class LayerBlockComparator
-{
-public:
-	int compareElements(LayerBlock * t1, LayerBlock * t2)
-	{
-		if (t1->time->floatValue() < t2->time->floatValue()) return -1;
-		else if (t1->time->floatValue() > t2->time->floatValue()) return 1;
-		return 0;
-	}
-};
-
 class LayerBlockManager :
 	public BaseManager<LayerBlock>
 {
@@ -29,13 +18,7 @@ public:
 	~LayerBlockManager();
 	
 	bool blocksCanOverlap;
-
-	static LayerBlockComparator comparator;
-
-	void reorderItems() override;
-
 	 Array<Point<float>> computeEmptySpaces(LayerBlock * exludeBlock);
-
 
 	LayerBlock * addBlockAt(float time);
 	LayerBlock * getBlockAtTime(float time, bool returnClosestPreviousIfNotFound = false, bool includeDisabled = true);
@@ -45,5 +28,6 @@ public:
 
 	void placeBlockAt(LayerBlock * block, float desiredTime);
 
+	static int compareTime(LayerBlock * t1, LayerBlock * t2);
 };
  

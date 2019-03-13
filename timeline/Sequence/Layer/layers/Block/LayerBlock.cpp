@@ -67,8 +67,9 @@ void LayerBlock::setStartTime(float newStart, bool keepCoreEnd, bool stickToCore
 	if (keepCoreEnd) setCoreLength(coreLength->floatValue() - timeDiff, false, stickToCoreEnd);
 }
 
-double LayerBlock::getRelativeTime(double t, bool timeIsAbsolute)
+double LayerBlock::getRelativeTime(double t, bool timeIsAbsolute, bool noLoop)
 {
 	if (timeIsAbsolute) t -= time->floatValue();
+	if (t == coreLength->floatValue() || noLoop) return t; //avoid getting the start value when asking for the end value
 	return fmod(t, coreLength->floatValue());
 }

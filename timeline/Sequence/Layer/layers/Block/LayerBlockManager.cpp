@@ -1,3 +1,4 @@
+#include "LayerBlockManager.h"
 /*
   ==============================================================================
 
@@ -8,25 +9,19 @@
   ==============================================================================
 */
 
-LayerBlockComparator LayerBlockManager::comparator;
-
 LayerBlockManager::LayerBlockManager(StringRef name) :
 	BaseManager(name),
 	blocksCanOverlap(true)
 {
+
 	hideInEditor = true;
+	comparator.compareFunc = &LayerBlockManager::compareTime;
 }
 
 LayerBlockManager::~LayerBlockManager()
 {
 }
 
-
-void LayerBlockManager::reorderItems()
-{
-	items.sort(LayerBlockManager::comparator, true);
-	BaseManager::reorderItems();
-}
 
 Array<Point<float>> LayerBlockManager::computeEmptySpaces(LayerBlock * excludeBlock)
 {
@@ -51,11 +46,11 @@ Array<Point<float>> LayerBlockManager::computeEmptySpaces(LayerBlock * excludeBl
 LayerBlock * LayerBlockManager::addBlockAt(float time)
 {
 	LayerBlock * t = createItem();
-	BaseManager::addItem(t);
+	t->time->setValue(time);
 	
-	placeBlockAt(t, time);
+	BaseManager::addItem(t);
 
-	reorderItems();
+	placeBlockAt(t, time);
 
 	int nextIndex = items.indexOf(t) + 1;
 	if (nextIndex < items.size())
@@ -161,4 +156,11 @@ void LayerBlockManager::placeBlockAt(LayerBlock * block, float desiredTime)
 
 		block->time->setValue(targetTime);
 	}
+}
+
+int LayerBlockManager::compareTime(LayerBlock * t1, LayerBlock * t2)
+{
+	if (t1->time->floatValue() < t2->time->floatValue()) return -1;
+	else if (t1->time->floatValue() > t2->time->floatValue()) return 1;
+	return 0;
 }

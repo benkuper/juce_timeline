@@ -51,11 +51,12 @@ void LayerBlockManagerUI::placeBlockUI(LayerBlockUI * cui)
 
 void LayerBlockManagerUI::mouseDoubleClick(const MouseEvent & e)
 {
-	manager->addBlockAt(timeline->getTimeForX(getMouseXYRelative().x));
+	if(manager->userCanAddItemsManually) manager->addBlockAt(timeline->getTimeForX(getMouseXYRelative().x));
 }
 
 void LayerBlockManagerUI::addItemFromMenu(bool isFromAddButton, Point<int> mouseDownPos)
 {
+	if (!manager->userCanAddItemsManually) return;
 	if (isFromAddButton) return;
 	manager->addBlockAt(timeline->getTimeForX(mouseDownPos.x));
 }

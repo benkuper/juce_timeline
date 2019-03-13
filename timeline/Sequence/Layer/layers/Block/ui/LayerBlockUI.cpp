@@ -14,15 +14,20 @@ LayerBlockUI::LayerBlockUI(LayerBlock * block) :
 	viewStart(0),
 	viewEnd(block->getTotalLength()),
 	viewCoreEnd(block->coreLength->floatValue()),
+	canBeGrabbed(true),
 	grabber(Grabber::VERTICAL),
 	coreGrabber(Grabber::VERTICAL),
 	loopGrabber(Grabber::VERTICAL)
 {
 	bgColor = BG_COLOR.brighter(item->isActive->boolValue() ? .1f : .05f);
 
-	addChildComponent(&grabber);
-	addChildComponent(&coreGrabber);
-	addChildComponent(&loopGrabber);
+	if (canBeGrabbed)
+	{
+		addChildComponent(&grabber);
+		addChildComponent(&coreGrabber);
+		addChildComponent(&loopGrabber);
+	}
+	
 }
 
 LayerBlockUI::~LayerBlockUI()
@@ -40,15 +45,18 @@ void LayerBlockUI::paint(Graphics & g)
 
 void LayerBlockUI::resized()
 {
-	Rectangle<int> r = getGrabberBounds();
+	if (canBeGrabbed)
+	{
+		Rectangle<int> r = getGrabberBounds();
 
-	grabber.setBounds(r.removeFromLeft(10));
-	
-	loopGrabber.setVisible(item->loopLength->floatValue() > 0);
-	if (loopGrabber.isVisible())	loopGrabber.setBounds(r.removeFromRight(10));
-	
-	r.setRight(getCoreWidth());
-	coreGrabber.setBounds(r.removeFromRight(10));
+		grabber.setBounds(r.removeFromLeft(10));
+
+		loopGrabber.setVisible(item->loopLength->floatValue() > 0);
+		if (loopGrabber.isVisible())	loopGrabber.setBounds(r.removeFromRight(10));
+
+		r.setRight(getCoreWidth());
+		coreGrabber.setBounds(r.removeFromRight(10));
+	}
 
 	resizedBlockInternal();
 }
@@ -56,22 +64,28 @@ void LayerBlockUI::resized()
 void LayerBlockUI::mouseEnter(const MouseEvent & e)
 {
 	BaseItemMinimalUI::mouseEnter(e);
-	grabber.setVisible(true);
-	coreGrabber.setVisible(true);
-	loopGrabber.setVisible(true && item->loopLength->floatValue() > 0);
+	if (canBeGrabbed)
+	{
+		grabber.setVisible(true);
+		coreGrabber.setVisible(true);
+		loopGrabber.setVisible(true && item->loopLength->floatValue() > 0);
+	}
 }
 
 void LayerBlockUI::mouseExit(const MouseEvent & e)
 {
 	BaseItemMinimalUI::mouseExit(e);
-	grabber.setVisible(isMouseOverOrDragging());
-	coreGrabber.setVisible(isMouseOverOrDragging());
-	loopGrabber.setVisible(isMouseOverOrDragging() && item->loopLength->floatValue() > 0);
-	if (isMouseOverOrDragging())
+	if (canBeGrabbed)
 	{
-		grabber.toFront(false);
-		coreGrabber.toFront(false);
-		loopGrabber.toFront(false);
+		grabber.setVisible(isMouseOverOrDragging());
+		coreGrabber.setVisible(isMouseOverOrDragging());
+		loopGrabber.setVisible(isMouseOverOrDragging() && item->loopLength->floatValue() > 0);
+		if (isMouseOverOrDragging())
+		{
+			grabber.toFront(false);
+			coreGrabber.toFront(false);
+			loopGrabber.toFront(false);
+		}
 	}
 }
 
@@ -80,33 +94,38 @@ void LayerBlockUI::mouseDown(const MouseEvent & e)
 {
 	BaseItemMinimalUI::mouseDown(e);
 
-	timeAtMouseDown = item->time->floatValue();
-	coreLengthAtMouseDown = item->coreLength->floatValue();
-	loopLengthAtMouseDown = item->loopLength->floatValue();
+	if (canBeGrabbed)
+	{
+		timeAtMouseDown = item->time->floatValue();
+		coreLengthAtMouseDown = item->coreLength->floatValue();
+		loopLengthAtMouseDown = item->loopLength->floatValue();
 
-	isDragging = e.eventComponent == this && getDragBounds().contains(e.getPosition());
-	posAtMouseDown = getX();
+		isDragging = e.eventComponent == this && getDragBounds().contains(e.getPosition());
+		posAtMouseDown = getX();
+	}
 }
 
 void LayerBlockUI::mouseDrag(const MouseEvent & e)
 {
-	if (isDragging)
+	if (canBeGrabbed)
 	{
-		blockUIListeners.call(&BlockUIListener::blockUIDragged, this, e);
+		if (isDragging)
+		{
+			blockUIListeners.call(&BlockUIListener::blockUIDragged, this, e);
+		}
+		else if (e.eventComponent == &grabber)
+		{
+			blockUIListeners.call(&BlockUIListener::blockUIStartDragged, this, e);
+		}
+		else if (e.eventComponent == &coreGrabber)
+		{
+			blockUIListeners.call(&BlockUIListener::blockUICoreDragged, this, e);
+		}
+		else if (e.eventComponent == &loopGrabber)
+		{
+			blockUIListeners.call(&BlockUIListener::blockUILoopDragged, this, e);
+		}
 	}
-	else if (e.eventComponent == &grabber)
-	{
-		blockUIListeners.call(&BlockUIListener::blockUIStartDragged, this, e);
-	}
-	else if (e.eventComponent == &coreGrabber)
-	{
-		blockUIListeners.call(&BlockUIListener::blockUICoreDragged, this, e);
-	}
-	else if (e.eventComponent == &loopGrabber)
-	{
-		blockUIListeners.call(&BlockUIListener::blockUILoopDragged, this, e);
-	}
-
 	BaseItemMinimalUI::mouseDrag(e);
 
 }
@@ -114,31 +133,34 @@ void LayerBlockUI::mouseDrag(const MouseEvent & e)
 void LayerBlockUI::mouseUp(const MouseEvent & e)
 {
 
-	if (isDragging)
+	if (canBeGrabbed)
 	{
-		item->time->setUndoableValue(timeAtMouseDown, item->time->floatValue());
-		blockUIListeners.call(&BlockUIListener::blockUINeedsReorder);
-	}
-	else if (e.eventComponent == &grabber)
-	{
-		item->time->setUndoableValue(timeAtMouseDown, item->time->floatValue());
-		item->coreLength->setUndoableValue(coreLengthAtMouseDown, item->coreLength->floatValue());
-	}
-	else if (e.eventComponent == &coreGrabber)
-	{
-		item->time->setUndoableValue(timeAtMouseDown, item->time->floatValue());
-		item->coreLength->setUndoableValue(coreLengthAtMouseDown, item->coreLength->floatValue());
-	}
-	else if (e.eventComponent == &loopGrabber)
-	{
-		item->loopLength->setUndoableValue(loopLengthAtMouseDown, item->loopLength->floatValue());
-	}
+		if (isDragging)
+		{
+			item->time->setUndoableValue(timeAtMouseDown, item->time->floatValue());
+			blockUIListeners.call(&BlockUIListener::blockUINeedsReorder);
+		}
+		else if (e.eventComponent == &grabber)
+		{
+			item->time->setUndoableValue(timeAtMouseDown, item->time->floatValue());
+			item->coreLength->setUndoableValue(coreLengthAtMouseDown, item->coreLength->floatValue());
+		}
+		else if (e.eventComponent == &coreGrabber)
+		{
+			item->time->setUndoableValue(timeAtMouseDown, item->time->floatValue());
+			item->coreLength->setUndoableValue(coreLengthAtMouseDown, item->coreLength->floatValue());
+		}
+		else if (e.eventComponent == &loopGrabber)
+		{
+			item->loopLength->setUndoableValue(loopLengthAtMouseDown, item->loopLength->floatValue());
+		}
 
-	isDragging = false;
+		isDragging = false;
 
-	grabber.setVisible(isMouseOverOrDragging());
-	coreGrabber.setVisible(isMouseOverOrDragging());
-	loopGrabber.setVisible(isMouseOverOrDragging());
+		grabber.setVisible(isMouseOverOrDragging());
+		coreGrabber.setVisible(isMouseOverOrDragging());
+		loopGrabber.setVisible(isMouseOverOrDragging());
+	}
 
 	BaseItemMinimalUI::mouseUp(e);
 }

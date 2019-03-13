@@ -23,7 +23,6 @@ public:
 	FloatParameter * loopLength;
 	BoolParameter * isActive;
 
-
 	float getTotalLength();
 	float getCoreEndTime();
 	float getEndTime();
@@ -33,5 +32,5 @@ public:
 	virtual void setLoopLength(float newLength);
 	virtual void setStartTime(float newStart, bool keepCoreEnd = false, bool stickToCoreEnd = false);
 	
-	virtual double getRelativeTime(double t, bool timeIsAbsolute = false);
+	virtual double getRelativeTime(double t, bool timeIsAbsolute = false, bool noLoop = false);
 };
