@@ -8,16 +8,13 @@
   ==============================================================================
 */
 
-#include "TimeTriggerManager.h"
-#include "TriggerLayer.h"
-
-TimeTriggerComparator TimeTriggerManager::comparator;
-
 TimeTriggerManager::TimeTriggerManager(TriggerLayer * _layer, Sequence * _sequence) :
-	BaseManager<TimeTrigger>("Triggers"),
+	BaseManager("Triggers"),
 	layer(_layer),
 	sequence(_sequence)
 {
+	comparator.compareFunc = &TimeTriggerManager::compareTime;
+
 	itemDataType = "TimeTrigger";
 	skipControllableNameInAddress = true;
 	sequence->addSequenceListener(this);
@@ -33,12 +30,6 @@ void TimeTriggerManager::addTriggerAt(float time,float flagY)
 {
 	TimeTrigger * t = new TimeTrigger(time,flagY);
 	BaseManager::addItem(t);
-}
-
-void TimeTriggerManager::reorderItems()
-{
-	items.sort(TimeTriggerManager::comparator, true);
-	BaseManager::reorderItems();
 }
 
 void TimeTriggerManager::addItemInternal(TimeTrigger * t, var data)
@@ -128,4 +119,11 @@ void TimeTriggerManager::sequenceTotalTimeChanged(Sequence *)
 void TimeTriggerManager::sequenceLooped(Sequence *)
 {
 	for (auto & t : items) t->isTriggered->setValue(false);
+}
+
+int TimeTriggerManager::compareTime(TimeTrigger * t1, TimeTrigger * t2)
+{
+	if (t1->time->floatValue() < t2->time->floatValue()) return -1;
+	else if (t1->time->floatValue() > t2->time->floatValue()) return 1;
+	return 0;
 }

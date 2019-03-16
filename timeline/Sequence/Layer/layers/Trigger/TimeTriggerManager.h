@@ -12,16 +12,6 @@
 
 class TriggerLayer;
 
-class TimeTriggerComparator
-{
-public:
-	int compareElements(TimeTrigger * t1, TimeTrigger * t2)
-	{
-		if (t1->time->floatValue() < t2->time->floatValue()) return -1;
-		else if (t1->time->floatValue() > t2->time->floatValue()) return 1;
-		return 0;
-	}
-};
 
 class TimeTriggerManager :
 	public BaseManager<TimeTrigger>,
@@ -34,10 +24,7 @@ public:
 	TriggerLayer * layer;
 	Sequence * sequence;
 
-	static TimeTriggerComparator comparator;
-
 	virtual void addTriggerAt(float time,float flagYPos);
-	void reorderItems() override;
 
 	void addItemInternal(TimeTrigger * t, var data) override;
 	
@@ -51,6 +38,8 @@ public:
 	void sequenceCurrentTimeChanged(Sequence * _sequence, float prevTime, bool evaluateSkippedData) override;
 	void sequenceTotalTimeChanged(Sequence *) override;
 	void sequenceLooped(Sequence *) override;
+
+	static int compareTime(TimeTrigger * t1, TimeTrigger * t2);
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TimeTriggerManager)
 };

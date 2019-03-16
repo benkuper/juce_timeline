@@ -1,3 +1,4 @@
+#include "TimeCueManager.h"
 /*
   ==============================================================================
 
@@ -8,11 +9,10 @@
   ==============================================================================
 */
 
-TimeCueComparator TimeCueManager::comparator;
-
 TimeCueManager::TimeCueManager() :
 	BaseManager("Cues")
 {
+	comparator.compareFunc = &TimeCueManager::compareTime;
 }
 
 TimeCueManager::~TimeCueManager()
@@ -24,12 +24,6 @@ void TimeCueManager::addCueAt(float time)
 {
 	TimeCue * t = new TimeCue(time);
 	BaseManager::addItem(t);
-}
-
-void TimeCueManager::reorderItems()
-{
-	items.sort(TimeCueManager::comparator, true);
-	BaseManager::reorderItems();
 }
 
 Array<float> TimeCueManager::getAllCueTimes(float minTime, float maxTime)
@@ -113,4 +107,11 @@ void TimeCueManager::onControllableFeedbackUpdate(ControllableContainer * cc, Co
 		}
 	}
 	*/
+}
+
+int TimeCueManager::compareTime(TimeCue * t1, TimeCue * t2)
+{
+	if (t1->time->floatValue() < t2->time->floatValue()) return -1;
+	else if (t1->time->floatValue() > t2->time->floatValue()) return 1;
+	return 0;
 }
