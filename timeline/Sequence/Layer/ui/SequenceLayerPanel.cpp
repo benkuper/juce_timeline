@@ -48,11 +48,11 @@ void SequenceLayerPanel::controllableFeedbackUpdateInternal(Controllable * c)
 
 	if (c == item->uiHeight)
 	{
-		setSize(getWidth(), item->uiHeight->intValue());
+		if (!item->isCurrentlyLoadingData) setSize(getWidth(), item->uiHeight->intValue());
 	}
 	else if (c == item->color)
 	{
-		repaint();
+		if (!item->isCurrentlyLoadingData) repaint();
 	}
 
 }
