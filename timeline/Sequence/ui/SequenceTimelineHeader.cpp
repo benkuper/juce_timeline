@@ -19,6 +19,8 @@ SequenceTimelineHeader::SequenceTimelineHeader(Sequence * _sequence) :
 	needle.setInterceptsMouseClicks(false, false);
 
 	setSize(100, 20);
+    
+    startTimerHz(20);
 }
 
 SequenceTimelineHeader::~SequenceTimelineHeader()
@@ -116,7 +118,6 @@ void SequenceTimelineHeader::paint(Graphics & g)
 				
 			}
 		}
-		
 	}
 
 	g.setColour(BG_COLOR.brighter(.7f));
@@ -126,16 +127,19 @@ void SequenceTimelineHeader::paint(Graphics & g)
 
 	g.setColour(BG_COLOR.darker(.6f));
 	g.drawRoundedRectangle(getLocalBounds().toFloat(), 2, 2);
-
-	cueManagerUI.updateContent();
 }
 
 void SequenceTimelineHeader::resized()
 {
-	Rectangle<int> r = getLocalBounds();
-	cueManagerUI.setBounds(r);
-	Rectangle<int> nr = r.withSize(7, getHeight());
-	nr.setPosition(getXForTime(sequence->currentTime->floatValue())-needle.getWidth()/2, 0);
+	cueManagerUI.setBounds(getLocalBounds());
+	updateNeedlePosition();
+	
+}
+
+void SequenceTimelineHeader::updateNeedlePosition()
+{
+	Rectangle<int> nr = getLocalBounds().withSize(7, getHeight());
+	nr.setPosition(getXForTime(sequence->currentTime->floatValue()) - needle.getWidth() / 2, 0);
 	needle.setBounds(nr);
 }
 
@@ -145,7 +149,7 @@ void SequenceTimelineHeader::mouseDown(const MouseEvent & e)
 {
 	if (e.mods.isLeftButtonDown())
 	{
-		sequence->setCurrentTime(getTimeForX(e.getPosition().x));	
+		sequence->setCurrentTime(getTimeForX(e.getPosition().x), true, true);	
 	}
 }
 
@@ -153,7 +157,7 @@ void SequenceTimelineHeader::mouseDrag(const MouseEvent & e)
 {
 	if(e.mods.isLeftButtonDown())
 	{
-		sequence->setCurrentTime(getTimeForX(e.getPosition().x));
+		sequence->setCurrentTime(getTimeForX(e.getPosition().x), true, true);
 	}
 }
 
@@ -190,9 +194,10 @@ void SequenceTimelineHeader::newMessage(const ContainerAsyncEvent & e)
 		{
 			repaint();
 			resized();
+			cueManagerUI.updateContent();
 		} else if (e.targetControllable == sequence->currentTime)
 		{
-			resized();
+            shouldUpdateNeedle = true;
 		} else if (e.targetControllable == sequence->totalTime)
 		{
 			resized();
@@ -203,6 +208,15 @@ void SequenceTimelineHeader::newMessage(const ContainerAsyncEvent & e)
 	//other events not handled 
 	break;
 	}
+}
+
+void SequenceTimelineHeader::timerCallback()
+{
+    if(shouldUpdateNeedle)
+    {
+        shouldUpdateNeedle = false;
+        updateNeedlePosition();
+    }
 }
 
 

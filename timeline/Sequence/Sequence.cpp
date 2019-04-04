@@ -12,6 +12,7 @@ Sequence::Sequence() :
 	BaseItem("Sequence",true),
 	currentManager(nullptr),
 	hiResAudioTime(0),
+	isSeeking(false),
 	isBeingEdited(false),
 	sequenceNotifier(10)
 {
@@ -68,6 +69,11 @@ Sequence::Sequence() :
 
 Sequence::~Sequence()
 {
+	
+}
+
+void Sequence::clearItem()
+{
 	stopTimer();
 	stopTrigger->trigger();
 	setAudioDeviceManager(nullptr);
@@ -75,16 +81,23 @@ Sequence::~Sequence()
 	if (Engine::mainEngine != nullptr) Engine::mainEngine->removeEngineListener(this);
 }
 
-void Sequence::setCurrentTime(float time, bool forceOverPlaying)
+void Sequence::setCurrentTime(float time, bool forceOverPlaying, bool seekMode)
 {
 	time = jlimit<float>(0, totalTime->floatValue(), time);
 
 	if (isPlaying->boolValue() && !forceOverPlaying) return;
+
+	isSeeking = seekMode;
 	if (timeIsDrivenByAudio())
 	{
 		hiResAudioTime = time;
-		if (!isPlaying->boolValue()) currentTime->setValue(time);
-	}else currentTime->setValue(time);
+		if (!isPlaying->boolValue() || isSeeking) currentTime->setValue(time);
+	}
+	else
+	{
+		currentTime->setValue(time);
+	}
+	isSeeking = false;
 }
 
 void Sequence::setBeingEdited(bool value)
@@ -97,8 +110,8 @@ void Sequence::setBeingEdited(bool value)
 
 bool Sequence::paste()
 {
-	SequenceLayer * p = layerManager->addItemFromClipboard(false);
-	if (p == nullptr) return BaseItem::paste();
+	Array<SequenceLayer *> p = layerManager->addItemsFromClipboard(false);
+	if (p.isEmpty()) return BaseItem::paste();
 	return true;
 }
 
@@ -144,7 +157,7 @@ void Sequence::loadJSONDataInternal(var data)
 	BaseItem::loadJSONDataInternal(data);
 	layerManager->loadJSONData(data.getProperty("layerManager", var()));
 	cueManager->loadJSONData(data.getProperty("cueManager", var()));
-	setBeingEdited(data.getProperty("editing", false));
+	isBeingEdited = data.getProperty("editing", false);
 
 	if (Engine::mainEngine->isLoadingFile)
 	{
@@ -161,9 +174,9 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 	}
 	else if (p == currentTime)
 	{
+		if ((!isPlaying->boolValue() || isSeeking) && timeIsDrivenByAudio()) hiResAudioTime = currentTime->floatValue(); 
 		sequenceListeners.call(&SequenceListener::sequenceCurrentTimeChanged, this, (float)prevTime, isPlaying->boolValue());
 		prevTime = currentTime->floatValue();
-		if (!isPlaying->boolValue() && timeIsDrivenByAudio()) hiResAudioTime = currentTime->floatValue();
 	}
 	else if (p == totalTime)
 	{
@@ -276,6 +289,7 @@ void Sequence::hiResTimerCallback()
 void Sequence::endLoadFile()
 {
 	Engine::mainEngine->removeEngineListener(this);
+	if (isBeingEdited) selectThis();
 
 	if (startAtLoad->boolValue())
 	{

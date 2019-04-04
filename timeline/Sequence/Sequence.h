@@ -48,6 +48,7 @@ public:
     
 	double hiResAudioTime;
 
+	bool isSeeking;
 
 	//Temp variables
 	double prevMillis; 
@@ -59,8 +60,9 @@ public:
 	FloatParameter * viewEndTime;
 	bool isBeingEdited;
 
+	virtual void clearItem() override;
 
-	void setCurrentTime(float time, bool forceOverPlaying = true);
+	void setCurrentTime(float time, bool forceOverPlaying = true, bool seekMode = false);
 
 	void setBeingEdited(bool value);
 
@@ -120,9 +122,5 @@ public:
 
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Sequence)
-
-		
-
-	
 
 };

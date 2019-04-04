@@ -21,6 +21,7 @@ public :
 	
 	Trigger * lockAll;
 	Trigger * unlockAll;
+	BoolParameter * triggerWhenSeeking;
 
 	void setManager(TimeTriggerManager * ttm);
 
