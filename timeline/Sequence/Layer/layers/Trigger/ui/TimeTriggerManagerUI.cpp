@@ -182,7 +182,7 @@ void TimeTriggerManagerUI::inspectablesSelectionChanged()
 
 	for (auto &i : manager->selectionManager->currentInspectables)
 	{
-		TimeTrigger * k = static_cast<TimeTrigger *>(i);
+		TimeTrigger * k = dynamic_cast<TimeTrigger *>(i.get());
 		if (k == nullptr) continue;
 		TimeTriggerUI * kui = getUIForItem(k);
 		if (kui == nullptr) return;

@@ -19,6 +19,8 @@ LayerBlockUI::LayerBlockUI(LayerBlock * block) :
 	coreGrabber(Grabber::VERTICAL),
 	loopGrabber(Grabber::VERTICAL)
 {
+	dragAndDropEnabled = false;
+
 	bgColor = BG_COLOR.brighter(item->isActive->boolValue() ? .1f : .05f);
 
 	if (canBeGrabbed)

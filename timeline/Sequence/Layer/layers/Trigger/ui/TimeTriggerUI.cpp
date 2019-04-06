@@ -9,9 +9,11 @@
 */
 
 TimeTriggerUI::TimeTriggerUI(TimeTrigger * _tt) :
-	BaseItemUI<TimeTrigger>(_tt, Direction::NONE, Direction::NONE),
+	BaseItemUI<TimeTrigger>(_tt, Direction::NONE),
 	flagXOffset(0)
 {
+	dragAndDropEnabled = false; //avoid default behavior
+
 	autoDrawContourWhenSelected = false;
 	setName(_tt->niceName);
 

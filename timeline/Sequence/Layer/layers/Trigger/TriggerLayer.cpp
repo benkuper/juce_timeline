@@ -33,7 +33,8 @@ void TriggerLayer::setManager(TimeTriggerManager * _ttm)
 
 bool TriggerLayer::paste()
 {
-	Array<TimeTrigger *> p = ttm.addItemsFromClipboard(false);
+	if (ttm == nullptr) return false;
+	Array<TimeTrigger *> p = ttm->addItemsFromClipboard(false);
 	if (p.isEmpty()) return BaseItem::paste();
 	return true;
 }
