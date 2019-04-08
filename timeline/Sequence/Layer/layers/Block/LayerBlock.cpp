@@ -12,6 +12,8 @@
 LayerBlock::LayerBlock(StringRef name, float _time) :
 	BaseItem(name, true, false)
 {
+	editorIsCollapsed = true;
+
 	time = addFloatParameter("Start Time", "Time of the start of the clip", 0, 0, 3600);
 	time->setValue(_time);
 	time->defaultUI = FloatParameter::TIME;
