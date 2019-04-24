@@ -31,6 +31,9 @@ public:
 
 	bool canBeGrabbed;
 
+	Colour baseColor;
+	Colour highlightColor;
+
 	Grabber grabber;
 	Grabber coreGrabber;
 	Grabber loopGrabber;

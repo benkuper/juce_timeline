@@ -15,13 +15,15 @@ LayerBlockUI::LayerBlockUI(LayerBlock * block) :
 	viewEnd(block->getTotalLength()),
 	viewCoreEnd(block->coreLength->floatValue()),
 	canBeGrabbed(true),
+	baseColor(BG_COLOR.brighter(.1f)),
+	highlightColor(BG_COLOR.brighter(.05f)),
 	grabber(Grabber::VERTICAL),
 	coreGrabber(Grabber::VERTICAL),
 	loopGrabber(Grabber::VERTICAL)
 {
 	dragAndDropEnabled = false;
 
-	bgColor = BG_COLOR.brighter(item->isActive->boolValue() ? .1f : .05f);
+	bgColor = baseColor;
 
 	if (canBeGrabbed)
 	{
@@ -187,7 +189,7 @@ void LayerBlockUI::controllableFeedbackUpdateInternal(Controllable * c)
 	}
 	else if (c == item->isActive)
 	{
-		bgColor = BG_COLOR.brighter(item->isActive->boolValue() ? .1f : .05f);
+		bgColor = item->isActive->boolValue() ? baseColor : highlightColor; 
 	}
 }
 
