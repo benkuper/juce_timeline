@@ -17,7 +17,7 @@ class SequenceEditorView :
 	public GapGrabber::Listener
 {
 public:
-	SequenceEditorView(Sequence * _sequence);
+	SequenceEditorView(Sequence * _sequence, SequenceTimelineNavigationUI * navigationUI = nullptr, SequenceTransportUI * transportUI = nullptr) ;
 	virtual ~SequenceEditorView();
 
 	Sequence * sequence;
@@ -27,7 +27,7 @@ public:
 	Component panelContainer;
 	Component timelineContainer;
 
-	SequenceTimelineNavigationUI navigationUI;
+	ScopedPointer<SequenceTimelineNavigationUI> navigationUI;
 	SequenceLayerPanelManagerUI panelManagerUI;
 	SequenceLayerTimelineManagerUI timelineManagerUI;
 	ScopedPointer<SequenceTransportUI> transportUI;

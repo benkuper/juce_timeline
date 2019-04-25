@@ -9,23 +9,25 @@
   ==============================================================================
 */
 
-SequenceEditorView::SequenceEditorView(Sequence * _sequence) :
+SequenceEditorView::SequenceEditorView(Sequence * _sequence, SequenceTimelineNavigationUI * navigationUI, SequenceTransportUI * transportUI) :
 	sequence(_sequence),
 	sequenceRef(_sequence),
-	navigationUI(_sequence),
+	navigationUI(navigationUI),
 	panelManagerUI(_sequence->layerManager),
 	timelineManagerUI(_sequence->layerManager),
-	transportUI(new SequenceTransportUI(_sequence)),
+	transportUI(transportUI),
     grabber(GapGrabber::HORIZONTAL),
 	panelWidth(250)
 {
 	addAndMakeVisible(panelContainer);
 	addAndMakeVisible(timelineContainer);
 	
-	panelContainer.addAndMakeVisible(transportUI);
+	if (this->transportUI == nullptr) this->transportUI = new SequenceTransportUI(sequence);
+	panelContainer.addAndMakeVisible(this->transportUI);
 	panelContainer.addAndMakeVisible(&panelManagerUI);
 	
-	timelineContainer.addAndMakeVisible(&navigationUI);
+	if (this->navigationUI == nullptr) this->navigationUI = new SequenceTimelineNavigationUI(sequence);
+	timelineContainer.addAndMakeVisible(this->navigationUI);
 	timelineContainer.addAndMakeVisible(&timelineManagerUI);
 
 	panelManagerUI.viewport.getVerticalScrollBar().addListener(this);
@@ -65,7 +67,7 @@ void SequenceEditorView::resized()
 	Rectangle<int> timelineR = timelineContainer.getLocalBounds();
 
 	transportUI->setBounds(panelR.removeFromTop(headerHeight));
-	navigationUI.setBounds(timelineR.removeFromTop(headerHeight));
+	navigationUI->setBounds(timelineR.removeFromTop(headerHeight));
 
 	panelManagerUI.setBounds(panelR);
 	timelineManagerUI.setBounds(timelineR);
