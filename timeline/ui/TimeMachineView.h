@@ -28,6 +28,8 @@ public:
 	void resized() override;
 
 	virtual void setSequence(Sequence * sequence);
+	virtual SequenceEditorView * createEditorForSequence(Sequence * sequence);
+
 	virtual void inspectablesSelectionChanged() override;
 	void inspectableDestroyed(Inspectable * i) override;
 

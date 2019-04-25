@@ -1,3 +1,4 @@
+#include "TimeMachineView.h"
 /*
   ==============================================================================
 
@@ -61,12 +62,17 @@ void TimeMachineView::setSequence(Sequence * sequence)
 
 	if (sequence != nullptr)
 	{
-		editor = new SequenceEditorView(sequence);
+		editor = createEditorForSequence(sequence);
 		editor->sequence->addInspectableListener(this);
 		addAndMakeVisible(editor);
 	}
 	
 	resized();
+}
+
+SequenceEditorView * TimeMachineView::createEditorForSequence(Sequence * sequence)
+{
+	return new SequenceEditorView(sequence);
 }
 
 void TimeMachineView::inspectablesSelectionChanged()
