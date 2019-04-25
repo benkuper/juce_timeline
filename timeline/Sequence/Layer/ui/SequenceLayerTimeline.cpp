@@ -69,7 +69,8 @@ void SequenceLayerTimeline::mouseDown(const MouseEvent &e)
 
 SequenceLayerPanel * SequenceLayerTimeline::getRelatedPanel()
 {
-	TimeMachineView * tmv = dynamic_cast<TimeMachineView *>(ShapeShifterManager::getInstance()->getContentForName("Sequence Editor"));
+	TimeMachineView * tmv = ShapeShifterManager::getInstance()->getContentForType<TimeMachineView>();
+
 	if (tmv == nullptr)
 	{
 		DBG("TimeMachineView not found");

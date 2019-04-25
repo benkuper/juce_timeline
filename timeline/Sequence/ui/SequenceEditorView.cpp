@@ -69,8 +69,6 @@ void SequenceEditorView::resized()
 
 	panelManagerUI.setBounds(panelR);
 	timelineManagerUI.setBounds(timelineR);
-	
-	
 }
 
 void SequenceEditorView::scrollBarMoved(ScrollBar * scrollBarThatHasMoved, double /*newRangeStart*/)
