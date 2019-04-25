@@ -8,13 +8,15 @@
   ==============================================================================
 */
 
-SequenceTimelineNavigationUI::SequenceTimelineNavigationUI(Sequence * _sequence) :
+SequenceTimelineNavigationUI::SequenceTimelineNavigationUI(Sequence * _sequence, SequenceTimelineSeeker * seeker, SequenceTimelineHeader * header) :
 	sequence(_sequence),
-	seeker(_sequence),
-	header(_sequence)
+	seeker(seeker),
+	header(header)
 {
-	addAndMakeVisible(&seeker);
-	addAndMakeVisible(&header);
+	if(this->seeker == nullptr) this->seeker = new SequenceTimelineSeeker(sequence);
+	addAndMakeVisible(this->seeker);
+	if(this->header == nullptr) this->header = new SequenceTimelineHeader(sequence);
+	addAndMakeVisible(this->header);
 }
 
 SequenceTimelineNavigationUI::~SequenceTimelineNavigationUI()
@@ -34,7 +36,7 @@ void SequenceTimelineNavigationUI::resized()
 	r.removeFromRight(10);
 	
 	r.removeFromTop(4);
-	seeker.setBounds(r.removeFromTop(15));
+	seeker->setBounds(r.removeFromTop(15));
 	r.reduce(0, 2);
-	header.setBounds(r);
+	header->setBounds(r);
 }

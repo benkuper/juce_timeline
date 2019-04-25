@@ -26,13 +26,13 @@ class SequenceTimelineHeader :
     public Timer
 {
 public:
-	SequenceTimelineHeader(Sequence * _sequence);
+	SequenceTimelineHeader(Sequence * _sequence, TimeCueManagerUI * curManagerUI = nullptr, TimeNeedleUI * needleUI = nullptr);
 	~SequenceTimelineHeader();
 
 	Sequence * sequence;
 
-	TimeNeedleUI needle;
-	TimeCueManagerUI cueManagerUI;
+	ScopedPointer<TimeNeedleUI> needle;
+	ScopedPointer<TimeCueManagerUI> cueManagerUI;
 
     bool shouldUpdateNeedle;
     

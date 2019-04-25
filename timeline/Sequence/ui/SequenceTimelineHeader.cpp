@@ -8,18 +8,21 @@
   ==============================================================================
 */
 
-SequenceTimelineHeader::SequenceTimelineHeader(Sequence * _sequence) :
+SequenceTimelineHeader::SequenceTimelineHeader(Sequence * _sequence, TimeCueManagerUI * cueManagerUI, TimeNeedleUI * needleUI) :
 	sequence(_sequence),
-	cueManagerUI(this,_sequence->cueManager)
+	cueManagerUI(cueManagerUI),
+	needle(needleUI)
 {
 	sequence->addAsyncContainerListener(this);
-	addAndMakeVisible(&cueManagerUI);
 	
+	if (this->cueManagerUI == nullptr) this->cueManagerUI = new TimeCueManagerUI(this, sequence->cueManager);
+	addAndMakeVisible(this->cueManagerUI);
+	
+	if (needle == nullptr) needle = new TimeNeedleUI();
 	addAndMakeVisible(needle);
-	needle.setInterceptsMouseClicks(false, false);
+	needle->setInterceptsMouseClicks(false, false);
 
 	setSize(100, 20);
-    
     startTimerHz(20);
 }
 
@@ -131,7 +134,7 @@ void SequenceTimelineHeader::paint(Graphics & g)
 
 void SequenceTimelineHeader::resized()
 {
-	cueManagerUI.setBounds(getLocalBounds());
+	cueManagerUI->setBounds(getLocalBounds());
 	updateNeedlePosition();
 	
 }
@@ -139,8 +142,8 @@ void SequenceTimelineHeader::resized()
 void SequenceTimelineHeader::updateNeedlePosition()
 {
 	Rectangle<int> nr = getLocalBounds().withSize(7, getHeight());
-	nr.setPosition(getXForTime(sequence->currentTime->floatValue()) - needle.getWidth() / 2, 0);
-	needle.setBounds(nr);
+	nr.setPosition(getXForTime(sequence->currentTime->floatValue()) - needle->getWidth() / 2, 0);
+	needle->setBounds(nr);
 }
 
 #pragma warning(pop)
@@ -165,7 +168,7 @@ void SequenceTimelineHeader::mouseDoubleClick(const MouseEvent & e)
 {
 	if (e.mods.isLeftButtonDown())
 	{
-		cueManagerUI.addCueAtPos(e.getMouseDownX());
+		cueManagerUI->addCueAtPos(e.getMouseDownX());
 	}
 }
 
@@ -194,7 +197,7 @@ void SequenceTimelineHeader::newMessage(const ContainerAsyncEvent & e)
 		{
 			repaint();
 			resized();
-			cueManagerUI.updateContent();
+			cueManagerUI->updateContent();
 		} else if (e.targetControllable == sequence->currentTime)
 		{
             shouldUpdateNeedle = true;
