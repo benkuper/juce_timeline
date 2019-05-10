@@ -8,8 +8,7 @@
   ==============================================================================
 */
 
-#ifndef TIMECUE_H_INCLUDED
-#define TIMECUE_H_INCLUDED
+#pragma once
 
 class TimeCue :
 	public BaseItem
@@ -21,5 +20,3 @@ public:
 	FloatParameter * time;
 	Sequence * getSequence();
 };
-
-#endif  // TIMECUE_H_INCLUDED

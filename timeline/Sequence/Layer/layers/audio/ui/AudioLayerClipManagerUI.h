@@ -8,8 +8,7 @@
   ==============================================================================
 */
 
-#ifndef AUDIOLAYERCLIPMANAGERUI_H_INCLUDED
-#define AUDIOLAYERCLIPMANAGERUI_H_INCLUDED
+#pragma once
 
 class AudioLayerTimeline;
 
@@ -38,7 +37,3 @@ public:
 	void clipUITimeChanged(AudioLayerClipUI * cui) override;
 	void clipUIDragged(AudioLayerClipUI * cui, const MouseEvent &) override;
 };
-
-
-
-#endif  // AUDIOLAYERCLIPMANAGERUI_H_INCLUDED

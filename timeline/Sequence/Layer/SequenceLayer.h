@@ -8,8 +8,7 @@
   ==============================================================================
 */
 
-#ifndef SEQUENCELAYER_H_INCLUDED
-#define SEQUENCELAYER_H_INCLUDED
+#pragma once
 
 class SequenceLayerPanel;
 class SequenceLayerTimeline;
@@ -42,8 +41,3 @@ public:
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceLayer)
 };
-
-
-
-
-#endif  // SEQUENCELAYER_H_INCLUDED

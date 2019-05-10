@@ -8,8 +8,7 @@
   ==============================================================================
 */
 
-#ifndef AUDIOLAYERTIMELINE_H_INCLUDED
-#define AUDIOLAYERTIMELINE_H_INCLUDED
+#pragma once
 
 class AudioLayerTimeline :
 	public SequenceLayerTimeline
@@ -24,7 +23,3 @@ public:
 	void resized() override;
 	void updateContent() override;
 };
-
-
-
-#endif  // AUDIOLAYERTIMELINE_H_INCLUDED

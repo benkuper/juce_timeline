@@ -8,8 +8,7 @@
   ==============================================================================
 */
 
-#ifndef TIMECUEUI_H_INCLUDED
-#define TIMECUEUI_H_INCLUDED
+#pragma once
 
 class TimeCueUI :
 	public BaseItemMinimalUI<TimeCue>
@@ -43,7 +42,3 @@ public:
 	void removeCueUIListener(TimeCueUIListener* listener) { cueUIListeners.remove(listener); }
 
 };
-
-
-
-#endif  // TIMECUEUI_H_INCLUDED

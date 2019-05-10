@@ -8,8 +8,7 @@
   ==============================================================================
 */
 
-#ifndef SEQUENCELAYERTIMELINEMANAGERUI_H_INCLUDED
-#define SEQUENCELAYERTIMELINEMANAGERUI_H_INCLUDED
+#pragma once
 
 class SequenceLayerTimelineManagerUI :
 	public BaseManagerUI<SequenceLayerManager, SequenceLayer, SequenceLayerTimeline>
@@ -27,8 +26,3 @@ public:
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceLayerTimelineManagerUI)
 };
-
-
-
-
-#endif  // SEQUENCELAYERTIMELINEMANAGERUI_H_INCLUDED

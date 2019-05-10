@@ -8,8 +8,8 @@
   ==============================================================================
 */
 
-#ifndef SEQUENCETIMELINESEEKER_H_INCLUDED
-#define SEQUENCETIMELINESEEKER_H_INCLUDED
+#pragma once
+
 
 class SeekHandle :
 	public Component
@@ -60,6 +60,3 @@ public:
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceTimelineSeeker)
 
 };
-
-
-#endif  // SEQUENCETIMELINESEEKER_H_INCLUDED

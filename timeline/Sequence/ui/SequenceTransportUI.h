@@ -8,8 +8,7 @@
   ==============================================================================
 */
 
-#ifndef SEQUENCETRANSPORTUI_H_INCLUDED
-#define SEQUENCETRANSPORTUI_H_INCLUDED
+#pragma once
 
 class SequenceTransportUI :
 	public Component,
@@ -34,6 +33,3 @@ public:
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceTransportUI)
 };
-
-
-#endif  // SEQUENCETRANSPORTUI_H_INCLUDED

@@ -8,8 +8,7 @@
   ==============================================================================
 */
 
-#ifndef TIMECUEMANAGERUI_H_INCLUDED
-#define TIMECUEMANAGERUI_H_INCLUDED
+#pragma once
 
 class SequenceTimelineHeader;
 
@@ -39,8 +38,3 @@ public:
 	void cueDragged(TimeCueUI * ttui, const MouseEvent &e) override;
 	void cueTimeChanged(TimeCueUI * ttui) override;
 };
-
-
-
-
-#endif  // TIMECUEMANAGERUI_H_INCLUDED

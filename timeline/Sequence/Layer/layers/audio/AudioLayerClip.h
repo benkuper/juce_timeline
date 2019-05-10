@@ -8,8 +8,7 @@
   ==============================================================================
 */
 
-#ifndef AUDIOLAYERCLIP_H_INCLUDED
-#define AUDIOLAYERCLIP_H_INCLUDED
+#pragma once
 
 class AudioLayerClip :
 	public BaseItem,
@@ -78,7 +77,3 @@ private:
 	friend class WeakReference<AudioLayerClip>;
 
 };
-
-
-
-#endif  // AUDIOLAYERCLIP_H_INCLUDED

@@ -8,8 +8,7 @@
   ==============================================================================
 */
 
-#ifndef AUDIOLAYER_H_INCLUDED
-#define AUDIOLAYER_H_INCLUDED
+#pragma once
 
 class AudioLayerProcessor;
 
@@ -109,4 +108,3 @@ public:
 	virtual void getStateInformation(juce::MemoryBlock & destData) override;
 	virtual void setStateInformation(const void * data, int sizeInBytes) override;
 };
-#endif  // AUDIOLAYER_H_INCLUDED

@@ -8,8 +8,7 @@
   ==============================================================================
 */
 
-#ifndef SEQUENCELAYERPANEL_H_INCLUDED
-#define SEQUENCELAYERPANEL_H_INCLUDED
+#pragma once
 
 class SequenceLayerPanel :
 	public BaseItemUI<SequenceLayer>
@@ -27,7 +26,3 @@ public:
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceLayerPanel)
 };
-
-
-
-#endif  // SEQUENCELAYERPANEL_H_INCLUDED

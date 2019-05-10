@@ -8,8 +8,8 @@
   ==============================================================================
 */
 
-#ifndef AUDIOLAYERCLIPMANAGER_H_INCLUDED
-#define AUDIOLAYERCLIPMANAGER_H_INCLUDED
+#pragma once
+
 
 class AudioLayerClipManager :
 	public BaseManager<AudioLayerClip>
@@ -22,5 +22,3 @@ public:
 
 	AudioLayerClip * getClipAtTime(float time);
 };
-
-#endif  // AUDIOLAYERCLIPMANAGER_H_INCLUDED

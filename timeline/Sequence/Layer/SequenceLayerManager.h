@@ -7,9 +7,7 @@
 
   ==============================================================================
 */
-
-#ifndef SEQUENCELAYERMANAGER_H_INCLUDED
-#define SEQUENCELAYERMANAGER_H_INCLUDED
+#pragma once
 
 class SequenceLayerManager :
 	public BaseManager<SequenceLayer>,
@@ -21,7 +19,7 @@ public:
 
 	Sequence * sequence;
 	AudioLayer * masterAudioLayer;
-	
+
 	SequenceLayer * createItem() override;
 	SequenceLayer * addItemFromData(var data, bool fromUndoableAction = false) override;
 
@@ -35,7 +33,3 @@ public:
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceLayerManager)
 
 };
-
-
-
-#endif  // SEQUENCELAYERMANAGER_H_INCLUDED

@@ -8,8 +8,7 @@
   ==============================================================================
 */
 
-#ifndef SEQUENCELAYERTIMELINE_H_INCLUDED
-#define SEQUENCELAYERTIMELINE_H_INCLUDED
+#pragma once
 
 class SequenceLayerTimeline :
 	public BaseItemMinimalUI<SequenceLayer>
@@ -31,13 +30,7 @@ public:
 
 	void controllableFeedbackUpdateInternal(Controllable * c) override;
 
-	
+
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceLayerTimeline)
 };
-
-
-
-
-
-#endif  // SEQUENCELAYERTIMELINE_H_INCLUDED
