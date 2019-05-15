@@ -10,8 +10,9 @@
 
 SequenceTimelineHeader::SequenceTimelineHeader(Sequence * _sequence, TimeCueManagerUI * cueManagerUI, TimeNeedleUI * needleUI) :
 	sequence(_sequence),
-	cueManagerUI(cueManagerUI),
-	needle(needleUI)
+    needle(needleUI),
+	cueManagerUI(cueManagerUI)
+
 {
 	sequence->addAsyncContainerListener(this);
 	
