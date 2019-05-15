@@ -11,9 +11,9 @@
 SequenceLayerPanel::SequenceLayerPanel(SequenceLayer * layer) :
 	BaseItemUI<SequenceLayer>(layer,Direction::VERTICAL)
 {
-	colorUI = item->color->createColorParamUI();
+	colorUI.reset(item->color->createColorParamUI());
 
-	addAndMakeVisible(colorUI);
+	addAndMakeVisible(colorUI.get());
 
 
 	setSize(100, item->uiHeight->intValue());

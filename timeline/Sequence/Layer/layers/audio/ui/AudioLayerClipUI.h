@@ -22,7 +22,7 @@ public:
 	float timeAtMouseDown;
 	int posAtMouseDown;
 
-	ScopedPointer<ImageButton> browseBT;
+	std::unique_ptr<ImageButton> browseBT;
 	AudioThumbnailCache thumbnailCache;
 	AudioThumbnail thumbnail;
 	AudioLayerClip * clip;

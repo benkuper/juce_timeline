@@ -18,15 +18,15 @@ SequenceTransportUI::SequenceTransportUI(Sequence * _sequence) :
 	sequence->addSequenceListener(this);
 	 
 	
-	togglePlayUI = sequence->togglePlayTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::play_png, TimelineBinaryData::play_pngSize));
-	stopUI = sequence->stopTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::stop_png, TimelineBinaryData::stop_pngSize));
-	nextCueUI = sequence->nextCue->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::nextcue_png, TimelineBinaryData::nextcue_pngSize));
-	prevCueUI = sequence->prevCue->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::prevcue_png, TimelineBinaryData::prevcue_pngSize));
+	togglePlayUI.reset(sequence->togglePlayTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::play_png, TimelineBinaryData::play_pngSize)));
+	stopUI.reset(sequence->stopTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::stop_png, TimelineBinaryData::stop_pngSize)));
+	nextCueUI.reset(sequence->nextCue->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::nextcue_png, TimelineBinaryData::nextcue_pngSize)));
+	prevCueUI.reset(sequence->prevCue->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::prevcue_png, TimelineBinaryData::prevcue_pngSize)));
 	
-	addAndMakeVisible(togglePlayUI);
-	addAndMakeVisible(stopUI);
-	addAndMakeVisible(nextCueUI);
-	addAndMakeVisible(prevCueUI);
+	addAndMakeVisible(togglePlayUI.get());
+	addAndMakeVisible(stopUI.get());
+	addAndMakeVisible(nextCueUI.get());
+	addAndMakeVisible(prevCueUI.get());
 }
 
 SequenceTransportUI::~SequenceTransportUI()

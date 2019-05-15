@@ -27,10 +27,10 @@ public:
 	Component panelContainer;
 	Component timelineContainer;
 
-	ScopedPointer<SequenceTimelineNavigationUI> navigationUI;
+	std::unique_ptr<SequenceTimelineNavigationUI> navigationUI;
 	SequenceLayerPanelManagerUI panelManagerUI;
 	SequenceLayerTimelineManagerUI timelineManagerUI;
-	ScopedPointer<SequenceTransportUI> transportUI;
+	std::unique_ptr<SequenceTransportUI> transportUI;
 
 	GapGrabber grabber;
 

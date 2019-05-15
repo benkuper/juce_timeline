@@ -17,7 +17,7 @@ public :
 	TriggerLayer(Sequence * _sequence, var params = var());
 	~TriggerLayer();
 
-	ScopedPointer<TimeTriggerManager> ttm;
+	std::unique_ptr<TimeTriggerManager> ttm;
 	
 	Trigger * lockAll;
 	Trigger * unlockAll;

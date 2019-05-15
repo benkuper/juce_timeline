@@ -13,8 +13,8 @@ SequenceEditorView::SequenceEditorView(Sequence * _sequence, SequenceTimelineNav
 	sequence(_sequence),
 	sequenceRef(_sequence),
 	navigationUI(navigationUI),
-	panelManagerUI(_sequence->layerManager),
-	timelineManagerUI(_sequence->layerManager),
+	panelManagerUI(_sequence->layerManager.get()),
+	timelineManagerUI(_sequence->layerManager.get()),
 	transportUI(transportUI),
     grabber(GapGrabber::HORIZONTAL),
 	panelWidth(250)
@@ -22,12 +22,12 @@ SequenceEditorView::SequenceEditorView(Sequence * _sequence, SequenceTimelineNav
 	addAndMakeVisible(panelContainer);
 	addAndMakeVisible(timelineContainer);
 	
-	if (this->transportUI == nullptr) this->transportUI = new SequenceTransportUI(sequence);
-	panelContainer.addAndMakeVisible(this->transportUI);
+	if (this->transportUI == nullptr) this->transportUI.reset(new SequenceTransportUI(sequence));
+	panelContainer.addAndMakeVisible(this->transportUI.get());
 	panelContainer.addAndMakeVisible(&panelManagerUI);
 	
-	if (this->navigationUI == nullptr) this->navigationUI = new SequenceTimelineNavigationUI(sequence);
-	timelineContainer.addAndMakeVisible(this->navigationUI);
+	if (this->navigationUI == nullptr) this->navigationUI.reset(new SequenceTimelineNavigationUI(sequence));
+	timelineContainer.addAndMakeVisible(this->navigationUI.get());
 	timelineContainer.addAndMakeVisible(&timelineManagerUI);
 
 	panelManagerUI.viewport.getVerticalScrollBar().addListener(this);

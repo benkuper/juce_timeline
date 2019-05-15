@@ -55,16 +55,16 @@ void TimeMachineView::setSequence(Sequence * sequence)
 	if (editor != nullptr)
 	{
 		editor->sequence->removeInspectableListener(this);
-		removeChildComponent(editor);
+		removeChildComponent(editor.get());
 		editor = nullptr;
 		
 	}
 
 	if (sequence != nullptr)
 	{
-		editor = createEditorForSequence(sequence);
+		editor.reset(createEditorForSequence(sequence));
 		editor->sequence->addInspectableListener(this);
-		addAndMakeVisible(editor);
+		addAndMakeVisible(editor.get());
 	}
 	
 	resized();

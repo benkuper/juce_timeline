@@ -13,17 +13,17 @@ SequenceUI::SequenceUI(Sequence * sequence) :
 {
 	minContentHeight = 20; //To fix : need to pass in constructor of BaseItemUI
 
-	togglePlayUI = item->togglePlayTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::play_png, TimelineBinaryData::play_pngSize));
-	stopUI = item->stopTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::stop_png, TimelineBinaryData::stop_pngSize));
-	addAndMakeVisible(togglePlayUI);
-	addAndMakeVisible(stopUI);
+	togglePlayUI.reset(item->togglePlayTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::play_png, TimelineBinaryData::play_pngSize)));
+	stopUI.reset(item->stopTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::stop_png, TimelineBinaryData::stop_pngSize)));
+	addAndMakeVisible(togglePlayUI.get());
+	addAndMakeVisible(stopUI.get());
 
 
-	timeUI = item->currentTime->createSlider();
+	timeUI.reset(item->currentTime->createSlider());
 	timeUI->showLabel = false;
 	timeUI->showValue = false;
 	timeUI->bgColor = BG_COLOR.darker(.1f);
-	addAndMakeVisible(timeUI);
+	addAndMakeVisible(timeUI.get());
 
 	bgColor = item->isBeingEdited ? BLUE_COLOR.darker() : BG_COLOR.brighter(.1f); 
 	

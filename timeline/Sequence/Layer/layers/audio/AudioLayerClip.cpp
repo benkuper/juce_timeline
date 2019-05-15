@@ -90,7 +90,7 @@ void AudioLayerClip::run()
 {
 	audioClipAsyncNotifier.addMessage(new ClipEvent(ClipEvent::SOURCE_LOAD_START, this));
 
-	ScopedPointer<AudioFormatReader>  reader(formatManager.createReaderFor(filePath->getAbsolutePath()));
+	std::unique_ptr<AudioFormatReader>  reader(formatManager.createReaderFor(filePath->getAbsolutePath()));
 
 	if (reader != nullptr)
 	{

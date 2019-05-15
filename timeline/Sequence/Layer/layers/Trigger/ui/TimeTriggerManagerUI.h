@@ -21,7 +21,7 @@ public:
 	~TimeTriggerManagerUI();
 
 	TriggerLayerTimeline * timeline;
-	ScopedPointer<TimeTriggerMultiTransformer> transformer;
+	std::unique_ptr<TimeTriggerMultiTransformer> transformer;
 
 	void resized() override;
 	void updateContent();

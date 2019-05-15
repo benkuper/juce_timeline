@@ -27,8 +27,8 @@ TriggerLayer::~TriggerLayer()
 
 void TriggerLayer::setManager(TimeTriggerManager * _ttm)
 {
-	ttm = _ttm;
-	if (ttm != nullptr) addChildControllableContainer(ttm);
+	ttm.reset(_ttm);
+	if (ttm != nullptr) addChildControllableContainer(ttm.get());
 }
 
 bool TriggerLayer::paste()

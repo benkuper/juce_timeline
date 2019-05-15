@@ -19,8 +19,8 @@ public:
 
 	Sequence * sequence;
 
-	ScopedPointer<SequenceTimelineSeeker> seeker;
-	ScopedPointer<SequenceTimelineHeader> header;
+	std::unique_ptr<SequenceTimelineSeeker> seeker;
+	std::unique_ptr<SequenceTimelineHeader> header;
 
 	void paint(Graphics &g) override;
 	void resized() override;

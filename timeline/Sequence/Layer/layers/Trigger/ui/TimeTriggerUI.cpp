@@ -17,8 +17,8 @@ TimeTriggerUI::TimeTriggerUI(TimeTrigger * _tt) :
 	autoDrawContourWhenSelected = false;
 	setName(_tt->niceName);
 
-	lockUI = item->isLocked->createImageToggle(AssetManager::getInstance()->getToggleBTImage(ImageCache::getFromMemory(TimelineBinaryData::padlock_png, TimelineBinaryData::padlock_pngSize)));
-	addAndMakeVisible(lockUI);
+	lockUI.reset(item->isLocked->createImageToggle(AssetManager::getInstance()->getToggleBTImage(ImageCache::getFromMemory(TimelineBinaryData::padlock_png, TimelineBinaryData::padlock_pngSize))));
+	addAndMakeVisible(lockUI.get());
 
 	removeBT->setVisible(item->isSelected);
 	enabledBT->setVisible(item->isSelected);

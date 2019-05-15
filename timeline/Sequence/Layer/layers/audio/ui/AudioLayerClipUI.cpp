@@ -18,8 +18,8 @@ AudioLayerClipUI::AudioLayerClipUI(AudioLayerClip * _clip) :
 {
 	dragAndDropEnabled = false;
 
-	browseBT = AssetManager::getInstance()->getFileBT();
-	addAndMakeVisible(browseBT);
+	browseBT.reset(AssetManager::getInstance()->getFileBT());
+	addAndMakeVisible(browseBT.get());
 	browseBT->addListener(this);
 	clip->addAsyncClipListener(this);
 
@@ -84,7 +84,7 @@ void AudioLayerClipUI::mouseUp(const MouseEvent & e)
 void AudioLayerClipUI::buttonClicked(Button * b)
 {
 	BaseItemUI::buttonClicked(b);
-	if (b == browseBT)
+	if (b == browseBT.get())
 	{
 		FileChooser chooser("Load a carrot", File(), "*.wav;*.mp3");
 		bool result = chooser.browseForFileToOpen();

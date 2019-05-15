@@ -101,7 +101,7 @@ void TimeTriggerManagerUI::mouseDown(const MouseEvent & e)
 
 				if (transformer != nullptr)
 				{
-					removeChildComponent(transformer);
+					removeChildComponent(transformer.get());
 					transformer = nullptr;
 				}
 
@@ -139,7 +139,7 @@ void TimeTriggerManagerUI::removeItemUIInternal(TimeTriggerUI * ttui)
 {
 	if (transformer != nullptr)
 	{
-		removeChildComponent(transformer);
+		removeChildComponent(transformer.get());
 		transformer = nullptr;
 	}
 
@@ -170,7 +170,7 @@ void TimeTriggerManagerUI::inspectablesSelectionChanged()
 {
 	if (transformer != nullptr)
 	{
-		removeChildComponent(transformer);
+		removeChildComponent(transformer.get());
 		transformer = nullptr;
 	}
 
@@ -192,8 +192,8 @@ void TimeTriggerManagerUI::inspectablesSelectionChanged()
 
 	if (uiSelection.size() >= 2)
 	{
-		transformer = new TimeTriggerMultiTransformer(this, uiSelection);
-		addAndMakeVisible(transformer);
+		transformer.reset(new TimeTriggerMultiTransformer(this, uiSelection));
+		addAndMakeVisible(transformer.get());
 		transformer->grabKeyboardFocus(); // so no specific key has the focus for deleting
 	}
 }

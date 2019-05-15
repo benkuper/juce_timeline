@@ -31,8 +31,8 @@ public:
 
 	Sequence * sequence;
 
-	ScopedPointer<TimeNeedleUI> needle;
-	ScopedPointer<TimeCueManagerUI> cueManagerUI;
+	std::unique_ptr<TimeNeedleUI> needle;
+	std::unique_ptr<TimeCueManagerUI> cueManagerUI;
 
     bool shouldUpdateNeedle;
     

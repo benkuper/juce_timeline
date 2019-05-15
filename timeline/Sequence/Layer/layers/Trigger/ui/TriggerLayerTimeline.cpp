@@ -13,8 +13,8 @@ TriggerLayerTimeline::TriggerLayerTimeline(TriggerLayer * layer) :
 {
 	if (layer->ttm != nullptr)
 	{
-		ttmui = new TimeTriggerManagerUI(this, layer->ttm);
-		addAndMakeVisible(ttmui);
+		ttmui.reset(new TimeTriggerManagerUI(this, layer->ttm.get()));
+		addAndMakeVisible(ttmui.get());
 	}
 
 	updateContent();

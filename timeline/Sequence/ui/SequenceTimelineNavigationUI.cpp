@@ -13,10 +13,10 @@ SequenceTimelineNavigationUI::SequenceTimelineNavigationUI(Sequence * _sequence,
 	seeker(seeker),
 	header(header)
 {
-	if(this->seeker == nullptr) this->seeker = new SequenceTimelineSeeker(sequence);
-	addAndMakeVisible(this->seeker);
-	if(this->header == nullptr) this->header = new SequenceTimelineHeader(sequence);
-	addAndMakeVisible(this->header);
+	if (this->seeker == nullptr) this->seeker.reset(new SequenceTimelineSeeker(sequence));
+	addAndMakeVisible(this->seeker.get());
+	if(this->header == nullptr) this->header.reset(new SequenceTimelineHeader(sequence));
+	addAndMakeVisible(this->header.get());
 }
 
 SequenceTimelineNavigationUI::~SequenceTimelineNavigationUI()

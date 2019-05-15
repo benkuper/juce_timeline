@@ -18,7 +18,7 @@ public:
 	~AudioLayerTimeline();
 
 	AudioLayer * audioLayer;
-	ScopedPointer<AudioLayerClipManagerUI> cmMUI;
+	std::unique_ptr<AudioLayerClipManagerUI> cmMUI;
 
 	void resized() override;
 	void updateContent() override;

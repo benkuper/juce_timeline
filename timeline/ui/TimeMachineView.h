@@ -21,7 +21,7 @@ public:
 	TimeMachineView(const String &contentName);
 	~TimeMachineView();
 
-	ScopedPointer<SequenceEditorView> editor;
+	std::unique_ptr<SequenceEditorView> editor;
 
 	bool autoSelectOnSequenceSelected;
 	void paint(Graphics &g) override;

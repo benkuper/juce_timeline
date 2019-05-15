@@ -15,11 +15,11 @@ SequenceTimelineHeader::SequenceTimelineHeader(Sequence * _sequence, TimeCueMana
 {
 	sequence->addAsyncContainerListener(this);
 	
-	if (this->cueManagerUI == nullptr) this->cueManagerUI = new TimeCueManagerUI(this, sequence->cueManager);
-	addAndMakeVisible(this->cueManagerUI);
+	if (this->cueManagerUI == nullptr) this->cueManagerUI.reset(new TimeCueManagerUI(this, sequence->cueManager.get()));
+	addAndMakeVisible(this->cueManagerUI.get());
 	
-	if (needle == nullptr) needle = new TimeNeedleUI();
-	addAndMakeVisible(needle);
+	if (needle == nullptr) needle.reset(new TimeNeedleUI());
+	addAndMakeVisible(needle.get());
 	needle->setInterceptsMouseClicks(false, false);
 
 	setSize(100, 20);
