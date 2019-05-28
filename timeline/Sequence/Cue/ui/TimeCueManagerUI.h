@@ -22,19 +22,19 @@ public:
 
 	SequenceTimelineHeader * header;
 
-	void resized() override;
-	void updateContent();
+	virtual void resized() override;
+	virtual void updateContent();
 
-	bool hitTest(int x, int y) override;
+	virtual bool hitTest(int x, int y) override;
 
-	void placeTimeCueUI(TimeCueUI *);
+	virtual void placeTimeCueUI(TimeCueUI *);
 
-	void addCueAtPos(int x);
+	virtual void addCueAtPos(int x);
 
-	void addItemFromMenu(bool, Point<int> mouseDownPos) override;
-	void addItemUIInternal(TimeCueUI * ttui) override;
-	void removeItemUIInternal(TimeCueUI * ttui) override;
+	virtual void addItemFromMenu(bool, Point<int> mouseDownPos) override;
+	virtual void addItemUIInternal(TimeCueUI * ttui) override;
+	virtual void removeItemUIInternal(TimeCueUI * ttui) override;
 
-	void cueDragged(TimeCueUI * ttui, const MouseEvent &e) override;
-	void cueTimeChanged(TimeCueUI * ttui) override;
+	virtual void cueDragged(TimeCueUI * ttui, const MouseEvent &e) override;
+	virtual void cueTimeChanged(TimeCueUI * ttui) override;
 };

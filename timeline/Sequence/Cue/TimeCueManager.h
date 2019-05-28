@@ -23,15 +23,15 @@ public:
 	TimeCueManager();
 	~TimeCueManager();
 
-	void addCueAt(float time);
+	virtual void addCueAt(float time);
 
-	Array<float> getAllCueTimes(float minTime = 0, float maxTime = 0);
-	float getNearestCueForTime(float time);
+	virtual Array<float> getAllCueTimes(float minTime = 0, float maxTime = 0);
+	virtual float getNearestCueForTime(float time);
 	
-	float getNextCueForTime(float time);
-	float getPrevCueForTime(float time, float goToPreviousThreshold);
+	virtual float getNextCueForTime(float time);
+	virtual float getPrevCueForTime(float time, float goToPreviousThreshold);
 
-    void onControllableFeedbackUpdate(ControllableContainer * cc, Controllable * c) override;
+	virtual void onControllableFeedbackUpdate(ControllableContainer * cc, Controllable * c) override;
 
 	static int compareTime(TimeCue * t1, TimeCue * t2);
 };
