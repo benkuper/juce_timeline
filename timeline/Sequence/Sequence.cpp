@@ -313,20 +313,14 @@ void Sequence::audioDeviceIOCallback(const float ** , int , float ** outputChann
 	for(int i=0;i<numOutputChannels;i++) FloatVectorOperations::clear(outputChannelData[i], numSamples);
 
 	
-	if (isPlaying->boolValue())
-	{
-		DBG("Sample rate : " << sampleRate);
-		hiResAudioTime += (numSamples / sampleRate) * playSpeed->floatValue();
-	}
+	if (isPlaying->boolValue()) hiResAudioTime += (numSamples / sampleRate) * playSpeed->floatValue();
 }
 
 void Sequence::audioDeviceAboutToStart(AudioIODevice *)
 {
-	DBG("About to start");
 	updateSampleRate();
 }
 
 void Sequence::audioDeviceStopped()
 {
-	DBG("Stop");
 }
