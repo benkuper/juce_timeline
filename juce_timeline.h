@@ -32,11 +32,13 @@
 #define ORGANIC_TIMELINE_H_INCLUDED
 
 //==============================================================================
+
 #ifdef _MSC_VER
  #pragma warning (push)
  // Disable warnings for long class names, padding, and undefined preprocessor definitions.
  #pragma warning (disable: 4251 4786 4668 4820)
 #endif
+
 
 #include <juce_audio_utils/juce_audio_utils.h>
 #include <juce_organicui/juce_organicui.h>
@@ -71,7 +73,6 @@ using namespace juce;
 #include "timeline/Sequence/Layer/layers/audio/AudioLayerClipManager.h"
 #include "timeline/Sequence/Layer/layers/audio/AudioLayer.h"
 
-#include "timeline/Sequence/Layer/SequenceLayerFactory.h"
 #include "timeline/Sequence/Layer/SequenceLayerManager.h"
 
 #include "timeline/Sequence/Cue/TimeCue.h"

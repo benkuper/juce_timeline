@@ -37,7 +37,6 @@
 #include "timeline/Sequence/Layer/layers/Trigger/TriggerLayer.cpp"
 
 #include "timeline/Sequence/Layer/SequenceLayer.cpp"
-#include "timeline/Sequence/Layer/SequenceLayerFactory.cpp"
 #include "timeline/Sequence/Layer/SequenceLayerManager.cpp"
 
 #include "timeline/Sequence/Cue/TimeCue.cpp"

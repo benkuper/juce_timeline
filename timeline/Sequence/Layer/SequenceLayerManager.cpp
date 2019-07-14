@@ -1,4 +1,3 @@
-#include "SequenceLayerManager.h"
 /*
   ==============================================================================
 
@@ -16,6 +15,7 @@ SequenceLayerManager::SequenceLayerManager(Sequence * _sequence) :
 {
 	itemDataType = "SequenceLayer";
 	hideInEditor = true;
+	managerFactory = &factory;
 }
 
 SequenceLayerManager::~SequenceLayerManager()
@@ -28,6 +28,7 @@ SequenceLayer * SequenceLayerManager::createItem()
 	return new SequenceLayer(sequence);
 }
 
+#if TIMELINE_UNIQUE_LAYER_FACTORY
 SequenceLayer * SequenceLayerManager::addItemFromData(var data, bool fromUndoableAction)
 {
 	String layerType = data.getProperty("type", "none");
@@ -36,42 +37,8 @@ SequenceLayer * SequenceLayerManager::addItemFromData(var data, bool fromUndoabl
 	if (i != nullptr) return addItem(i, data, fromUndoableAction);
 	return nullptr;
 }
+#endif
 
-
-void SequenceLayerManager::addItemInternal(SequenceLayer * item, var data)
-{
-	//AudioLayer * a = dynamic_cast<AudioLayer *>(item);
-	/*
-	if (a != nullptr)
-	{
-		a->addAudioLayerListener(this);
-		if (a->audioModule != nullptr) updateTargetAudioLayer();
-	}
-	*/
-}
-
-void SequenceLayerManager::removeItemInternal(SequenceLayer * item)
-{
-	/*
-	AudioLayer * a = dynamic_cast<AudioLayer *>(item);
-	if (a != nullptr)
-	{
-		a->removeAudioLayerListener(this);
-		if (masterAudioLayer == a)
-		{
-			masterAudioLayer = nullptr;
-			updateTargetAudioLayer(a);
-		}
-	}
-	*/
-}
-
-/*
-void SequenceLayerManager::targetAudioModuleChanged(AudioLayer *)
-{
-	updateTargetAudioLayer();
-}
-*/
 
 void SequenceLayerManager::updateTargetAudioLayer(AudioLayer * excludeLayer)
 {
@@ -80,39 +47,17 @@ void SequenceLayerManager::updateTargetAudioLayer(AudioLayer * excludeLayer)
 		for (auto &i : items)
 		{
 			if (i == excludeLayer) continue;
-			//AudioLayer * a = dynamic_cast<AudioLayer *>(i);
-			/*
-			if (a != nullptr && a->audioModule != nullptr)
-			{
-				setMasterAudioLayer(a);
-				return;
-			}
-			*/
 		}
 
 		setMasterAudioLayer(nullptr);
 	}
 	else
 	{
-		/*
-		if (masterAudioLayer->audioModule == nullptr)
-		{
-			DBG("master is not null but has no audioModule, setting master to null and searching");
-			masterAudioLayer = nullptr;
-			updateTargetAudioLayer();
-		}
-		else
-		{
-			DBG("master has changed its module");
-			setMasterAudioLayer(masterAudioLayer); //force refresh
-		}
-		*/
 	}	
 }
 
 void SequenceLayerManager::setMasterAudioLayer(AudioLayer * layer)
 {
 	masterAudioLayer = layer;
-	//sequence->setMasterAudioModule(masterAudioLayer != nullptr ? masterAudioLayer->audioModule : nullptr);
 }
 

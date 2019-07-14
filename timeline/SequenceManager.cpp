@@ -20,7 +20,6 @@ SequenceManager::SequenceManager() :
 
 SequenceManager::~SequenceManager()
 {
-	SequenceLayerFactory::deleteInstance();
 }
 
 
