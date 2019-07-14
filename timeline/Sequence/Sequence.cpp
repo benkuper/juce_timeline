@@ -1,3 +1,4 @@
+#include "Sequence.h"
 /*
   ==============================================================================
 
@@ -12,6 +13,7 @@ Sequence::Sequence() :
 	BaseItem("Sequence",true),
 	currentManager(nullptr),
 	hiResAudioTime(0),
+	sampleRate(44100),
 	isSeeking(false),
 	isBeingEdited(false),
 	sequenceNotifier(10)
@@ -131,9 +133,17 @@ void Sequence::setAudioDeviceManager(AudioDeviceManager * manager)
 	{
 		//masterAudioModule->enabled->addParameterListener(this);
 		currentManager->addAudioCallback(this);
+
 	}
 
 	sequenceListeners.call(&SequenceListener::sequenceMasterAudioModuleChanged, this);
+}
+
+void Sequence::updateSampleRate()
+{
+	AudioDeviceManager::AudioDeviceSetup s;
+	if (currentManager != nullptr) currentManager->getAudioDeviceSetup(s);
+	if(s.sampleRate != 0) sampleRate = s.sampleRate;
 }
 
 bool Sequence::timeIsDrivenByAudio()
@@ -302,14 +312,13 @@ void Sequence::audioDeviceIOCallback(const float ** , int , float ** outputChann
 {
 	for(int i=0;i<numOutputChannels;i++) FloatVectorOperations::clear(outputChannelData[i], numSamples);
 
-	AudioDeviceManager::AudioDeviceSetup s;
 	
-	double sRate = s.sampleRate == 0 ? 44100 : s.sampleRate;
-	if (isPlaying->boolValue()) hiResAudioTime += (numSamples / sRate)*playSpeed->floatValue();
+	if (isPlaying->boolValue()) hiResAudioTime += (numSamples / sampleRate) * playSpeed->floatValue();
 }
 
 void Sequence::audioDeviceAboutToStart(AudioIODevice *)
 {
+	updateSampleRate();
 }
 
 void Sequence::audioDeviceStopped()

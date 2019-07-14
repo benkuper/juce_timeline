@@ -54,10 +54,11 @@ void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph * graph, int outputG
 	if (currentGraph != nullptr)
 	{
         
-		currentProcessor = new AudioLayerProcessor(this);
+		auto proc = std::unique_ptr<AudioLayerProcessor>(new AudioLayerProcessor(this));
+		currentProcessor = proc.get(); 
 		
 		graphID = AudioProcessorGraph::NodeID(AudioLayer::graphIDIncrement++);
-		currentGraph->addNode(currentProcessor, graphID);
+		currentGraph->addNode(std::move(proc), graphID);
 		
 		int numChannels = currentGraph->getMainBusNumOutputChannels();
 		AudioChannelSet channelSet = currentGraph->getChannelLayoutOfBus(false, 0);

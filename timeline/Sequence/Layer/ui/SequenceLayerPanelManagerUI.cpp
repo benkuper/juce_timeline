@@ -25,9 +25,3 @@ SequenceLayerPanel * SequenceLayerPanelManagerUI::createUIForItem(SequenceLayer 
 {
 	return layer->getPanel();
 }
-
-void SequenceLayerPanelManagerUI::showMenuAndAddItem(bool isFromAddButton, Point<int>)
-{
-	SequenceLayer * i = SequenceLayerFactory::getInstance()->showCreateMenu(manager->sequence);
-	if (i != nullptr) manager->addItem(i);
-}

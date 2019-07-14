@@ -20,13 +20,31 @@ public:
 	Sequence * sequence;
 	AudioLayer * masterAudioLayer;
 
+	Factory<SequenceLayer> factory;
+
+	class LayerDefinition : 
+		public FactoryParametricDefinition<SequenceLayer, std::function<SequenceLayer *(Sequence *, var)>>
+	{
+	public:
+		LayerDefinition(StringRef menu, StringRef type, std::function<SequenceLayer *(Sequence*, var)> func, Sequence* s) :
+			FactoryParametricDefinition(menu, type, func),
+			sequence(s)
+		{
+		}
+
+		virtual ~LayerDefinition() {}
+
+		Sequence* sequence;
+		SequenceLayer* create() override { return createFunc(sequence, params); }
+	};
+
+
 	SequenceLayer * createItem() override;
+
+#if TIMELINE_UNIQUE_LAYER_FACTORY
 	SequenceLayer * addItemFromData(var data, bool fromUndoableAction = false) override;
+#endif
 
-	void addItemInternal(SequenceLayer * item, var data) override;
-	void removeItemInternal(SequenceLayer * item) override;
-
-	//void targetAudioModuleChanged(AudioLayer * layer) override;
 	void updateTargetAudioLayer(AudioLayer * excludeLayer = nullptr);
 	void setMasterAudioLayer(AudioLayer * layer);
 

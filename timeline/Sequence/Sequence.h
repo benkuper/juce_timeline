@@ -48,6 +48,8 @@ public:
     
 	double hiResAudioTime;
 
+	double sampleRate;
+
 	bool isSeeking;
 
 	//Temp variables
@@ -69,6 +71,7 @@ public:
 	virtual bool paste() override;
 
 	void setAudioDeviceManager(AudioDeviceManager * am);
+	void updateSampleRate();
 
 	// Inherited via AudioIODeviceCallback
 	virtual void audioDeviceIOCallback(const float ** inputChannelData, int numInputChannels, float ** outputChannelData, int numOutputChannels, int numSamples) override;
