@@ -1,3 +1,4 @@
+#include "LayerBlockManager.h"
 /*
   ==============================================================================
 
@@ -8,8 +9,9 @@
   ==============================================================================
 */
 
-LayerBlockManager::LayerBlockManager(StringRef name) :
+LayerBlockManager::LayerBlockManager(SequenceLayer * layer, StringRef name) :
 	BaseManager(name),
+	layer(layer),
 	blocksCanOverlap(true)
 {
 
@@ -112,6 +114,28 @@ Array<LayerBlock*> LayerBlockManager::getBlocksInRange(float start, float end, b
 		if (c->getEndTime() >= start || c->time->floatValue() <= end) result.add(c);
 	}
 	return result;
+}
+
+Array<LayerBlock*> LayerBlockManager::addItemsFromClipboard(bool showWarning)
+{
+	Array<LayerBlock*> blocks = BaseManager::addItemsFromClipboard(showWarning);
+	if (blocks.isEmpty()) return nullptr;
+
+	float minTime = blocks[0]->time->floatValue();
+	for (auto& b : blocks)
+	{
+		if (b->time->floatValue() < minTime)
+		{
+			minTime = b->time->floatValue();
+		}
+	}
+
+	float diffTime = layer->sequence->currentTime->floatValue() - minTime;
+	for (auto& tt : blocks) tt->time->setValue(tt->time->floatValue() + diffTime);
+
+	reorderItems();
+
+	return blocks;
 }
 
 void LayerBlockManager::placeBlockAt(LayerBlock * block, float desiredTime)

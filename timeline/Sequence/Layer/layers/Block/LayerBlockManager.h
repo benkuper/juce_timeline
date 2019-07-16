@@ -10,13 +10,17 @@
 
 #pragma once
 
+class SequenceLayer;
+
 class LayerBlockManager :
 	public BaseManager<LayerBlock>
 {
 public:
-	LayerBlockManager(StringRef name = "Blocks");
+	LayerBlockManager(SequenceLayer* layer, StringRef name = "Blocks");
 	~LayerBlockManager();
-	
+
+	SequenceLayer* layer;
+
 	bool blocksCanOverlap;
 	 Array<Point<float>> computeEmptySpaces(LayerBlock * exludeBlock);
 
@@ -25,6 +29,8 @@ public:
 	LayerBlock * getNextBlockAtTime(float time, bool includeDisabled = true);
 	Array<LayerBlock *> getBlocksAtTime(float time, bool includeDisabled = true);
 	Array<LayerBlock *> getBlocksInRange(float start, float end, bool includeDisabled = true);
+
+	Array<LayerBlock *> addItemsFromClipboard(bool showWarning = true) override;
 
 	void placeBlockAt(LayerBlock * block, float desiredTime);
 

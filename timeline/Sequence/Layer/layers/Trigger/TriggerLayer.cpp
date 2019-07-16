@@ -35,7 +35,7 @@ bool TriggerLayer::paste()
 {
 	if (ttm == nullptr) return false;
 	Array<TimeTrigger *> p = ttm->addItemsFromClipboard(false);
-	if (p.isEmpty()) return BaseItem::paste();
+	if (p.isEmpty()) return SequenceLayer::paste();
 	return true;
 }
 
