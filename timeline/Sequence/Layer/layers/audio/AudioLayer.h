@@ -26,10 +26,12 @@ public:
 	WeakReference<AudioLayerClip> currentClip;
 	AudioLayerProcessor * currentProcessor;
 
-	Array<BoolParameter *> outChannels;
+	ControllableContainer channelsCC;
 	Array<int> selectedOutChannels;
+	var channelsData; //for ghosting
 
     FloatParameter * volume;
+	FloatParameter * panning;
 	FloatParameter * enveloppe;
 
 	int numActiveOutputs;
@@ -43,7 +45,9 @@ public:
 
 	void updateSelectedOutChannels();
 
-	void onContainerParameterChangedInternal(Parameter * p) override;
+	virtual float getVolumeFactor();
+
+	void onControllableFeedbackUpdateInternal(ControllableContainer *cc, Controllable * c) override;
 
 	var getJSONData() override;
 	void loadJSONDataInternal(var data) override;

@@ -19,8 +19,11 @@ public:
 	virtual ~AudioLayerClip();
 
 	AudioFormatManager formatManager;
-	AudioSampleBuffer buffer;
-	
+	//AudioSampleBuffer buffer;
+	std::unique_ptr<AudioFormatReaderSource> readerSource;
+	AudioTransportSource transportSource;
+	ChannelRemappingAudioSource channelRemapAudioSource;
+
 	FileParameter * filePath;
 
 	FloatParameter * time; 
@@ -28,6 +31,8 @@ public:
 
 	FloatParameter * volume;
 	BoolParameter * scratch;
+
+	BoolParameter * isLocked;
 
 	double clipDuration;
 	double sampleRate;
@@ -77,3 +82,5 @@ private:
 	friend class WeakReference<AudioLayerClip>;
 
 };
+
+

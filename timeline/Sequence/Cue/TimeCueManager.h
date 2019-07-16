@@ -10,12 +10,6 @@
 
 #pragma once
 
-class TimeCueComparator
-{
-public:
-	
-};
-
 class TimeCueManager :
 	public BaseManager<TimeCue>
 {
@@ -23,15 +17,17 @@ public:
 	TimeCueManager();
 	~TimeCueManager();
 
-	virtual void addCueAt(float time);
+	void addCueAt(float time);
+	void reorderItems() override;
 
-	virtual Array<float> getAllCueTimes(float minTime = 0, float maxTime = 0);
-	virtual float getNearestCueForTime(float time);
+	Array<float> getAllCueTimes(float minTime = 0, float maxTime = 0, bool includeDisabled = false);
+	float getNearestCueForTime(float time, bool includeDisabled = false);
+
+	Array<TimeCue *> getCuesInTimespan(float startTime, float endTime, bool includeDisabled = false);
 	
-	virtual float getNextCueForTime(float time);
-	virtual float getPrevCueForTime(float time, float goToPreviousThreshold);
-
-	virtual void onControllableFeedbackUpdate(ControllableContainer * cc, Controllable * c) override;
+	float getNextCueForTime(float time, bool includeDisabled = false);
+	float getPrevCueForTime(float time, float goToPreviousThreshold, bool includeDisabled = false);
 
 	static int compareTime(TimeCue * t1, TimeCue * t2);
+
 };

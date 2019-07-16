@@ -8,13 +8,37 @@
   ==============================================================================
 */
 
+
 TimeCueUI::TimeCueUI(TimeCue * timeCue) :
-	BaseItemMinimalUI(timeCue)
+	BaseItemMinimalUI(timeCue),
+	timeAtMouseDown(timeCue->time->floatValue()),
+	itemLabel("Label",timeCue->niceName)
 {
+	dragAndDropEnabled = false;
+
 	bgColor = bgColor.brighter();
 	setRepaintsOnMouseActivity(true);
 	autoDrawContourWhenSelected = false;
 	setSize(10, 20);
+
+	itemLabel.setColour(itemLabel.backgroundColourId, Colours::transparentWhite);
+	itemLabel.setColour(itemLabel.textColourId, TEXT_COLOR);
+
+	itemLabel.setColour(itemLabel.backgroundWhenEditingColourId, Colours::black);
+	itemLabel.setColour(itemLabel.textWhenEditingColourId, Colours::white);
+	itemLabel.setColour(CaretComponent::caretColourId, Colours::orange);
+	itemLabel.setFont(11);
+	itemLabel.setJustificationType(Justification::centredLeft);
+
+	itemLabel.setEditable(false, item->nameCanBeChangedByUser);
+	itemLabel.addListener(this);
+	addAndMakeVisible(&itemLabel);
+
+	setTooltip(item->niceName);
+
+	removeMouseListener(this);
+
+	setSize(arrowSize + 12 + itemLabel.getFont().getStringWidth(itemLabel.getText()), getHeight());
 }
 
 TimeCueUI::~TimeCueUI()
@@ -23,24 +47,37 @@ TimeCueUI::~TimeCueUI()
 
 void TimeCueUI::paint(Graphics & g)
 {
-	Colour c = item->isSelected ? HIGHLIGHT_COLOR : bgColor;
+	
+	Colour c = item->isSelected ? HIGHLIGHT_COLOR : item->pauseOnCue->boolValue()?YELLOW_COLOR:bgColor;
 	if (isMouseOver()) c = c.brighter();
+
+	if (item->isLocked->boolValue()) c = c.interpolatedWith(RED_COLOR, .5f);
+	
 	g.setColour(c);
 	g.fillPath(drawPath);
+	
 	g.setColour(c.darker());
 	g.strokePath(drawPath, PathStrokeType(1));
+
 }
 
 void TimeCueUI::resized()
 {
+	Rectangle<int> r = getLocalBounds();
+	Rectangle<int> cr = r.removeFromLeft(arrowSize);
 	drawPath.clear();
-	drawPath.startNewSubPath(getWidth() / 2.f, (float)getHeight());
-	drawPath.lineTo(0, (float)getHeight() - 5);
+	drawPath.startNewSubPath(cr.getWidth() / 2.f, (float)cr.getHeight());
+	drawPath.lineTo(0, (float)cr.getHeight() - 5);
 	drawPath.lineTo(0, 0);
-	drawPath.lineTo((float)getWidth(), 0);
-	drawPath.lineTo((float)getWidth(), (float)getHeight() - 5);
+	drawPath.lineTo((float)cr.getWidth(), 0);
+	drawPath.lineTo((float)cr.getWidth(), (float)cr.getHeight() - 5);
 	drawPath.closeSubPath();
 	drawPath = drawPath.createPathWithRoundedCorners(1);
+
+
+	r.removeFromLeft(1);
+	itemLabel.setBounds(r);
+
 }
 
 void TimeCueUI::mouseDoubleClick(const MouseEvent & e)
@@ -49,10 +86,33 @@ void TimeCueUI::mouseDoubleClick(const MouseEvent & e)
 	if (e.mods.isCommandDown()) item->remove();
 }
 
+void TimeCueUI::mouseDown(const MouseEvent & e)
+{
+	BaseItemMinimalUI::mouseDown(e);
+	timeAtMouseDown = item->time->floatValue();
+}
+
 void TimeCueUI::mouseDrag(const MouseEvent & e)
 {
 	BaseItemMinimalUI::mouseDrag(e);
-	cueUIListeners.call(&TimeCueUIListener::cueDragged, this, e);
+	if(!item->isLocked->boolValue() && e.eventComponent != &itemLabel) cueUIListeners.call(&TimeCueUIListener::cueDragged, this, e);
+}
+
+void TimeCueUI::mouseUp(const MouseEvent & e)
+{
+	BaseItemMinimalUI::mouseUp(e);
+	DBG(item->time->floatValue() << " < > " << timeAtMouseDown);
+	if(item->time->floatValue() != timeAtMouseDown) item->time->setUndoableValue(timeAtMouseDown, item->time->floatValue());
+}
+
+void TimeCueUI::labelTextChanged(Label * l)
+{
+	if (l == &itemLabel)
+	{
+		if (l->getText().isEmpty()) itemLabel.setText(this->baseItem->niceName, dontSendNotification); //avoid setting empty names
+		else this->baseItem->setUndoableNiceName(l->getText());
+		setSize(arrowSize + 12 + itemLabel.getFont().getStringWidth(itemLabel.getText()), getHeight());
+	}
 }
 
 void TimeCueUI::controllableFeedbackUpdateInternal(Controllable * c)
@@ -61,4 +121,14 @@ void TimeCueUI::controllableFeedbackUpdateInternal(Controllable * c)
 	{
 		cueUIListeners.call(&TimeCueUIListener::cueTimeChanged, this);
 	}
+	else if (c == item->isLocked || c == item->pauseOnCue)
+	{
+		repaint();
+	}
+}
+
+void TimeCueUI::containerChildAddressChangedAsync(ControllableContainer * cc)
+{
+	itemLabel.setText(item->niceName, dontSendNotification);
+	setSize(arrowSize + 12 + itemLabel.getFont().getStringWidth(itemLabel.getText()), getHeight());
 }

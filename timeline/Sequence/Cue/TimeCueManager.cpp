@@ -1,4 +1,3 @@
-#include "TimeCueManager.h"
 /*
   ==============================================================================
 
@@ -26,19 +25,27 @@ void TimeCueManager::addCueAt(float time)
 	BaseManager::addItem(t);
 }
 
-Array<float> TimeCueManager::getAllCueTimes(float minTime, float maxTime)
+void TimeCueManager::reorderItems()
+{
+	items.sort(TimeCueManager::comparator, true);
+	BaseManager::reorderItems();
+}
+
+Array<float> TimeCueManager::getAllCueTimes(float minTime, float maxTime, bool includeDisabled)
 {
 	Array<float> result;
-	for (auto &c : items)
+	for (auto &tt : items)
 	{
-		float t = c->time->floatValue();
+		if (!tt->enabled->boolValue() && !includeDisabled) continue;
+		
+		float t = tt->time->floatValue();
 		if (maxTime > 0 && (t < minTime || t > maxTime)) continue;
 		result.add(t);
 	}
 	return result;
 }
 
-float TimeCueManager::getNearestCueForTime(float time)
+float TimeCueManager::getNearestCueForTime(float time, bool includeDisabled)
 {
 	float result = time;
 	if (items.size() == 0) return result;
@@ -48,6 +55,8 @@ float TimeCueManager::getNearestCueForTime(float time)
 
 	for (int i = 1; i < numItems; i++)
 	{
+		if (!items[i]->enabled->boolValue() && !includeDisabled) continue;
+		
 		float newTime = items[i]->time->floatValue();
 		float newDiff = std::abs(time - newTime);
 		if (newDiff > diffTime) break;
@@ -57,12 +66,25 @@ float TimeCueManager::getNearestCueForTime(float time)
 	return result;
 }
 
-float TimeCueManager::getNextCueForTime(float time)
+Array<TimeCue*> TimeCueManager::getCuesInTimespan(float startTime, float endTime, bool includeDisabled)
+{
+	Array<TimeCue*> result;
+	for (auto &tt : items)
+	{
+		if (!tt->enabled->boolValue() && !includeDisabled) continue; 
+		if (tt->time->floatValue() > startTime && tt->time->floatValue() <= endTime) result.add(tt);
+	}
+	return result;
+	
+}
+
+float TimeCueManager::getNextCueForTime(float time, bool includeDisabled)
 {
 	int numItems = items.size();
 	float result = time;
 	for (int i = numItems - 1; i >= 0; i--)
 	{
+		if (!items[i]->enabled->boolValue() && !includeDisabled) continue; 
 		float t = items[i]->time->floatValue();
 		if (t <= time) break;
 		result = t;
@@ -71,42 +93,19 @@ float TimeCueManager::getNextCueForTime(float time)
 	return result;
 }
 
-float TimeCueManager::getPrevCueForTime(float time, float goToPreviousThreshold)
+float TimeCueManager::getPrevCueForTime(float time, float goToPreviousThreshold, bool includeDisabled)
 {
 	int numItems = items.size();
 	float result = time;
 	for (int i = 0; i < numItems; i++)
 	{
+		if (!items[i]->enabled->boolValue() && !includeDisabled) continue;
 		float t = items[i]->time->floatValue();
 		if (t > time-goToPreviousThreshold) break;
 		result = t;
 	}
 
 	return result;
-}
-
-void TimeCueManager::onControllableFeedbackUpdate(ControllableContainer * cc, Controllable * c)
-{
-	/*
-	TimeCue * t = static_cast<TimeCue *>(cc);
-	if (t != nullptr)
-	{
-		if (c == t->time)
-		{
-			int index = items.indexOf(t);
-			if (index > 0 && t->time->floatValue() < items[index - 1]->time->floatValue())
-			{
-				items.swap(index, index - 1);
-				baseManagerListeners.call(&Listener::itemsReordered);
-			}
-			else if (index < items.size() - 1 && t->time->floatValue() > items[index + 1]->time->floatValue())
-			{
-				items.swap(index, index + 1);
-				baseManagerListeners.call(&Listener::itemsReordered);
-			}
-		}
-	}
-	*/
 }
 
 int TimeCueManager::compareTime(TimeCue * t1, TimeCue * t2)

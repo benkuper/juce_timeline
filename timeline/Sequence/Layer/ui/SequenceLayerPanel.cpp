@@ -11,11 +11,14 @@
 SequenceLayerPanel::SequenceLayerPanel(SequenceLayer * layer) :
 	BaseItemUI<SequenceLayer>(layer,Direction::VERTICAL)
 {
+	setWantsKeyboardFocus(false); 
+	setMouseClickGrabsKeyboardFocus(false);
+	bringToFrontOnSelect = false;
+
+	bgColor = item->color->getColor(); 
 	colorUI.reset(item->color->createColorParamUI());
 
 	addAndMakeVisible(colorUI.get());
-
-
 	setSize(100, item->uiHeight->intValue());
 }
 

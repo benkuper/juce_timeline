@@ -71,14 +71,15 @@ Sequence::Sequence() :
 
 Sequence::~Sequence()
 {
-	
+	clearItem();
 }
 
 void Sequence::clearItem()
 {
+	setAudioDeviceManager(nullptr);
+
 	stopTimer();
 	stopTrigger->trigger();
-	setAudioDeviceManager(nullptr);
 
 	if (Engine::mainEngine != nullptr) Engine::mainEngine->removeEngineListener(this);
 }
@@ -132,6 +133,7 @@ void Sequence::setAudioDeviceManager(AudioDeviceManager * manager)
 	if (currentManager != nullptr)
 	{
 		//masterAudioModule->enabled->addParameterListener(this);
+		
 		currentManager->addAudioCallback(this);
 
 	}

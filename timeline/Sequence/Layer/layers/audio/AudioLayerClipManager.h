@@ -10,7 +10,6 @@
 
 #pragma once
 
-
 class AudioLayerClipManager :
 	public BaseManager<AudioLayerClip>
 {
@@ -20,5 +19,5 @@ public:
 
 	AudioLayerClip * addClipAt(float time);
 
-	AudioLayerClip * getClipAtTime(float time);
+	AudioLayerClip * getClipAtTime(float time, bool includeDisabled = false);
 };

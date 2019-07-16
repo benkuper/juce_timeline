@@ -8,7 +8,7 @@
   ==============================================================================
 */
 
-#pragma once
+class Sequence;
 
 class TimeCue :
 	public BaseItem
@@ -18,5 +18,8 @@ public:
 	~TimeCue();
 
 	FloatParameter * time;
+	BoolParameter * isLocked;
+	BoolParameter * pauseOnCue;
+
 	Sequence * getSequence();
 };

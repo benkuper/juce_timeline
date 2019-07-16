@@ -78,7 +78,6 @@ using namespace juce;
 #include "timeline/Sequence/Cue/TimeCue.h"
 #include "timeline/Sequence/Cue/TimeCueManager.h"
 
-
 //ui
 
 #include "timeline/Sequence/Layer/ui/SequenceLayerPanel.h"

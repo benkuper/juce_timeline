@@ -9,14 +9,18 @@
 */
 
 TimeCue::TimeCue(const float & _time) :
-	BaseItem("Time Cue")
+	BaseItem("Cue")
 {
 	//nameParam->hideInEditor = false;
+	helpID = "TimeCue";
 
-	time = addFloatParameter("Time", "Cue Time", _time, 0, 3600);
+	time = addFloatParameter("Time", "Cue Time", 0, 0, 3600);
+	time->setValue(_time, true, true);
 	time->defaultUI = FloatParameter::TIME;
 
-	helpID = "TimeCue";
+	isLocked = addBoolParameter("Locked", "When locked, you can't change time by dragging it values", false);
+
+	pauseOnCue = addBoolParameter("Pause On Cue", "If checked, the sequence will pause when the time is on this cue", false);
 }
 
 TimeCue::~TimeCue()

@@ -8,8 +8,6 @@
   ==============================================================================
 */
 
-#include "AudioLayerClipUI.h"
-
 AudioLayerClipUI::AudioLayerClipUI(AudioLayerClip * _clip) :
 	BaseItemUI(_clip),
 	thumbnailCache(100000),
