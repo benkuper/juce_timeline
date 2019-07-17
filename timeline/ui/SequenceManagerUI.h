@@ -19,7 +19,7 @@ public:
 
 	void mouseDoubleClick(const MouseEvent &e) override;
 
-	static SequenceManagerUI * create(const String &contentName) { return new SequenceManagerUI(contentName, SequenceManager::getInstance()); }
+	static SequenceManagerUI * create(const String &contentName, SequenceManager * manager) { return new SequenceManagerUI(contentName, manager); }
 
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceManagerUI)

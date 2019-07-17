@@ -78,18 +78,19 @@ public:
 	virtual void audioDeviceAboutToStart(AudioIODevice * device) override;
 	virtual void audioDeviceStopped() override;
 
-	bool timeIsDrivenByAudio();
+	virtual bool timeIsDrivenByAudio();
 	
-	var getJSONData() override;
-	void loadJSONDataInternal(var data) override;
-
-
-	void onContainerParameterChangedInternal(Parameter *) override;
-	void onContainerTriggerTriggered(Trigger *) override;
-
+	
+	virtual void onContainerParameterChangedInternal(Parameter*) override;
+	virtual void onContainerTriggerTriggered(Trigger*) override;
+	
 	virtual void hiResTimerCallback() override;
 
 	virtual void endLoadFile() override;
+
+	virtual var getJSONData() override;
+	virtual void loadJSONDataInternal(var data) override;
+
 
 	class SequenceListener
 	{

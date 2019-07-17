@@ -17,18 +17,20 @@ class SequenceManager :
 	public BaseManager<Sequence>
 {
 public:
+#if TIMELINE_USE_SEQUENCEMANAGER_SINGLETON
 	juce_DeclareSingleton(SequenceManager, false)
+#endif
 
 	SequenceManager();
 	~SequenceManager();
 
-	static Sequence * showMenuAndGetSequence();
+	Sequence * showMenuAndGetSequence();
 	Sequence * getSequenceForItemID(int itemID);
 
-	static SequenceLayer * showmMenuAndGetLayer();
+	SequenceLayer * showmMenuAndGetLayer();
 	SequenceLayer * getLayerForItemID(int itemID);
 
-	static TimeCue * showMenuAndGetCue();
+	TimeCue * showMenuAndGetCue();
 	TimeCue * getCueForItemID(int itemID);
 
 

@@ -8,8 +8,8 @@
   ==============================================================================
 */
 
-TriggerLayer::TriggerLayer(Sequence * _sequence, var params) :
-	SequenceLayer(_sequence, "New Trigger Layer"),
+TriggerLayer::TriggerLayer(Sequence * _sequence, StringRef name, var params) :
+	SequenceLayer(_sequence, String(name)),
 	ttm(nullptr)
 {
 	helpID = "TriggerLayer";

@@ -11,27 +11,18 @@
 #pragma once
 
 class AudioLayerPanel :
-	public SequenceLayerPanel,
-	//public ModuleChooserUI::ChooserListener,
-	public AudioLayer::AudioLayerListener
+	public SequenceLayerPanel
 {
 public:
 	AudioLayerPanel(AudioLayer * layer);
 	~AudioLayerPanel();
 
-	//ModuleChooserUI moduleChooser;
 	AudioLayer * audioLayer;
 
 	std::unique_ptr<FloatSliderUI> enveloppeUI;
 
 	void resizedInternalContent(Rectangle<int> &r) override;
 
-	//void targetAudioModuleChanged(AudioLayer *) override;
-	
-	//void selectedModuleChanged(ModuleChooserUI *, Module *) override;
-	//void moduleListChanged(ModuleChooserUI *) override;
-
-	//static bool isAudioModule(Module * m) { return dynamic_cast<AudioModule *>(m) != nullptr; }
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioLayerPanel)
 };

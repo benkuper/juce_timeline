@@ -14,7 +14,7 @@ class TriggerLayer :
 	public SequenceLayer
 {
 public :
-	TriggerLayer(Sequence * _sequence, var params = var());
+	TriggerLayer(Sequence * _sequence, StringRef name = "Trigger", var params = var());
 	~TriggerLayer();
 
 	std::unique_ptr<TimeTriggerManager> ttm;
@@ -32,7 +32,7 @@ public :
 	var getJSONData() override;
 	void loadJSONDataInternal(var data) override;
 
-	static TriggerLayer * create(Sequence * sequence, var params) { return new TriggerLayer(sequence, params); }
+	static TriggerLayer * create(Sequence * sequence, var params) { return new TriggerLayer(sequence, "Trigger", params); }
 	virtual String getTypeString() const override { return "Trigger"; }
 
 

@@ -8,8 +8,9 @@
   ==============================================================================
 */
 
-
+#if TIMELINE_USE_SEQUENCEMANAGER_SINGLETON
 juce_ImplementSingleton(SequenceManager)
+#endif
 
 SequenceManager::SequenceManager() :
 	BaseManager("Sequences")
@@ -26,13 +27,13 @@ SequenceManager::~SequenceManager()
 Sequence * SequenceManager::showMenuAndGetSequence()
 {
 	PopupMenu menu;
-	int numItems = SequenceManager::getInstance()->items.size();
+	int numItems = items.size();
 	for (int i = 0; i < numItems; i++)
 	{
-		menu.addItem(1 + i, SequenceManager::getInstance()->items[i]->niceName);
+		menu.addItem(1 + i, items[i]->niceName);
 	}
 	int result = menu.show();
-	return SequenceManager::getInstance()->getSequenceForItemID(result);
+	return getSequenceForItemID(result);
 }
 
 Sequence * SequenceManager::getSequenceForItemID(int itemID)
@@ -44,22 +45,21 @@ Sequence * SequenceManager::getSequenceForItemID(int itemID)
 SequenceLayer * SequenceManager::showmMenuAndGetLayer()
 {
 	PopupMenu menu;
-	SequenceManager * sm = SequenceManager::getInstance();
-	for (int i = 0; i < sm->items.size(); i++)
+	for (int i = 0; i < items.size(); i++)
 	{
 		PopupMenu sMenu;
-		int numValues = sm->items[i]->layerManager->items.size();
+		int numValues = items[i]->layerManager->items.size();
 		for (int j = 0; j < numValues; j++)
 		{
-			SequenceLayer * c = sm->items[i]->layerManager->items[j];
+			SequenceLayer * c = items[i]->layerManager->items[j];
 			sMenu.addItem(i * 1000 + j + 1, c->niceName);
 		}
-		menu.addSubMenu(sm->items[i]->niceName, sMenu);
+		menu.addSubMenu(items[i]->niceName, sMenu);
 	}
 
 	int result = menu.show();
 	if (result == 0) return nullptr;
-	return SequenceManager::getInstance()->getLayerForItemID(result);
+	return getLayerForItemID(result);
 }
 
 SequenceLayer * SequenceManager::getLayerForItemID(int itemID)
@@ -73,21 +73,20 @@ SequenceLayer * SequenceManager::getLayerForItemID(int itemID)
 TimeCue * SequenceManager::showMenuAndGetCue()
 {
 	PopupMenu menu;
-	SequenceManager * sm = SequenceManager::getInstance();
-	for (int i = 0; i < sm->items.size(); i++)
+	for (int i = 0; i < items.size(); i++)
 	{
 		PopupMenu sMenu;
-		int numValues = sm->items[i]->cueManager->items.size();
+		int numValues = items[i]->cueManager->items.size();
 		for (int j = 0; j < numValues; j++)
 		{
-			TimeCue * c = sm->items[i]->cueManager->items[j];
+			TimeCue * c = items[i]->cueManager->items[j];
 			sMenu.addItem(i * 1000 + j + 1, c->niceName);
 		}
-		menu.addSubMenu(sm->items[i]->niceName, sMenu);
+		menu.addSubMenu(items[i]->niceName, sMenu);
 	}
 
 	int result = menu.show();
-	return SequenceManager::getInstance()->getCueForItemID(result);
+	return getCueForItemID(result);
 }
 
 TimeCue * SequenceManager::getCueForItemID(int itemID)

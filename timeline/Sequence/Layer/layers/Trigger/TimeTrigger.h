@@ -14,7 +14,7 @@ class TimeTrigger :
 	public BaseItem
 {
 public:
-	TimeTrigger(float time = 0, float flagYPos = 0, const String &name = "Trigger");
+	TimeTrigger(StringRef name = "Trigger");
 	virtual ~TimeTrigger();
 
 	FloatParameter * time;
@@ -25,8 +25,8 @@ public:
 	//ui
 	FloatParameter * flagY;
 
-	void onContainerParameterChangedInternal(Parameter * p) override;
+	virtual void onContainerParameterChangedInternal(Parameter * p) override;
 
-	void trigger();
+	virtual void trigger();
 	virtual void triggerInternal() {}
 };

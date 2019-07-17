@@ -10,8 +10,7 @@
 
 SequenceLayerManager::SequenceLayerManager(Sequence * _sequence) :
 	BaseManager<SequenceLayer>("Layers"),
-	sequence(_sequence),
-	masterAudioLayer(nullptr)
+	sequence(_sequence)
 {
 	itemDataType = "SequenceLayer";
 	hideInEditor = true;
@@ -20,7 +19,6 @@ SequenceLayerManager::SequenceLayerManager(Sequence * _sequence) :
 
 SequenceLayerManager::~SequenceLayerManager()
 {
-	setMasterAudioLayer(nullptr);
 }
 
 SequenceLayer * SequenceLayerManager::createItem()
@@ -38,26 +36,3 @@ SequenceLayer * SequenceLayerManager::addItemFromData(var data, bool fromUndoabl
 	return nullptr;
 }
 #endif
-
-
-void SequenceLayerManager::updateTargetAudioLayer(AudioLayer * excludeLayer)
-{
-	if (masterAudioLayer == nullptr)
-	{
-		for (auto &i : items)
-		{
-			if (i == excludeLayer) continue;
-		}
-
-		setMasterAudioLayer(nullptr);
-	}
-	else
-	{
-	}	
-}
-
-void SequenceLayerManager::setMasterAudioLayer(AudioLayer * layer)
-{
-	masterAudioLayer = layer;
-}
-

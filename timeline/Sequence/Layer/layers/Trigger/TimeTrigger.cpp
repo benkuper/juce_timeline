@@ -8,19 +8,18 @@
   ==============================================================================
 */
 
-TimeTrigger::TimeTrigger(float _time, float flagYPos, const String &name) :
+TimeTrigger::TimeTrigger(StringRef name) :
 	BaseItem(name)
 {
 	itemDataType = "TimeTrigger"; 
-	
+	showWarningInUI = true;
+
 	time = addFloatParameter("Time", "Time at which the action is triggered", 0, 0, 3600);
 	
 	time->defaultUI = FloatParameter::TIME;
 	flagY = addFloatParameter("Flag Y", "Position of the trigger's flag", 0,0,1);
 	isTriggered = addBoolParameter("Is Triggered", "Is this Time Trigger already triggered during this playing ?", false);
 	
-	time->setValue(_time);
-	flagY->setValue(flagYPos);
 
 	isLocked = addBoolParameter("Locked", "When locked, you can't change time or flag values by dragging it", false);
 
@@ -44,6 +43,7 @@ void TimeTrigger::onContainerParameterChangedInternal(Parameter * p)
 
 void TimeTrigger::trigger()
 {
+	if (!enabled->boolValue()) return;
 	isTriggered->setValue(true);
 	triggerInternal();
 }

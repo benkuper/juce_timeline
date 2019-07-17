@@ -10,18 +10,15 @@
 #pragma once
 
 class SequenceLayerManager :
-	public BaseManager<SequenceLayer>,
-	public AudioLayer::AudioLayerListener //for sequence driven by audio
+	public BaseManager<SequenceLayer>
 {
 public:
 	SequenceLayerManager(Sequence * _sequence);
 	~SequenceLayerManager();
 
 	Sequence * sequence;
-	AudioLayer * masterAudioLayer;
-
 	Factory<SequenceLayer> factory;
-
+	
 	class LayerDefinition : 
 		public FactoryParametricDefinition<SequenceLayer, std::function<SequenceLayer *(Sequence *, var)>>
 	{
@@ -30,6 +27,11 @@ public:
 			FactoryParametricDefinition(menu, type, func),
 			sequence(s)
 		{
+		}
+
+		static LayerDefinition* createDef(StringRef menu, StringRef type, std::function<SequenceLayer* (Sequence*, var)> func, Sequence* s)
+		{
+			return new LayerDefinition(menu, type, func, s);
 		}
 
 		virtual ~LayerDefinition() {}
@@ -45,9 +47,7 @@ public:
 	SequenceLayer * addItemFromData(var data, bool fromUndoableAction = false) override;
 #endif
 
-	void updateTargetAudioLayer(AudioLayer * excludeLayer = nullptr);
-	void setMasterAudioLayer(AudioLayer * layer);
-
+	
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceLayerManager)
 
 };

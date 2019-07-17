@@ -13,6 +13,8 @@ TimeTriggerManager::TimeTriggerManager(TriggerLayer * _layer, Sequence * _sequen
 	layer(_layer),
 	sequence(_sequence)
 {
+	hideInEditor = true;
+
 	comparator.compareFunc = &TimeTriggerManager::compareTime;
 
 	itemDataType = "TimeTrigger";
@@ -27,7 +29,9 @@ TimeTriggerManager::~TimeTriggerManager()
 
 void TimeTriggerManager::addTriggerAt(float time,float flagY)
 {
-	TimeTrigger * t = new TimeTrigger(time,flagY);
+	TimeTrigger* t = createItem();
+	t->time->setValue(time);
+	t->flagY->setValue(flagY);
 	BaseManager::addItem(t);
 }
 

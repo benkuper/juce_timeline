@@ -1,3 +1,4 @@
+#include "AudioLayer.h"
 /*
   ==============================================================================
 
@@ -11,7 +12,7 @@
 int AudioLayer::graphIDIncrement = 10;
 
 AudioLayer::AudioLayer(Sequence * _sequence, var params) :
-	SequenceLayer(_sequence, "New Audio Layer"),
+	SequenceLayer(_sequence, "Audio"),
 	currentGraph(nullptr),
 	currentProcessor(nullptr),
 	channelsCC("Channels"),
@@ -36,8 +37,11 @@ AudioLayer::AudioLayer(Sequence * _sequence, var params) :
 
 AudioLayer::~AudioLayer()
 {
-	//if (ModuleManager::getInstanceWithoutCreating() != nullptr) ModuleManager::getInstance()->removeBaseManagerListener(this);
-	//setAudioModule(nullptr);
+	clearItem();
+}
+
+void AudioLayer::clearItem()
+{
 	setAudioProcessorGraph(nullptr);
 }
 

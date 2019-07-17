@@ -40,6 +40,15 @@
 #endif
 
 
+/** Config: TIMELINE_USE_SEQUENCEMANAGER_SINGLETON
+	Enables the declaration of SequenceManager as a Singleton. If you have special handling of your Sequence Manager, or want mutiple managers, you should not use this
+*/
+#ifndef TIMELINE_USE_SEQUENCEMANAGER_SINGLETON
+#define TIMELINE_USE_SEQUENCEMANAGER_SINGLETON 0
+#endif
+
+
+
 #include <juce_audio_utils/juce_audio_utils.h>
 #include <juce_organicui/juce_organicui.h>
 

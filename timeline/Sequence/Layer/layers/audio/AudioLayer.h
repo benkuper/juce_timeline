@@ -40,6 +40,8 @@ public:
 	static int graphIDIncrement;
 	int audioOutputGraphID;
 
+	virtual void clearItem() override;
+
 	void setAudioProcessorGraph(AudioProcessorGraph * graph, int audioOutputGraphID = 2);
 	void updateCurrentClip();
 
@@ -49,8 +51,8 @@ public:
 
 	void onControllableFeedbackUpdateInternal(ControllableContainer *cc, Controllable * c) override;
 
-	var getJSONData() override;
-	void loadJSONDataInternal(var data) override;
+	virtual var getJSONData() override;
+	virtual void loadJSONDataInternal(var data) override;
 
 	virtual SequenceLayerPanel * getPanel() override;
 	virtual SequenceLayerTimeline * getTimelineUI() override;
@@ -61,17 +63,7 @@ public:
 	static AudioLayer * create(Sequence * sequence, var params) { return new AudioLayer(sequence, params); }
 	virtual String getTypeString() const override { return "Audio"; }
 
-	class AudioLayerListener
-	{
-	public:
-		virtual ~AudioLayerListener() {}
-		virtual void targetAudioModuleChanged(AudioLayer *) {}
-	};
-
-	ListenerList<AudioLayerListener> audioLayerListeners;
-	void addAudioLayerListener(AudioLayerListener* newListener) { audioLayerListeners.add(newListener); }
-	void removeAudioLayerListener(AudioLayerListener* listener) { audioLayerListeners.remove(listener); }
-
+	
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioLayer)
 	

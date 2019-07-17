@@ -1,4 +1,3 @@
-#include "SequenceLayerTimeline.h"
 /*
   ==============================================================================
 
@@ -9,16 +8,25 @@
   ==============================================================================
 */
 
-SequenceLayerTimeline::SequenceLayerTimeline(SequenceLayer * layer) :
-	BaseItemMinimalUI<SequenceLayer>(layer),
-	timeBarColor(defaultTimeBarColor)
-{
-	item->sequence->addAsyncContainerListener(this);
-	setSize(0, item->uiHeight->intValue());
+#include "SequenceLayerTimeline.h"
 
+SequenceLayerTimeline::SequenceLayerTimeline(SequenceLayer * layer) :
+	BaseItemMinimalUI<SequenceLayer>(layer)
+{
+	bgColor = item->color->getColor();
+
+	item->sequence->addAsyncContainerListener(this);
+	setSize(100, item->uiHeight->intValue());
+
+
+	bringToFrontOnSelect = false;
 	//setInterceptsMouseClicks(true, true);
 	setWantsKeyboardFocus(false);
 	setMouseClickGrabsKeyboardFocus(false);
+
+    addAndMakeVisible(&needle);
+    
+	startTimerHz(30);
 }
 
 SequenceLayerTimeline::~SequenceLayerTimeline()
@@ -37,53 +45,29 @@ int SequenceLayerTimeline::getXForTime(float time)
 
 float SequenceLayerTimeline::getTimeForX(int tx, bool offsetStart)
 {
+	if (getWidth() == 0) return 0; 
+	
 	float viewStart = item->sequence->viewStartTime->floatValue();
 	float viewEnd = item->sequence->viewEndTime->floatValue();
 	float viewTime = viewEnd - viewStart;
 	float mapStart = offsetStart ? viewStart : 0;
-	return jmap<float>((float)tx, 0, (float)getWidth(), mapStart,mapStart+viewTime);
+;	return jmap<float>((float)tx, 0, (float)getWidth(), mapStart,mapStart+viewTime);
 }
 
 
-void SequenceLayerTimeline::paintOverChildren(Graphics & g)
+
+void SequenceLayerTimeline::updateNeedlePosition()
 {
-	BaseItemMinimalUI::paintOverChildren(g);
-
-	g.setColour(timeBarColor);
-	g.drawVerticalLine(getXForTime(item->sequence->currentTime->floatValue()), 0, (float)getHeight());
-
-	g.setColour(item->color->getColor());
-	g.drawRoundedRectangle(getLocalBounds().reduced(1).toFloat(), 2, 2);
-
-	BaseItemMinimalUI::paintOverChildren(g);
+    int tx = getXForTime(item->sequence->currentTime->floatValue());
+    needle.setBounds(getLocalBounds().withWidth(1).withX(tx));
 }
 
 void SequenceLayerTimeline::mouseDown(const MouseEvent &e)
 {
-	BaseItemMinimalUI::mouseDown(e);
 	if (e.mods.isLeftButtonDown() && e.eventComponent->getParentComponent() == this)
 	{
 		item->selectThis();
 	}
-}
-
-SequenceLayerPanel * SequenceLayerTimeline::getRelatedPanel()
-{
-	TimeMachineView * tmv = ShapeShifterManager::getInstance()->getContentForType<TimeMachineView>();
-
-	if (tmv == nullptr)
-	{
-		DBG("TimeMachineView not found");
-		return nullptr;
-	}
-
-	if (tmv->editor == nullptr)
-	{
-		DBG("No editor in tmv");
-		return nullptr;
-	}
-
-	return tmv->editor->panelManagerUI.getUIForItem(item);
 }
 
 void SequenceLayerTimeline::controllableFeedbackUpdateInternal(Controllable * c)
@@ -96,11 +80,48 @@ void SequenceLayerTimeline::controllableFeedbackUpdateInternal(Controllable * c)
 	}
 	else if (c == item->sequence->viewStartTime || c == item->sequence->viewEndTime)
 	{
-		updateContent();
-		repaint();
+		if (isVisible())
+		{
+			updateContent();
+			shouldUpdateNeedle = true;
+		}
 	}
 	else if (c == item->sequence->currentTime)
 	{
-		repaint();
+		shouldUpdateNeedle = true;
+	} else if (c == item->color)
+	{
+		bgColor = item->color->getColor();
+        repaint();
 	}
+}
+
+void SequenceLayerTimeline::timerCallback()
+{
+	if (shouldUpdateNeedle)
+	{
+        updateNeedlePosition();
+		shouldUpdateNeedle = false;
+	}
+}
+
+void SequenceLayerTimeline::visibilityChanged()
+{
+	if (isVisible()) updateContent();
+}
+
+SequenceLayerTimeline::TimelineNeedle::TimelineNeedle() :
+timeBarColor(defaultTimeBarColor)
+{
+    
+}
+
+SequenceLayerTimeline::TimelineNeedle::~TimelineNeedle()
+{
+    
+}
+
+void SequenceLayerTimeline::TimelineNeedle::paint(juce::Graphics &g)
+{
+    g.fillAll(timeBarColor);
 }

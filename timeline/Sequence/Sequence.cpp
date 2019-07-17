@@ -19,6 +19,7 @@ Sequence::Sequence() :
 	sequenceNotifier(10)
 {
 	itemDataType = "Sequence";
+	helpID = "Sequence";
 
 	isPlaying = addBoolParameter("Is Playing", "Is the sequence playing ?", false);
 	isPlaying->setControllableFeedbackOnly(true);
@@ -66,7 +67,6 @@ Sequence::Sequence() :
 
 	listUISize->setValue(5);
 
-	helpID = "Sequence";
 }
 
 Sequence::~Sequence()
