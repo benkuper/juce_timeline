@@ -45,6 +45,8 @@ AudioLayer::~AudioLayer()
 void AudioLayer::clearItem()
 {
 	setAudioProcessorGraph(nullptr);
+	clipManager.clear();
+	SequenceLayer::clearItem();
 }
 
 void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph * graph, int outputGraphID)
@@ -97,7 +99,7 @@ void AudioLayer::updateCurrentClip()
 	
 	if (sequence->currentTime->floatValue() > 0 || sequence->isPlaying->boolValue()) // only find a clip if sequence not at 0 or is playing
 	{
-		if (currentClip != nullptr && currentClip->isInRange(sequence->currentTime->floatValue())) return;
+		if (!currentClip.wasObjectDeleted() && currentClip != nullptr && currentClip->isInRange(sequence->currentTime->floatValue())) return;
 		target = clipManager.getClipAtTime(sequence->currentTime->floatValue());
 	}
 
@@ -124,7 +126,7 @@ void AudioLayer::updateCurrentClip()
 void AudioLayer::itemAdded(AudioLayerClip*)
 {
 	if (Engine::mainEngine->isLoadingFile) return;
-	updateCurrentClip();
+	//updateCurrentClip();
 }
 
 void AudioLayer::itemRemoved(AudioLayerClip* clip)

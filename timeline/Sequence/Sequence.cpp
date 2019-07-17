@@ -122,22 +122,17 @@ void Sequence::setAudioDeviceManager(AudioDeviceManager * manager)
 {
 	if (currentManager == manager) return;
 
-	if (currentManager != nullptr)
-	{
-		//masterAudioModule->enabled->removeParameterListener(this);
-		currentManager->removeAudioCallback(this);
-	}
+	if (currentManager != nullptr) currentManager->removeAudioCallback(this);
 
 	currentManager = manager;
 
-	if (currentManager != nullptr)
-	{
-		//masterAudioModule->enabled->addParameterListener(this);
-		
-		currentManager->addAudioCallback(this);
+	if (currentManager != nullptr) currentManager->addAudioCallback(this);
 
-	}
 
+	//resync values between audio/non-audio driving variables
+	hiResAudioTime = (double)currentTime->floatValue();
+	prevMillis = Time::getMillisecondCounterHiRes();
+	
 	sequenceListeners.call(&SequenceListener::sequenceMasterAudioModuleChanged, this);
 }
 
