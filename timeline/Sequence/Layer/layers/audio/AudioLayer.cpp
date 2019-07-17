@@ -13,6 +13,7 @@ int AudioLayer::graphIDIncrement = 10;
 
 AudioLayer::AudioLayer(Sequence * _sequence, var params) :
 	SequenceLayer(_sequence, "Audio"),
+	enveloppe(nullptr),
 	currentGraph(nullptr),
 	currentProcessor(nullptr),
 	channelsCC("Channels"),
@@ -31,6 +32,7 @@ AudioLayer::AudioLayer(Sequence * _sequence, var params) :
 	addChildControllableContainer(&channelsCC);
 	addChildControllableContainer(&clipManager);
 
+	clipManager.addBaseManagerListener(this);
 	helpID = "AudioLayer";
 
 }
@@ -108,7 +110,7 @@ void AudioLayer::updateCurrentClip()
 	}
 
 	currentClip = target;
-
+	
 	if (currentClip != nullptr)
 	{
 		currentClip->setIsCurrent(true);
@@ -117,6 +119,17 @@ void AudioLayer::updateCurrentClip()
 		if (sequence->isPlaying->boolValue()) currentClip->transportSource.start();
 	}
 
+}
+
+void AudioLayer::itemAdded(AudioLayerClip*)
+{
+	if (Engine::mainEngine->isLoadingFile) return;
+	updateCurrentClip();
+}
+
+void AudioLayer::itemRemoved(AudioLayerClip* clip)
+{
+	if (clip == currentClip) updateCurrentClip();
 }
 
 void AudioLayer::updateSelectedOutChannels()
@@ -209,8 +222,11 @@ SequenceLayerTimeline * AudioLayer::getTimelineUI()
 
 void AudioLayer::sequenceCurrentTimeChanged(Sequence *, float, bool)
 {
+	if (enveloppe == nullptr) return;
+
 	if (currentProcessor != nullptr) enveloppe->setValue(currentProcessor->currentEnveloppe);
 	else enveloppe->setValue(0);
+
 	updateCurrentClip();
 
 	if (currentClip != nullptr && sequence->isSeeking)

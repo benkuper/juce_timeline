@@ -13,7 +13,8 @@
 class AudioLayerProcessor;
 
 class AudioLayer :
-	public SequenceLayer
+	public SequenceLayer,
+	public AudioLayerClipManager::ManagerListener
 {
 public:
 	AudioLayer(Sequence * sequence, var params);
@@ -44,6 +45,9 @@ public:
 
 	void setAudioProcessorGraph(AudioProcessorGraph * graph, int audioOutputGraphID = 2);
 	void updateCurrentClip();
+
+	void itemAdded(AudioLayerClip*) override;
+	void itemRemoved(AudioLayerClip* clip) override;
 
 	void updateSelectedOutChannels();
 
