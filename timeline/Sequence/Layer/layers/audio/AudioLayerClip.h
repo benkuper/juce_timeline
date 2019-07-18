@@ -11,7 +11,7 @@
 #pragma once
 
 class AudioLayerClip :
-	public BaseItem,
+	public LayerBlock,
 	public Thread //async loading
 {
 public:
@@ -22,17 +22,21 @@ public:
 	//AudioSampleBuffer buffer;
 	std::unique_ptr<AudioFormatReaderSource> readerSource;
 	AudioTransportSource transportSource;
+	ResamplingAudioSource resamplingAudioSource;
 	ChannelRemappingAudioSource channelRemapAudioSource;
 
 	FileParameter * filePath;
 
-	FloatParameter * time; 
 	FloatParameter * clipLength;
+	FloatParameter * stretchFactor;
+	Trigger* resetStretch;
 
 	FloatParameter * volume;
-	BoolParameter * scratch;
 
 	BoolParameter * isLocked;
+
+	float clipStartOffset;
+
 
 	double clipDuration;
 	double sampleRate;
@@ -46,14 +50,23 @@ public:
 	bool isInRange(float time);
 
 	void updateAudioSourceFile();
-	void onContainerParameterChanged(Parameter *) override;
+	void onContainerTriggerTriggered(Trigger* t) override;
+	void onContainerParameterChangedInternal(Parameter *) override;
+
+	void setCoreLength(float value, bool stretch, bool stickToCoreEnd = false) override;
+	void setStartTime(float value, bool stretch, bool stickToCoreEnd = false) override;
 	
+	void setPlaySpeed(float value);
+
 	void run() override;
+
+	String getTypeString() const override { return "AudioClip"; }
 
 	class ClipListener
 	{
 	public:
 		virtual ~ClipListener() {}
+		virtual void clipSourceLoaded(AudioLayerClip*) {}
 		virtual void clipIsCurrentChanged(AudioLayerClip *) {}
 	};
 

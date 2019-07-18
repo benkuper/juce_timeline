@@ -1,3 +1,4 @@
+#include "SequenceManager.h"
 /*
   ==============================================================================
 
@@ -13,7 +14,8 @@ juce_ImplementSingleton(SequenceManager)
 #endif
 
 SequenceManager::SequenceManager() :
-	BaseManager("Sequences")
+	BaseManager("Sequences"),
+	defaultLayerFactory(nullptr)
 {
 	itemDataType = "Sequence";
 	helpID = "TimeMachine";
@@ -23,6 +25,11 @@ SequenceManager::~SequenceManager()
 {
 }
 
+
+void SequenceManager::addItemInternal(Sequence* item, var data)
+{
+	if (defaultLayerFactory != nullptr) item->layerManager->managerFactory = defaultLayerFactory;
+}
 
 Sequence * SequenceManager::showMenuAndGetSequence()
 {

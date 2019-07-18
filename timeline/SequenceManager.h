@@ -24,6 +24,10 @@ public:
 	SequenceManager();
 	~SequenceManager();
 
+	Factory<SequenceLayer>* defaultLayerFactory;
+
+	virtual void addItemInternal(Sequence* item, var data) override;
+
 	Sequence * showMenuAndGetSequence();
 	Sequence * getSequenceForItemID(int itemID);
 

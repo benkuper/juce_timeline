@@ -7,7 +7,6 @@
 
   ==============================================================================
 */
-
 LayerBlockUI::LayerBlockUI(LayerBlock * block) :
 	BaseItemMinimalUI(block),
 	viewStart(0),

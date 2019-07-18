@@ -1,3 +1,4 @@
+#include "AudioLayerClipManagerUI.h"
 /*
   ==============================================================================
 
@@ -10,63 +11,25 @@
 
 
 AudioLayerClipManagerUI::AudioLayerClipManagerUI(AudioLayerTimeline * _timeline, AudioLayerClipManager * manager) :
-	BaseManagerUI("Clip Manager", manager, false),
-	timeline(_timeline)
+	LayerBlockManagerUI(_timeline, manager)
 {
-	noItemText = "To add an audio clip to this layer, double-click here";
-	addItemText = "Add Audio";
-	animateItemOnAdd = false;
-	transparentBG = true;
-
-	addItemBT->setVisible(false);
 	addExistingItems();
+
 }
 
 AudioLayerClipManagerUI::~AudioLayerClipManagerUI()
 {
 }
 
-void AudioLayerClipManagerUI::resized()
-{
-	updateContent();
-}
 
-void AudioLayerClipManagerUI::updateContent()
+LayerBlockUI* AudioLayerClipManagerUI::createUIForItem(LayerBlock* item)
 {
-	for (auto &cui : itemsUI)
-	{
-		placeClipUI(cui);
-	}
+	return new AudioLayerClipUI(dynamic_cast<AudioLayerClip *>(item));
 }
-
-void AudioLayerClipManagerUI::placeClipUI(AudioLayerClipUI * cui)
-{
-	int tx = timeline->getXForTime(cui->clip->time->floatValue());
-	int tx2 = timeline->getXForTime(cui->clip->time->floatValue() + cui->clip->clipLength->floatValue());
-	cui->setBounds(tx, 0, tx2-tx, getHeight());
-}
-
 
 void AudioLayerClipManagerUI::mouseDoubleClick(const MouseEvent & e)
 {
 	addClipWithFileChooserAt(getMouseXYRelative().x);
-}
-
-void AudioLayerClipManagerUI::addItemFromMenu(bool isFromAddButton, Point<int> mouseDownPos)
-{
-	if (isFromAddButton) return;
-	addClipWithFileChooserAt(mouseDownPos.x);
-}
-
-void AudioLayerClipManagerUI::addItemUIInternal(AudioLayerClipUI * cui)
-{
-	cui->addClipUIListener(this);
-	placeClipUI(cui);
-}
-
-void AudioLayerClipManagerUI::removeItemUIInternal(AudioLayerClipUI * cui)
-{
-	cui->removeClipUIListener(this);
 }
 
 void AudioLayerClipManagerUI::addClipWithFileChooserAt(float position)
@@ -76,24 +39,7 @@ void AudioLayerClipManagerUI::addClipWithFileChooserAt(float position)
 	if (result)
 	{
 		float time = timeline->getTimeForX(position);
-		AudioLayerClip * clip = manager->addClipAt(time);
+		AudioLayerClip* clip = dynamic_cast<AudioLayerClip*>(manager->addBlockAt(time));
 		clip->filePath->setValue(chooser.getResult().getFullPathName());
-
 	}
-
-}
-
-void AudioLayerClipManagerUI::clipUITimeChanged(AudioLayerClipUI * cui)
-{
-	placeClipUI(cui);
-}
-
-void AudioLayerClipManagerUI::clipUIDragged(AudioLayerClipUI * cui, const MouseEvent & e)
-{
-	if (!e.mods.isShiftDown())
-	{
-		float targetTime = cui->timeAtMouseDown + timeline->getTimeForX(e.getOffsetFromDragStart().x, false);
-		cui->clip->time->setValue(targetTime);
-	}
-	repaint();
 }

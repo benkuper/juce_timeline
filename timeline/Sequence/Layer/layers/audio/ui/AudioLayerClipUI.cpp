@@ -1,3 +1,4 @@
+#include "AudioLayerClipUI.h"
 /*
   ==============================================================================
 
@@ -9,16 +10,13 @@
 */
 
 AudioLayerClipUI::AudioLayerClipUI(AudioLayerClip * _clip) :
-	BaseItemUI(_clip),
+	LayerBlockUI(_clip),
 	thumbnailCache(100000),
 	thumbnail(50, _clip->formatManager, thumbnailCache),
 	clip(_clip)
 {
 	dragAndDropEnabled = false;
 
-	browseBT.reset(AssetManager::getInstance()->getFileBT());
-	addAndMakeVisible(browseBT.get());
-	browseBT->addListener(this);
 	clip->addAsyncClipListener(this);
 
 	bgColor = clip->isCurrent ? AUDIO_COLOR.brighter() : BG_COLOR.brighter(.1f);
@@ -39,7 +37,7 @@ AudioLayerClipUI::~AudioLayerClipUI()
 
 void AudioLayerClipUI::paint(Graphics & g)
 {
-	BaseItemUI::paint(g);
+	LayerBlockUI::paint(g);
 
 	if (clip->filePath->stringValue().isEmpty()) return;
 	g.setColour(Colours::white.withAlpha(.5f));
@@ -50,53 +48,21 @@ void AudioLayerClipUI::paint(Graphics & g)
 		
 	} else
 	{
-		thumbnail.drawChannels(g, getLocalBounds(), 0, item->clipDuration, item->volume->floatValue());
+		thumbnail.drawChannels(g, getCoreBounds(), clip->clipStartOffset, clip->clipStartOffset+clip->coreLength->floatValue()/clip->stretchFactor->floatValue(), clip->volume->floatValue());
 	}
 }
 
-void AudioLayerClipUI::resizedInternalHeader(Rectangle<int>& r)
+void AudioLayerClipUI::resizedBlockInternal()
 {
-	browseBT->setBounds(r.removeFromRight(r.getHeight()));
-	r.removeFromRight(2);
+	LayerBlockUI::resizedBlockInternal();
 }
 
-void AudioLayerClipUI::mouseDown(const MouseEvent & e)
-{
-	BaseItemUI::mouseDown(e);
-	timeAtMouseDown = clip->time->floatValue();
-	posAtMouseDown = getX();
-}
-
-void AudioLayerClipUI::mouseDrag(const MouseEvent & e)
-{
-	BaseItemUI::mouseDrag(e);
-	clipUIListeners.call(&ClipUIListener::clipUIDragged, this, e);
-}
-
-void AudioLayerClipUI::mouseUp(const MouseEvent & e)
-{
-	BaseItemUI::mouseUp(e);
-	item->time->setUndoableValue(timeAtMouseDown, item->time->floatValue());
-}
-
-void AudioLayerClipUI::buttonClicked(Button * b)
-{
-	BaseItemUI::buttonClicked(b);
-	if (b == browseBT.get())
-	{
-		FileChooser chooser("Load a carrot", File(), "*.wav;*.mp3");
-		bool result = chooser.browseForFileToOpen();
-		if (result) clip->filePath->setUndoableValue(clip->filePath->stringValue(),chooser.getResult().getFullPathName());
-	}
-}
 
 void AudioLayerClipUI::controllableFeedbackUpdateInternal(Controllable * c)
 {
-	if (c == item->time || c == item->clipLength)
-	{
-		clipUIListeners.call(&ClipUIListener::clipUITimeChanged, this);
-		repaint();
-	} else if (c == item->volume)
+	LayerBlockUI::controllableFeedbackUpdateInternal(c);
+
+	if (c == item->time || c == item->coreLength || c == clip->volume)
 	{
 		repaint();
 	}

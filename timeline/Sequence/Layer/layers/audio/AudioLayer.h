@@ -46,8 +46,8 @@ public:
 	void setAudioProcessorGraph(AudioProcessorGraph * graph, int audioOutputGraphID = 2);
 	void updateCurrentClip();
 
-	void itemAdded(AudioLayerClip*) override;
-	void itemRemoved(AudioLayerClip* clip) override;
+	void itemAdded(LayerBlock*) override;
+	void itemRemoved(LayerBlock* clip) override;
 
 	void updateSelectedOutChannels();
 
@@ -63,6 +63,7 @@ public:
 	
 	void sequenceCurrentTimeChanged(Sequence *, float prevTime, bool evaluatedSkippedData) override;
 	void sequencePlayStateChanged(Sequence *) override;
+	void sequencePlaySpeedChanged(Sequence*) override;
 
 	static AudioLayer * create(Sequence * sequence, var params) { return new AudioLayer(sequence, params); }
 	virtual String getTypeString() const override { return "Audio"; }

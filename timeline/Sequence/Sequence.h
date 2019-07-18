@@ -99,6 +99,7 @@ public:
 		virtual void sequencePlayStateChanged(Sequence *) {}
 		virtual void sequenceCurrentTimeChanged(Sequence *, float /*prevTime*/, bool /*evaluateSkippedData*/) {}
 		virtual void sequenceLooped(Sequence *) {}
+		virtual void sequencePlaySpeedChanged(Sequence*) {}
 		virtual void sequenceTotalTimeChanged(Sequence *) {}
 		virtual void sequenceMasterAudioModuleChanged(Sequence *) {}
 		virtual void sequenceEditingStateChanged(Sequence *) {}

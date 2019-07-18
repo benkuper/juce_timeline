@@ -24,7 +24,8 @@ Sequence::Sequence() :
 	isPlaying = addBoolParameter("Is Playing", "Is the sequence playing ?", false);
 	isPlaying->setControllableFeedbackOnly(true);
 	isPlaying->isSavable = false;
-	
+	isPlaying->hideInEditor = true;
+
 	playTrigger = addTrigger("Play", "Play the sequence");
 	stopTrigger = addTrigger("Stop", "Stops the sequence and set the current time at 0.");
 	finishTrigger = addTrigger("Finish", "When the sequence reached naturally its end, and there is no loop");
@@ -44,7 +45,7 @@ Sequence::Sequence() :
 	totalTime->defaultUI = FloatParameter::TIME;
 
 	loopParam = addBoolParameter("Loop", "Whether the sequence plays again from the start when reached the end while playing", false);
-	playSpeed = addFloatParameter("Play Speed", "Playing speed factor, 1 is normal speed, 2 is double speed and 0.5 is half speed",1,0,100);
+	playSpeed = addFloatParameter("Play Speed", "Playing speed factor, 1 is normal speed, 2 is double speed and 0.5 is half speed",1,0.01f);
 	fps = addIntParameter("FPS", "Frame Per Second.\nDefines the number of times per seconds the sequence is evaluated, the higher the value is, the more previse the calculation will be.\n \
 									This setting also sets how many messages per seconds are sent from layer with automations.", 50, 1,500);
 	
@@ -191,12 +192,10 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 
 		currentTime->setRange(0, totalTime->floatValue());
 		viewStartTime->setRange(0, totalTime->floatValue() - minViewTime);
-		viewEndTime->setRange(viewStartTime->floatValue()+ minViewTime, totalTime->floatValue());
+		viewEndTime->setRange(viewStartTime->floatValue() + minViewTime, totalTime->floatValue());
 		sequenceListeners.call(&SequenceListener::sequenceTotalTimeChanged, this);
-	} else if (p == playSpeed)
-	{
-
-	} else if (p == isPlaying)
+	}
+	else if (p == isPlaying)
 	{
 		if (isPlaying->boolValue())
 		{
@@ -219,6 +218,10 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 			stopTimer();
 			startTimer(1000/fps->intValue());
 		}
+	}
+	else if (p == playSpeed)
+	{
+		sequenceListeners.call(&SequenceListener::sequencePlaySpeedChanged, this);
 	}
 	else if (p == viewStartTime)
 	{

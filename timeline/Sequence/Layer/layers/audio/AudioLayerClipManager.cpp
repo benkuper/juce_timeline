@@ -8,29 +8,19 @@
   ==============================================================================
 */
 
-AudioLayerClipManager::AudioLayerClipManager() :
-	BaseManager("Clip Manager")
+
+AudioLayerClipManager::AudioLayerClipManager(AudioLayer * layer) :
+	LayerBlockManager(layer)
 {
+	itemDataType = "AudioClip";
+	blocksCanOverlap = false;
 }
 
 AudioLayerClipManager::~AudioLayerClipManager()
 {
 }
 
-AudioLayerClip * AudioLayerClipManager::addClipAt(float time)
+LayerBlock* AudioLayerClipManager::createItem()
 {
-	AudioLayerClip * t = new AudioLayerClip(time);
-	BaseManager::addItem(t);
-    return t;
-}
-
-AudioLayerClip * AudioLayerClipManager::getClipAtTime(float time, bool includeDisabled)
-{
-	for (auto& c : items)
-	{
-		if (!includeDisabled && !c->enabled->boolValue()) continue;
-		if (c->isInRange(time)) return c;
-	}
-
-	return nullptr;
+	return new AudioLayerClip();
 }

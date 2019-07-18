@@ -10,14 +10,16 @@
 
 #pragma once
 
+class AudioLayer;
+
 class AudioLayerClipManager :
-	public BaseManager<AudioLayerClip>
+	public LayerBlockManager
 {
 public:
-	AudioLayerClipManager();
+	AudioLayerClipManager(AudioLayer * layer);
 	~AudioLayerClipManager();
 
-	AudioLayerClip * addClipAt(float time);
 
-	AudioLayerClip * getClipAtTime(float time, bool includeDisabled = false);
+	LayerBlock* createItem() override;
+	
 };

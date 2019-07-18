@@ -10,6 +10,7 @@
 
 #pragma once
 
+
 class LayerBlockUI :
 	public BaseItemMinimalUI<LayerBlock>
 {

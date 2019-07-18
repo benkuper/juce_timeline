@@ -13,27 +13,14 @@
 class AudioLayerTimeline;
 
 class AudioLayerClipManagerUI :
-	public BaseManagerUI<AudioLayerClipManager, AudioLayerClip, AudioLayerClipUI>,
-	public AudioLayerClipUI::ClipUIListener
+	public LayerBlockManagerUI
 {
 public:
 	AudioLayerClipManagerUI(AudioLayerTimeline * timeline, AudioLayerClipManager * manager);
 	~AudioLayerClipManagerUI();
 
-	AudioLayerTimeline * timeline;
+	virtual LayerBlockUI* createUIForItem(LayerBlock* item) override;
 
-	void resized() override;
-	void updateContent();
-
-	void placeClipUI(AudioLayerClipUI * cui);
 	void mouseDoubleClick(const MouseEvent &e) override;
-
-	void addItemFromMenu(bool, Point<int> mouseDownPos) override;
-	void addItemUIInternal(AudioLayerClipUI * cui) override;
-	void removeItemUIInternal(AudioLayerClipUI * cui) override;
-
 	void addClipWithFileChooserAt(float position);
-
-	void clipUITimeChanged(AudioLayerClipUI * cui) override;
-	void clipUIDragged(AudioLayerClipUI * cui, const MouseEvent &) override;
 };

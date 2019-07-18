@@ -77,10 +77,17 @@ using namespace juce;
 
 #include "timeline/Sequence/Layer/SequenceLayer.h"
 
+#include "timeline/Sequence/Layer/layers/Block/LayerBlock.h"
+#include "timeline/Sequence/Layer/layers/Block/LayerBlockManager.h"
 
 #include "timeline/Sequence/Layer/layers/audio/AudioLayerClip.h"
 #include "timeline/Sequence/Layer/layers/audio/AudioLayerClipManager.h"
 #include "timeline/Sequence/Layer/layers/audio/AudioLayer.h"
+
+
+#include "timeline/Sequence/Layer/layers/Trigger/TimeTrigger.h"
+#include "timeline/Sequence/Layer/layers/Trigger/TimeTriggerManager.h"
+#include "timeline/Sequence/Layer/layers/Trigger/TriggerLayer.h"
 
 #include "timeline/Sequence/Layer/SequenceLayerManager.h"
 
@@ -94,20 +101,14 @@ using namespace juce;
 #include "timeline/Sequence/Layer/ui/SequenceLayerTimeline.h"
 #include "timeline/Sequence/Layer/ui/SequenceLayerTimelineManagerUI.h"
 
+#include "timeline/Sequence/Layer/layers/Block/ui/LayerBlockUI.h"
+#include "timeline/Sequence/Layer/layers/Block/ui/LayerBlockManagerUI.h"
 
 #include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerClipUI.h"
 #include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerClipManagerUI.h"
 #include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerPanel.h"
 #include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerTimeline.h"
 
-#include "timeline/Sequence/Layer/layers/Block/LayerBlock.h"
-#include "timeline/Sequence/Layer/layers/Block/LayerBlockManager.h"
-#include "timeline/Sequence/Layer/layers/Block/ui/LayerBlockUI.h"
-#include "timeline/Sequence/Layer/layers/Block/ui/LayerBlockManagerUI.h"
-
-#include "timeline/Sequence/Layer/layers/Trigger/TimeTrigger.h"
-#include "timeline/Sequence/Layer/layers/Trigger/TimeTriggerManager.h"
-#include "timeline/Sequence/Layer/layers/Trigger/TriggerLayer.h"
 #include "timeline/Sequence/Layer/layers/Trigger/ui/TimeTriggerUI.h"
 #include "timeline/Sequence/Layer/layers/Trigger/ui/TimeTriggerMultiTransformer.h"
 #include "timeline/Sequence/Layer/layers/Trigger/ui/TriggerLayerPanel.h"
