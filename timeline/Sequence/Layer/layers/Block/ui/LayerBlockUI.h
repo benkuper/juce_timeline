@@ -19,7 +19,6 @@ public:
 	~LayerBlockUI();
 
 	//interaction
-	float timeAtMouseDown;
 	float coreLengthAtMouseDown;
 	float loopLengthAtMouseDown;
 

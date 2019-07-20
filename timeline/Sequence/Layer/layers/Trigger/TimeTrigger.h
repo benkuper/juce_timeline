@@ -11,7 +11,8 @@
 #pragma once
 
 class TimeTrigger :
-	public BaseItem
+	public BaseItem,
+	public TimedLayerItem
 {
 public:
 	TimeTrigger(StringRef name = "Trigger");
@@ -26,6 +27,10 @@ public:
 	FloatParameter * flagY;
 
 	virtual void onContainerParameterChangedInternal(Parameter * p) override;
+
+	void setMoveTimeReferenceInternal() override;
+	void setTime(float targetTime) override;
+	UndoableAction* getUndoableMoveAction() override;
 
 	virtual void trigger();
 	virtual void triggerInternal() {}

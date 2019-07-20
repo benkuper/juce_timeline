@@ -51,7 +51,7 @@ void LayerBlockManagerUI::placeBlockUI(LayerBlockUI * cui)
 
 void LayerBlockManagerUI::mouseDoubleClick(const MouseEvent & e)
 {
-	if(manager->userCanAddItemsManually) manager->addBlockAt(timeline->getTimeForX(getMouseXYRelative().x));
+	if(!e.mods.isCommandDown() && !e.mods.isShiftDown() && manager->userCanAddItemsManually) manager->addBlockAt(timeline->getTimeForX(getMouseXYRelative().x));
 }
 
 void LayerBlockManagerUI::addItemFromMenu(bool isFromAddButton, Point<int> mouseDownPos)
@@ -79,8 +79,9 @@ void LayerBlockManagerUI::blockUITimeChanged(LayerBlockUI * cui)
 
 void LayerBlockManagerUI::blockUIDragged(LayerBlockUI * cui, const MouseEvent & e)
 {
-	float targetTime = cui->timeAtMouseDown + timeline->getTimeForX(e.getOffsetFromDragStart().x, false);
-	manager->placeBlockAt(cui->item, targetTime);
+	float targetOffsetTime = timeline->getTimeForX(e.getOffsetFromDragStart().x, false);
+	//float targetTime = cui->timeAtMouseDown + targetOffsetTime;
+	cui->item->moveTime(targetOffsetTime, true);
 	
 	cui->setViewRange(timeline->item->sequence->viewStartTime->floatValue() - cui->item->time->floatValue(), timeline->item->sequence->viewEndTime->floatValue() - cui->item->time->floatValue());
 	cui->resized(); //force resize because changing time will not resize it, just move it
@@ -89,7 +90,7 @@ void LayerBlockManagerUI::blockUIDragged(LayerBlockUI * cui, const MouseEvent & 
 void LayerBlockManagerUI::blockUIStartDragged(LayerBlockUI * cui, const MouseEvent & e)
 {
 	float timeDiff = timeline->getTimeForX(e.getOffsetFromDragStart().x, false);
-	float targetTime = cui->timeAtMouseDown + timeDiff;
+	float targetTime = cui->item->moveTimeReference + timeDiff;
 
 	int itemIndex = manager->items.indexOf(cui->item);
 	float minTime = (itemIndex > 0 && !manager->blocksCanOverlap) ? manager->items[itemIndex - 1]->getEndTime() : 0;
@@ -97,7 +98,7 @@ void LayerBlockManagerUI::blockUIStartDragged(LayerBlockUI * cui, const MouseEve
 
 	manager->placeBlockAt(cui->item, targetTime);
 
-	float realTimeDiff = cui->item->time->floatValue() - cui->timeAtMouseDown;
+	float realTimeDiff = cui->item->time->floatValue() - cui->item->moveTimeReference;
 	float targetCoreLength = cui->coreLengthAtMouseDown - realTimeDiff;
 
 	cui->item->setCoreLength(targetCoreLength,e.mods.isShiftDown(), !e.mods.isAltDown());

@@ -1,3 +1,4 @@
+#include "LayerBlock.h"
 /*
   ==============================================================================
 
@@ -48,6 +49,21 @@ float LayerBlock::getEndTime()
 bool LayerBlock::isInRange(float _time)
 {
 	return _time >= time->floatValue() && _time < getEndTime();
+}
+
+void LayerBlock::setMoveTimeReferenceInternal()
+{
+	moveTimeReference = time->floatValue();
+}
+
+void LayerBlock::setTime(float targetTime)
+{
+	blockListeners.call(&BlockListener::askForPlaceBlockTime, this, targetTime);
+}
+
+UndoableAction* LayerBlock::getUndoableMoveAction()
+{
+	return time->setUndoableValue(moveTimeReference, time->floatValue(), true);
 }
 
 

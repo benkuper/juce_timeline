@@ -19,7 +19,7 @@ SequenceLayer::SequenceLayer(Sequence * _sequence, const String &name) :
 	uiHeight = addIntParameter("UI Height", "Height of the layer in the editor", 60);
 	uiHeight->hideInEditor = true;
 
-	color = new ColorParameter("Layer Color", "Color of the layer", Colours::grey);
+	color = new ColorParameter("Layer Color", "Color of the layer", BG_COLOR.brighter(.2f));
 	color->hideInEditor = true;
 	addParameter(color);
 

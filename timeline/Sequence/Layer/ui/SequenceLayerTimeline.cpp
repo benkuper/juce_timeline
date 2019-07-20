@@ -66,7 +66,12 @@ void SequenceLayerTimeline::mouseDown(const MouseEvent &e)
 {
 	if (e.mods.isLeftButtonDown() && e.eventComponent->getParentComponent() == this)
 	{
-		item->selectThis();
+		if(e.mods.isShiftDown()) item->selectThis(true);
+		else
+		{
+			if (!item->isSelected) item->selectThis(e.mods.isCommandDown());
+			else if (e.mods.isCommandDown()) item->deselectThis();
+		}
 	}
 }
 

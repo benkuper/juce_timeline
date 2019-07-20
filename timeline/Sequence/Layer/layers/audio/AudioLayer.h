@@ -55,6 +55,8 @@ public:
 
 	void onControllableFeedbackUpdateInternal(ControllableContainer *cc, Controllable * c) override;
 
+	void selectAll(bool addToSelection = false) override;
+
 	virtual var getJSONData() override;
 	virtual void loadJSONDataInternal(var data) override;
 

@@ -139,6 +139,21 @@ Array<LayerBlock*> LayerBlockManager::addItemsFromClipboard(bool showWarning)
 	return blocks;
 }
 
+void LayerBlockManager::addItemInternal(LayerBlock* item, var)
+{
+	item->addBlockListener(this);
+}
+
+void LayerBlockManager::removeItemInternal(LayerBlock* item)
+{
+	item->removeBlockListener(this);
+}
+
+void LayerBlockManager::askForPlaceBlockTime(LayerBlock* block, float desiredTime)
+{
+	placeBlockAt(block, desiredTime);
+}
+
 void LayerBlockManager::placeBlockAt(LayerBlock * block, float desiredTime)
 {
 	if (blocksCanOverlap)

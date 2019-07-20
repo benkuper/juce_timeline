@@ -12,7 +12,8 @@
 
 
 class LayerBlock :
-	public BaseItem
+	public BaseItem,
+	public TimedLayerItem
 {
 public:
 	LayerBlock(StringRef name = "Block", float time = 0);
@@ -28,9 +29,25 @@ public:
 	float getEndTime();
 	bool isInRange(float time);
 
+	void setMoveTimeReferenceInternal() override;
+	void setTime(float targetTime) override;
+	UndoableAction *getUndoableMoveAction() override;
+
 	virtual void setCoreLength(float newLength, bool stretch, bool stickToCoreEnd = false);
 	virtual void setLoopLength(float newLength);
 	virtual void setStartTime(float newStart, bool keepCoreEnd = false, bool stickToCoreEnd = false);
 	
 	virtual double getRelativeTime(double t, bool timeIsAbsolute = false, bool noLoop = false);
+
+	class BlockListener
+	{
+	public:
+		virtual ~BlockListener() {}
+		virtual void askForPlaceBlockTime(LayerBlock *, float desiredTime) {}
+	};
+
+	ListenerList<BlockListener> blockListeners;
+	void addBlockListener(BlockListener* newListener) { blockListeners.add(newListener); }
+	void removeBlockListener(BlockListener* listener) { blockListeners.remove(listener); }
+
 };

@@ -1,3 +1,4 @@
+#include "TimeTrigger.h"
 /*
   ==============================================================================
 
@@ -39,6 +40,21 @@ void TimeTrigger::onContainerParameterChangedInternal(Parameter * p)
 		time->setControllableFeedbackOnly(isLocked->boolValue());
 		//flagY->setControllableFeedbackOnly(isLocked->boolValue());
 	}
+}
+
+void TimeTrigger::setMoveTimeReferenceInternal()
+{
+	moveTimeReference = time->floatValue();
+}
+
+void TimeTrigger::setTime(float targetTime)
+{
+	time->setValue(targetTime);
+}
+
+UndoableAction* TimeTrigger::getUndoableMoveAction()
+{
+	return time->setUndoableValue(moveTimeReference, time->floatValue(), true);
 }
 
 void TimeTrigger::trigger()

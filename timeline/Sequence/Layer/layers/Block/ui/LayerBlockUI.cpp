@@ -51,13 +51,15 @@ void LayerBlockUI::resized()
 	{
 		Rectangle<int> r = getGrabberBounds();
 
-		grabber.setBounds(r.removeFromLeft(10));
+		const int grabberSize = 9;
+
+		grabber.setBounds(r.removeFromLeft(grabberSize));
 
 		loopGrabber.setVisible(item->loopLength->floatValue() > 0);
-		if (loopGrabber.isVisible())	loopGrabber.setBounds(r.removeFromRight(10));
+		if (loopGrabber.isVisible())	loopGrabber.setBounds(r.removeFromRight(grabberSize));
 
 		r.setRight(getCoreWidth());
-		coreGrabber.setBounds(r.removeFromRight(10));
+		coreGrabber.setBounds(r.removeFromRight(grabberSize));
 	}
 
 	resizedBlockInternal();
@@ -66,7 +68,7 @@ void LayerBlockUI::resized()
 void LayerBlockUI::mouseEnter(const MouseEvent & e)
 {
 	BaseItemMinimalUI::mouseEnter(e);
-	if (canBeGrabbed)
+	if (canBeGrabbed && getWidth() > 24)
 	{
 		grabber.setVisible(true);
 		coreGrabber.setVisible(true);
@@ -98,11 +100,11 @@ void LayerBlockUI::mouseDown(const MouseEvent & e)
 
 	if (canBeGrabbed)
 	{
-		timeAtMouseDown = item->time->floatValue();
+		item->setMoveTimeReference(true);
 		coreLengthAtMouseDown = item->coreLength->floatValue();
 		loopLengthAtMouseDown = item->loopLength->floatValue();
 
-		isDragging = e.eventComponent == this && getDragBounds().contains(e.getPosition());
+		isDragging = e.eventComponent == this && getDragBounds().contains(e.getPosition()) && !e.mods.isCommandDown() && !e.mods.isShiftDown();
 		posAtMouseDown = getX();
 	}
 }
@@ -139,17 +141,17 @@ void LayerBlockUI::mouseUp(const MouseEvent & e)
 	{
 		if (isDragging)
 		{
-			item->time->setUndoableValue(timeAtMouseDown, item->time->floatValue());
+			item->addMoveToUndoManager(true);
 			blockUIListeners.call(&BlockUIListener::blockUINeedsReorder);
 		}
 		else if (e.eventComponent == &grabber)
 		{
-			item->time->setUndoableValue(timeAtMouseDown, item->time->floatValue());
+			item->time->setUndoableValue(item->moveTimeReference, item->time->floatValue());
 			item->coreLength->setUndoableValue(coreLengthAtMouseDown, item->coreLength->floatValue());
 		}
 		else if (e.eventComponent == &coreGrabber)
 		{
-			item->time->setUndoableValue(timeAtMouseDown, item->time->floatValue());
+			item->time->setUndoableValue(item->moveTimeReference, item->time->floatValue());
 			item->coreLength->setUndoableValue(coreLengthAtMouseDown, item->coreLength->floatValue());
 		}
 		else if (e.eventComponent == &loopGrabber)

@@ -35,7 +35,7 @@ TimeTriggerManagerUI::~TimeTriggerManagerUI()
 void TimeTriggerManagerUI::resized()
 {
 	updateContent();
-	if (transformer != nullptr) transformer->updateBoundsFromKeys();
+	//if (transformer != nullptr) transformer->updateBoundsFromKeys();
 }
 
 void TimeTriggerManagerUI::updateContent()
@@ -99,17 +99,20 @@ void TimeTriggerManagerUI::mouseDown(const MouseEvent & e)
 					inspectables.add(i->inspectable);
 				}
 
+				/*
 				if (transformer != nullptr)
 				{
 					removeChildComponent(transformer.get());
 					transformer = nullptr;
 				}
-
+				*/
+				
 				if (InspectableSelector::getInstance())
 				{
 					InspectableSelector::getInstance()->startSelection(this, selectables, inspectables, manager->selectionManager, !e.mods.isCommandDown());
 					InspectableSelector::getInstance()->addSelectorListener(this);
 				}
+				
 			}
 		}
 	}
@@ -137,11 +140,13 @@ void TimeTriggerManagerUI::addItemUIInternal(TimeTriggerUI * ttui)
 
 void TimeTriggerManagerUI::removeItemUIInternal(TimeTriggerUI * ttui)
 {
+	/*
 	if (transformer != nullptr)
 	{
 		removeChildComponent(transformer.get());
 		transformer = nullptr;
 	}
+	*/
 
 	ttui->removeTriggerUIListener(this);
 }
@@ -168,12 +173,16 @@ void TimeTriggerManagerUI::selectionEnded(Array<Component*> selectedComponents)
 
 void TimeTriggerManagerUI::inspectablesSelectionChanged()
 {
-	if (transformer != nullptr)
+
+/*
+if (transformer != nullptr)
 	{
 		removeChildComponent(transformer.get());
 		transformer = nullptr;
 	}
+	*/
 
+	/*
 	Array<TimeTriggerUI *> uiSelection;
 	if (manager->selectionManager->currentInspectables.size() >= 2)
 	{
@@ -190,10 +199,12 @@ void TimeTriggerManagerUI::inspectablesSelectionChanged()
 		uiSelection.add(kui);
 	}
 
+	
 	if (uiSelection.size() >= 2)
 	{
 		transformer.reset(new TimeTriggerMultiTransformer(this, uiSelection));
 		addAndMakeVisible(transformer.get());
 		transformer->grabKeyboardFocus(); // so no specific key has the focus for deleting
 	}
+	*/
 }

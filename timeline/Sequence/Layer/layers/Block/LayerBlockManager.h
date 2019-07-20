@@ -13,7 +13,8 @@
 class SequenceLayer;
 
 class LayerBlockManager :
-	public BaseManager<LayerBlock>
+	public BaseManager<LayerBlock>,
+	public LayerBlock::BlockListener
 {
 public:
 	LayerBlockManager(SequenceLayer* layer, StringRef name = "Blocks");
@@ -32,6 +33,10 @@ public:
 
 	Array<LayerBlock *> addItemsFromClipboard(bool showWarning = true) override;
 
+	void addItemInternal(LayerBlock* item, var) override;
+	void removeItemInternal(LayerBlock* item) override;
+
+	void askForPlaceBlockTime(LayerBlock* block, float desiredTime);
 	void placeBlockAt(LayerBlock * block, float desiredTime);
 
 	static int compareTime(LayerBlock * t1, LayerBlock * t2);

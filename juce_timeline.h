@@ -77,6 +77,8 @@ using namespace juce;
 
 #include "timeline/Sequence/Layer/SequenceLayer.h"
 
+#include "timeline/Sequence/Common/TimedLayerItem.h"
+
 #include "timeline/Sequence/Layer/layers/Block/LayerBlock.h"
 #include "timeline/Sequence/Layer/layers/Block/LayerBlockManager.h"
 

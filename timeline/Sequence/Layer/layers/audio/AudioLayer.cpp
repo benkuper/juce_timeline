@@ -212,6 +212,12 @@ void AudioLayer::onControllableFeedbackUpdateInternal(ControllableContainer * cc
 	}
 }
 
+void AudioLayer::selectAll(bool addToSelection)
+{
+	clipManager.askForSelectAllItems(addToSelection);
+	setSelected(false);
+}
+
 var AudioLayer::getJSONData()
 {
 	var data = SequenceLayer::getJSONData();
