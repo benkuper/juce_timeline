@@ -36,7 +36,8 @@ TimeCueUI::TimeCueUI(TimeCue * timeCue) :
 
 	setTooltip(item->niceName);
 
-	removeMouseListener(this);
+	//setDisableDefaultMouseEvents(true);
+	//removeMouseListener(this);
 
 	setSize(arrowSize + 12 + itemLabel.getFont().getStringWidth(itemLabel.getText()), getHeight());
 }
