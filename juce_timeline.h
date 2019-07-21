@@ -91,6 +91,7 @@ using namespace juce;
 #include "timeline/Sequence/Layer/layers/Trigger/TimeTriggerManager.h"
 #include "timeline/Sequence/Layer/layers/Trigger/TriggerLayer.h"
 
+
 #include "timeline/Sequence/Layer/SequenceLayerManager.h"
 
 #include "timeline/Sequence/Cue/TimeCue.h"
