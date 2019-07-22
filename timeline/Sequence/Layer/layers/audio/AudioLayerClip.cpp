@@ -77,7 +77,7 @@ void AudioLayerClip::setIsCurrent(bool value)
 
 bool AudioLayerClip::isInRange(float _time)
 {
-	return (_time >= time->floatValue() && _time <= time->floatValue() + clipLength->floatValue());
+	return (_time >= time->floatValue() && _time <= getEndTime());
 }
 
 void AudioLayerClip::updateAudioSourceFile()
