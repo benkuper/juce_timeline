@@ -78,3 +78,5 @@
 #include "timeline/ui/TimeMachineView.cpp"
 #include "timeline/ui/SequenceManagerUI.cpp"
 
+
+#include "TimelineAppCommands.cpp"

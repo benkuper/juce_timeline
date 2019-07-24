@@ -47,6 +47,12 @@
 #define TIMELINE_USE_SEQUENCEMANAGER_SINGLETON 0
 #endif
 
+/** Config: TIMELINE_ADD_MENU_ITEMS
+	If enabled, add control items to menu, implemented in juce_organicui
+*/
+#ifndef TIMELINE_ADD_MENU_ITEMS
+#define TIMELINE_ADD_MENU_ITEMS 1
+#endif
 
 
 #include <juce_audio_utils/juce_audio_utils.h>
@@ -130,3 +136,5 @@ using namespace juce;
 
 #include "timeline/ui/TimeMachineView.h"
 #include "timeline/ui/SequenceManagerUI.h"
+
+#include "TimelineAppCommands.h"
