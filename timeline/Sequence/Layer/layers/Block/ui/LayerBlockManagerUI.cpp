@@ -18,6 +18,8 @@ LayerBlockManagerUI::LayerBlockManagerUI(SequenceLayerTimeline * timeline, Layer
 	animateItemOnAdd = false;
 	transparentBG = true;
 
+	bringToFrontOnSelect = false;
+
 	addItemBT->setVisible(false);
 }
 

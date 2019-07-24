@@ -73,7 +73,7 @@ void SequenceEditorView::resized()
 	timelineManagerUI.setBounds(timelineR);
 }
 
-void SequenceEditorView::scrollBarMoved(ScrollBar * scrollBarThatHasMoved, double /*newRangeStart*/)
+void SequenceEditorView::scrollBarMoved(ScrollBar* scrollBarThatHasMoved, double /*newRangeStart*/)
 {
 	if (scrollBarThatHasMoved == &panelManagerUI.viewport.getVerticalScrollBar())
 	{
@@ -85,32 +85,64 @@ void SequenceEditorView::scrollBarMoved(ScrollBar * scrollBarThatHasMoved, doubl
 	}
 }
 
-void SequenceEditorView::mouseWheelMove(const MouseEvent & e, const MouseWheelDetails &)
+void SequenceEditorView::mouseWheelMove(const MouseEvent& e, const MouseWheelDetails& details)
 {
-	if (panelManagerUI.isMouseOver(true)) //hack, need to ask Jules about listenedComponent for direct listener to event information, also have a unique "scrollbar" event for wheel+drag
+	//DBG("Mouse wheel move " << (int)panelManagerUI.isMouseOver(true) << ", " << (int)timelineManagerUI.isMouseOver(true) << " / deltaX : " << details.deltaX << ", deltaY : " << details.deltaY);	
+
+	if (details.deltaY != 0)
 	{
-		timelineManagerUI.viewport.setViewPosition(panelManagerUI.viewport.getViewPosition());
+		if (e.mods.isShiftDown() || e.originalComponent == navigationUI->seeker.get() || e.originalComponent == &navigationUI->seeker->handle)
+		{
+			//float sequenceViewMid = (sequence->viewStartTime->floatValue() + sequence->viewEndTime->floatValue()) / 2;	
+			//float zoomFactor = details.deltaY; //*navigationUI.seeker.getTimeForX(details.deltaY);	
+			float initDist = sequence->viewEndTime->floatValue() - sequence->viewStartTime->floatValue();
+			float zoomFactor = (details.deltaY * initDist) / 2;
+			sequence->viewStartTime->setValue(sequence->viewStartTime->floatValue() + zoomFactor);
+			sequence->viewEndTime->setValue(sequence->viewEndTime->floatValue() - zoomFactor);
+
+		}
+		else
+		{
+			if (panelManagerUI.getLocalBounds().contains(panelManagerUI.getMouseXYRelative())) //hack, need to ask Jules about listenedComponent for direct listener to event information, also have a unique "scrollbar" event for wheel+drag	
+			{
+				timelineManagerUI.viewport.setViewPosition(panelManagerUI.viewport.getViewPosition());
+			}
+			else if (timelineManagerUI.getLocalBounds().contains(timelineManagerUI.getMouseXYRelative()))
+			{
+				panelManagerUI.viewport.setViewPosition(timelineManagerUI.viewport.getViewPosition());
+			}
+		}
 	}
-	else if(timelineManagerUI.isMouseOver(true))
+
+	if (details.deltaX != 0)
 	{
-		panelManagerUI.viewport.setViewPosition(timelineManagerUI.viewport.getViewPosition());
+		float initDist = sequence->viewEndTime->floatValue() - sequence->viewStartTime->floatValue();
+		sequence->viewStartTime->setValue(jmin(sequence->viewStartTime->floatValue() - initDist * details.deltaX, sequence->totalTime->floatValue() - initDist));
+		sequence->viewEndTime->setValue(sequence->viewStartTime->floatValue() + initDist);
 	}
 }
 
-bool SequenceEditorView::keyPressed(const KeyPress & key)
+void SequenceEditorView::mouseMagnify(const MouseEvent& e, float scaleFactor)
+{
+	float initDist = sequence->viewEndTime->floatValue() - sequence->viewStartTime->floatValue();
+	float zoomFactor = (scaleFactor * initDist) / 2;
+	sequence->viewStartTime->setValue(sequence->viewStartTime->floatValue() + zoomFactor);
+	sequence->viewEndTime->setValue(sequence->viewEndTime->floatValue() - zoomFactor);
+}
+
+bool SequenceEditorView::keyPressed(const KeyPress& key)
 {
 	if (sequence == nullptr) return false;
 
-	if (key.getKeyCode() == KeyPress::spaceKey)
-	{
-		sequence->togglePlayTrigger->trigger();
-		return true;
-	}
-	else if (key.getKeyCode() == KeyPress::homeKey)
+	if (key.getKeyCode() == KeyPress::homeKey)
 	{
 		sequence->currentTime->setValue(0);
 	}
-	
+	else if (key.getKeyCode() == KeyPress::endKey)
+	{
+		sequence->currentTime->setValue(sequence->totalTime->floatValue());
+	}
+
 
 	return false;
 }

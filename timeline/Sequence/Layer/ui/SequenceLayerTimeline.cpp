@@ -18,7 +18,6 @@ SequenceLayerTimeline::SequenceLayerTimeline(SequenceLayer * layer) :
 	item->sequence->addAsyncContainerListener(this);
 	setSize(100, item->uiHeight->intValue());
 
-
 	bringToFrontOnSelect = false;
 	//setInterceptsMouseClicks(true, true);
 	setWantsKeyboardFocus(false);
@@ -60,6 +59,7 @@ void SequenceLayerTimeline::updateNeedlePosition()
 {
     int tx = getXForTime(item->sequence->currentTime->floatValue());
     needle.setBounds(getLocalBounds().withWidth(1).withX(tx));
+	needle.toFront(false);
 }
 
 void SequenceLayerTimeline::mouseDown(const MouseEvent &e)

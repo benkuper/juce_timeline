@@ -17,6 +17,7 @@ AudioLayerTimeline::AudioLayerTimeline(AudioLayer * layer) :
 	cmMUI.reset(new AudioLayerClipManagerUI(this, &layer->clipManager));
 	addAndMakeVisible(cmMUI.get());
 
+	needle.toFront(false);
 	updateContent();
 }
 

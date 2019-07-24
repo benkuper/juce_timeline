@@ -45,6 +45,7 @@ public:
 	virtual void scrollBarMoved(ScrollBar * scrollBarThatHasMoved, double newRangeStart) override;
 
 	void mouseWheelMove(const MouseEvent &e, const MouseWheelDetails &) override;
+	void mouseMagnify(const MouseEvent& e, float scaleFactor) override;
 	bool keyPressed(const KeyPress &key) override;
 
 	// Inherited via Listener
