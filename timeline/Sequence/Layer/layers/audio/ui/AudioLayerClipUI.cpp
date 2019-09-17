@@ -9,7 +9,7 @@
   ==============================================================================
 */
 
-AudioLayerClipUI::AudioLayerClipUI(AudioLayerClip * _clip) :
+AudioLayerClipUI::AudioLayerClipUI(AudioLayerClip* _clip) :
 	LayerBlockUI(_clip),
 	thumbnailCache(100000),
 	thumbnail(50, _clip->formatManager, thumbnailCache),
@@ -35,7 +35,7 @@ AudioLayerClipUI::~AudioLayerClipUI()
 	if (!inspectable.wasObjectDeleted()) clip->removeAsyncClipListener(this);
 }
 
-void AudioLayerClipUI::paint(Graphics & g)
+void AudioLayerClipUI::paint(Graphics& g)
 {
 	LayerBlockUI::paint(g);
 
@@ -45,10 +45,11 @@ void AudioLayerClipUI::paint(Graphics & g)
 	{
 		g.setFont(20);
 		g.drawText("Loading...", getLocalBounds(), Justification::centred);
-		
-	} else
+
+	}
+	else
 	{
-		thumbnail.drawChannels(g, getCoreBounds(), clip->clipStartOffset, clip->clipStartOffset+clip->coreLength->floatValue()/clip->stretchFactor->floatValue(), clip->volume->floatValue());
+		thumbnail.drawChannels(g, getCoreBounds(), clip->clipStartOffset->floatValue(), clip->clipStartOffset->floatValue() + clip->coreLength->floatValue() / clip->stretchFactor->floatValue(), clip->volume->floatValue());
 	}
 }
 
@@ -58,7 +59,7 @@ void AudioLayerClipUI::resizedBlockInternal()
 }
 
 
-void AudioLayerClipUI::controllableFeedbackUpdateInternal(Controllable * c)
+void AudioLayerClipUI::controllableFeedbackUpdateInternal(Controllable* c)
 {
 	LayerBlockUI::controllableFeedbackUpdateInternal(c);
 
@@ -68,7 +69,7 @@ void AudioLayerClipUI::controllableFeedbackUpdateInternal(Controllable * c)
 	}
 }
 
-void AudioLayerClipUI::newMessage(const AudioLayerClip::ClipEvent & e)
+void AudioLayerClipUI::newMessage(const AudioLayerClip::ClipEvent& e)
 {
 	switch (e.type)
 	{
@@ -86,7 +87,7 @@ void AudioLayerClipUI::newMessage(const AudioLayerClip::ClipEvent & e)
 		thumbnail.setSource(new FileInputSource(clip->filePath->getFile()));
 		repaint();
 		break;
-	
+
 	}
-	
+
 }

@@ -28,6 +28,8 @@ public:
 	FileParameter * filePath;
 
 	FloatParameter * clipLength;
+	FloatParameter* clipStartOffset;
+	
 	FloatParameter * stretchFactor;
 	Trigger* resetStretch;
 
@@ -35,7 +37,6 @@ public:
 
 	BoolParameter * isLocked;
 
-	float clipStartOffset;
 
 
 	double clipDuration;

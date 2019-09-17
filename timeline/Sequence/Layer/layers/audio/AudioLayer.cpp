@@ -119,7 +119,7 @@ void AudioLayer::updateCurrentClip()
 		if (sequence->currentManager != nullptr)
 		{			
 		}
-		float pos = currentClip->clipStartOffset + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue();
+		float pos = currentClip->clipStartOffset->floatValue() + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue();
 		currentClip->transportSource.setPosition(pos); 
 
 		if (sequence->isPlaying->boolValue()) currentClip->transportSource.start();
@@ -200,7 +200,7 @@ void AudioLayer::onControllableFeedbackUpdateInternal(ControllableContainer * cc
 		if (c == currentClip->enabled) updateCurrentClip();
 		else if (c == currentClip->time || c == currentClip->stretchFactor)
 		{
-			float pos = currentClip->clipStartOffset + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue();
+			float pos = currentClip->clipStartOffset->floatValue() + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue();
 			currentClip->transportSource.setPosition(pos);
 			
 			if (c == currentClip->stretchFactor)
@@ -259,7 +259,7 @@ void AudioLayer::sequenceCurrentTimeChanged(Sequence *, float, bool)
 
 	if (currentClip != nullptr && sequence->isSeeking)
 	{
-		float pos = currentClip->clipStartOffset + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue(); 
+		float pos = currentClip->clipStartOffset->floatValue() + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue(); 
 		currentClip->transportSource.setPosition(pos);
 	}
 }
@@ -276,7 +276,7 @@ void AudioLayer::sequencePlayStateChanged(Sequence *)
 
 		if (currentClip != nullptr)
 		{
-			float pos = currentClip->clipStartOffset + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue(); 
+			float pos = currentClip->clipStartOffset->floatValue() + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue(); 
 			currentClip->transportSource.setPosition(pos);
 			currentClip->transportSource.start();
 		}

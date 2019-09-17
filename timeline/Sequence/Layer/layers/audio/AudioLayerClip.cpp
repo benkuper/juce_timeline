@@ -17,7 +17,6 @@ AudioLayerClip::AudioLayerClip(float _time) :
 	clipDuration(0),
 	sampleRate(0),
 	clipSamplePos(0),
-	clipStartOffset(0),
 	isCurrent(false),
 	isLoading(false),
 
@@ -37,6 +36,10 @@ AudioLayerClip::AudioLayerClip(float _time) :
 	stretchFactor->defaultUI = FloatParameter::TIME;
 	stretchFactor->setControllableFeedbackOnly(true);
 	stretchFactor->isSavable = false;
+
+	clipStartOffset = addFloatParameter("Clip Start Offset", "Offset at which the clip starts", 0, 0);
+	clipStartOffset->defaultUI = FloatParameter::TIME;
+
 
 	resetStretch = addTrigger("Reset Stretch", "Reset the stretch factor to 1");
 
@@ -65,7 +68,8 @@ void AudioLayerClip::setIsCurrent(bool value)
 	if (isCurrent)
 	{
 		clipSamplePos = 0;
-	} else
+	}
+	else
 	{
 		transportSource.stop();
 		clipSamplePos = -1;
@@ -101,7 +105,7 @@ void AudioLayerClip::onContainerTriggerTriggered(Trigger* t)
 	}
 }
 
-void AudioLayerClip::onContainerParameterChangedInternal(Parameter * p)
+void AudioLayerClip::onContainerParameterChangedInternal(Parameter* p)
 {
 	LayerBlock::onContainerParameterChangedInternal(p);
 	if (p == filePath)
@@ -117,7 +121,7 @@ void AudioLayerClip::setCoreLength(float value, bool stretch, bool stickToCoreEn
 	{
 
 		float offsetToAdd = value - coreLength->floatValue();
-		clipStartOffset = jlimit<float>(0, (float)clipLength->floatValue() - (float)coreLength->minimumValue, clipStartOffset - offsetToAdd); //invert to get actual start time of the clip
+		clipStartOffset->setValue(jlimit<float>(0, (float)clipLength->floatValue() - (float)coreLength->minimumValue, clipStartOffset->floatValue() - offsetToAdd)); //invert to get actual start time of the clip
 	}
 
 	if (stretch)
@@ -130,9 +134,9 @@ void AudioLayerClip::setCoreLength(float value, bool stretch, bool stickToCoreEn
 
 void AudioLayerClip::setStartTime(float value, bool stretch, bool stickToCoreEnd)
 {
-	if (stickToCoreEnd) 
+	if (stickToCoreEnd)
 	{
-		
+
 	}
 
 	LayerBlock::setStartTime(value, stretch, stickToCoreEnd);
@@ -154,7 +158,7 @@ void AudioLayerClip::run()
 	transportSource.setSource(nullptr);
 	readerSource.reset(nullptr);
 
-	AudioFormatReader * reader = formatManager.createReaderFor(filePath->getAbsolutePath());
+	AudioFormatReader* reader = formatManager.createReaderFor(filePath->getAbsolutePath());
 
 	if (reader != nullptr)
 	{
