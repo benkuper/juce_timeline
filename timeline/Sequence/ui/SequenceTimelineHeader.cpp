@@ -39,7 +39,7 @@ void SequenceTimelineHeader::paint(Graphics & g)
 	g.fillRoundedRectangle(getLocalBounds().toFloat(), 2);
 
 	g.setColour(BG_COLOR.brighter(.1f));
-	g.fillRoundedRectangle(getLocalBounds().removeFromTop(12).toFloat(), 2);
+	g.fillRoundedRectangle(getLocalBounds().removeFromTop(getHeight()/2).toFloat(), 2);
 
 	//Draw ticks
 	float start = floorf(sequence->viewStartTime->floatValue());
@@ -76,7 +76,7 @@ void SequenceTimelineHeader::paint(Graphics & g)
 	int minuteStartTime = floor((start / minuteSteps) / 60)*minuteSteps;
 	int minuteEndTime = ceil((end / minuteSteps) / 60)*minuteSteps;
 
-	g.setFont(10);
+	g.setFont(12);
 	float fadeAlpha = jlimit<float>(0, 1, jmap<float>(secondGap, minGap, fadeGap, 0, 1));
 
 
@@ -92,9 +92,9 @@ void SequenceTimelineHeader::paint(Graphics & g)
 		g.drawRoundedRectangle(getLocalBounds().toFloat(), 2, 2);
 
 		g.setColour(BG_COLOR.brighter(.7f));
-		g.fillRoundedRectangle(mtx - 10, 0, 20, 12, 2);
+		g.fillRoundedRectangle(mtx - 10, 0, 20, 14, 2);
 		g.setColour(BG_COLOR.darker());
-		g.drawText(String(i) + "'", mtx - 10, 2, 20, 10, Justification::centred);
+		g.drawText(String(i) + "'", mtx - 10, 2, 20, 14, Justification::centred);
 
 		if (showSeconds)
 		{
@@ -108,8 +108,8 @@ void SequenceTimelineHeader::paint(Graphics & g)
 				g.setColour(BG_COLOR.brighter(.1f).withAlpha(alpha));
 				//g.drawLine(tx, 0, tx, getHeight(), 1);
 				g.drawVerticalLine(stx, 0, (float)getHeight());
-				g.setColour(BG_COLOR.darker(.3f).withAlpha(alpha));
-				g.drawText(String(s), stx - 10, 2, 20, 10, Justification::centred);
+				g.setColour(BG_COLOR.brighter(.5f).withAlpha(alpha));
+				g.drawText(String(s), stx - 10, 2, 20, 14, Justification::centred);
 
 				//show subsecond ?
 				/*
@@ -124,9 +124,9 @@ void SequenceTimelineHeader::paint(Graphics & g)
 	}
 
 	g.setColour(BG_COLOR.brighter(.7f));
-	g.fillRoundedRectangle(0, 0, 20, 12, 2);
+	g.fillRoundedRectangle(0, 0, 20, 14, 2);
 	g.setColour(BG_COLOR.darker());
-	g.drawText(String(floor(start / 60)) + "'", 2, 2, 18, 10, Justification::centred);
+	g.drawText(String(floor(start / 60)) + "'", 2, 2, 18, 14, Justification::centred);
 
 	g.setColour(BG_COLOR.darker(.6f));
 	g.drawRoundedRectangle(getLocalBounds().toFloat(), 2, 2);
@@ -134,7 +134,7 @@ void SequenceTimelineHeader::paint(Graphics & g)
 
 void SequenceTimelineHeader::resized()
 {
-	cueManagerUI->setBounds(getLocalBounds());
+	cueManagerUI->setBounds(getLocalBounds().removeFromBottom(getHeight()/2));
 	updateNeedlePosition();
 	
 }

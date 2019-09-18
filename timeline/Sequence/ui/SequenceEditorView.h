@@ -35,7 +35,7 @@ public:
 	GapGrabber grabber;
 
 	//layout
-	const float headerHeight = 50;
+	const float headerHeight = 60;
 	float panelWidth;
 
 	void paint(Graphics &g) override;

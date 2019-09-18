@@ -58,7 +58,7 @@ bool TimeCueManagerUI::hitTest(int x, int y)
 void TimeCueManagerUI::placeTimeCueUI(TimeCueUI * ttui)
 {
 	int tx = header->getXForTime(ttui->item->time->floatValue());
-	ttui->setBounds(tx - ttui->arrowSize / 2, getHeight() / 2, ttui->getWidth(), getHeight()/2);
+	ttui->setBounds(tx - ttui->arrowSize / 2, 0, ttui->getWidth(), getHeight());
 }
 
 
