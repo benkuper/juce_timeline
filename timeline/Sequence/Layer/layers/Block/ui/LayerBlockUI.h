@@ -39,6 +39,7 @@ public:
 	Grabber loopGrabber;
 
 	virtual void paint(Graphics &g) override;
+	virtual void paintOverChildren(Graphics& g) override;
 
 	virtual void resized() override;
 	virtual void resizedBlockInternal() {};

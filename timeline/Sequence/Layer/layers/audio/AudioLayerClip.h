@@ -35,7 +35,6 @@ public:
 
 	FloatParameter * volume;
 
-	BoolParameter * isLocked;
 
 
 

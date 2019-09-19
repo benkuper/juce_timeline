@@ -23,6 +23,7 @@ public:
 	FloatParameter * coreLength;
 	FloatParameter * loopLength;
 	BoolParameter * isActive;
+	BoolParameter* isLocked;
 
 	float getTotalLength();
 	float getCoreEndTime();
