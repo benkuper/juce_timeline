@@ -22,7 +22,10 @@ SequenceUI::SequenceUI(Sequence * sequence) :
 	timeUI.reset(item->currentTime->createSlider());
 	timeUI->showLabel = false;
 	timeUI->showValue = false;
-	timeUI->bgColor = BG_COLOR.darker(.1f);
+	timeUI->useCustomBGColor = true;
+	timeUI->customBGColor = BG_COLOR.darker(.1f);
+	timeUI->customFGColor = HIGHLIGHT_COLOR;
+
 	addAndMakeVisible(timeUI.get());
 
 	bgColor = item->isBeingEdited ? BLUE_COLOR.darker() : BG_COLOR.brighter(.1f); 
@@ -44,6 +47,7 @@ void SequenceUI::resizedInternalHeader(Rectangle<int>& r)
 	togglePlayUI->setBounds(r.removeFromRight(r.getHeight()).reduced(2));
 	r.removeFromRight(2);
 
+
 	BaseItemUI::resizedInternalHeader(r);
 
 }
@@ -58,8 +62,8 @@ void SequenceUI::controllableFeedbackUpdateInternal(Controllable * c)
 {
 	if (c == item->isPlaying)
 	{
-		if (item->isPlaying->boolValue()) timeUI->setFrontColor(HIGHLIGHT_COLOR);
-		else timeUI->resetFrontColor();
+		timeUI->useCustomFGColor = item->isPlaying->boolValue();
+		timeUI->repaint();
 	}
 }
 
