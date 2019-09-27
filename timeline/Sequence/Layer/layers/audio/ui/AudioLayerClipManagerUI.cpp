@@ -34,7 +34,7 @@ void AudioLayerClipManagerUI::mouseDoubleClick(const MouseEvent & e)
 
 void AudioLayerClipManagerUI::addClipWithFileChooserAt(float position)
 {
-	FileChooser chooser("Load an audio file", File(), "*.wav;*.mp3");
+	FileChooser chooser("Load an audio file", File(), "*.wav;*.mp3;*.ogg;*.aiff");
 	bool result = chooser.browseForFileToOpen();
 	if (result)
 	{
