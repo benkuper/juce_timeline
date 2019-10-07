@@ -12,8 +12,11 @@ public:
 	void setMoveTimeReference(bool setOtherSelectedItems = false);
 	virtual void setMoveTimeReferenceInternal() = 0;
 
-    void moveTime(float timeOffset, bool moveOtherSelectedItems = false);
+	void moveTime(float timeOffset, bool moveOtherSelectedItems = false);
+	void scaleTime(float timeOffset, bool moveOtherSelectedItems = false);
+
 	virtual void setTime(float time) = 0;
+	virtual float getTime() = 0;
 
 	void addMoveToUndoManager(bool addOtherSelectedItems = false);
 

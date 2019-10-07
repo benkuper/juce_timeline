@@ -32,6 +32,8 @@ public:
 
 	void setMoveTimeReferenceInternal() override;
 	void setTime(float targetTime) override;
+	float getTime() override;
+
 	UndoableAction *getUndoableMoveAction() override;
 
 	virtual void setCoreLength(float newLength, bool stretch, bool stickToCoreEnd = false);

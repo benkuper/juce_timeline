@@ -52,6 +52,11 @@ void TimeTrigger::setTime(float targetTime)
 	time->setValue(targetTime);
 }
 
+float TimeTrigger::getTime()
+{
+	return time->floatValue();
+}
+
 UndoableAction* TimeTrigger::getUndoableMoveAction()
 {
 	return time->setUndoableValue(moveTimeReference, time->floatValue(), true);

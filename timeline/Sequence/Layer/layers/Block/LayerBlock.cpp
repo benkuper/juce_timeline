@@ -63,6 +63,11 @@ void LayerBlock::setTime(float targetTime)
 	blockListeners.call(&BlockListener::askForPlaceBlockTime, this, targetTime);
 }
 
+float LayerBlock::getTime()
+{
+	return time->floatValue();
+}
+
 UndoableAction* LayerBlock::getUndoableMoveAction()
 {
 	return time->setUndoableValue(moveTimeReference, time->floatValue(), true);

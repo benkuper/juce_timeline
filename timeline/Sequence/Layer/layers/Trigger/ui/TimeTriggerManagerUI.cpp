@@ -35,7 +35,6 @@ TimeTriggerManagerUI::~TimeTriggerManagerUI()
 void TimeTriggerManagerUI::resized()
 {
 	updateContent();
-	//if (transformer != nullptr) transformer->updateBoundsFromKeys();
 }
 
 void TimeTriggerManagerUI::updateContent()
@@ -46,8 +45,6 @@ void TimeTriggerManagerUI::updateContent()
 		if(ttui->item->isSelected) ttui->toFront(true);
 		else ttui->toBack();
 	}
-
-	
 }
 
 void TimeTriggerManagerUI::placeTimeTriggerUI(TimeTriggerUI * ttui)
@@ -55,7 +52,6 @@ void TimeTriggerManagerUI::placeTimeTriggerUI(TimeTriggerUI * ttui)
 	int tx = timeline->getXForTime(ttui->item->time->floatValue());
 	
 	float ttuiWidthTime = timeline->getTimeForX(ttui->getWidth(),false);
-	//DBG(ttuiWidthTime << "/" << timeline->item->sequence->totalTime->floatValue());
 
 	float viewEnd = timeline->item->sequence->viewEndTime->floatValue();
 	float totalTime = timeline->item->sequence->totalTime->floatValue();
@@ -93,20 +89,12 @@ void TimeTriggerManagerUI::mouseDown(const MouseEvent & e)
 			{
 				Array<Component *> selectables;
 				Array<Inspectable *> inspectables;
-				for (auto &i : itemsUI) if (i->isVisible())
+				for (auto& i : itemsUI) if (i->isVisible())
 				{
 					selectables.add(i);
 					inspectables.add(i->inspectable);
 				}
 
-				/*
-				if (transformer != nullptr)
-				{
-					removeChildComponent(transformer.get());
-					transformer = nullptr;
-				}
-				*/
-				
 				if (InspectableSelector::getInstance())
 				{
 					InspectableSelector::getInstance()->startSelection(this, selectables, inspectables, manager->selectionManager, !e.mods.isCommandDown());
@@ -124,8 +112,6 @@ void TimeTriggerManagerUI::mouseDoubleClick(const MouseEvent & e)
 	manager->addTriggerAt(time, getMouseXYRelative().y*1.f / getHeight());
 }
 
-
-
 void TimeTriggerManagerUI::addItemFromMenu(bool isFromAddButton, Point<int> mouseDownPos)
 {
 	if (isFromAddButton) return;
@@ -140,14 +126,6 @@ void TimeTriggerManagerUI::addItemUIInternal(TimeTriggerUI * ttui)
 
 void TimeTriggerManagerUI::removeItemUIInternal(TimeTriggerUI * ttui)
 {
-	/*
-	if (transformer != nullptr)
-	{
-		removeChildComponent(transformer.get());
-		transformer = nullptr;
-	}
-	*/
-
 	ttui->removeTriggerUIListener(this);
 }
 
@@ -156,7 +134,14 @@ void TimeTriggerManagerUI::timeTriggerDragged(TimeTriggerUI * ttui, const MouseE
 	float diffTime = timeline->getTimeForX(e.getOffsetFromDragStart().x, false);
 	if (e.mods.isShiftDown()) diffTime = timeline->item->sequence->cueManager->getNearestCueForTime(ttui->timeAtMouseDown + diffTime) - ttui->timeAtMouseDown;
 
-	ttui->item->moveTime(diffTime, true);
+	if (e.mods.isAltDown())
+	{
+		ttui->item->scaleTime(diffTime, true);
+	}
+	else
+	{
+		ttui->item->moveTime(diffTime, true);
+	}
 
 }
 
@@ -169,42 +154,4 @@ void TimeTriggerManagerUI::selectionEnded(Array<Component*> selectedComponents)
 {
 	if(InspectableSelector::getInstanceWithoutCreating()) InspectableSelector::getInstance()->removeSelectorListener(this);
 	if (selectedComponents.size() == 0) timeline->item->selectThis();
-}
-
-void TimeTriggerManagerUI::inspectablesSelectionChanged()
-{
-
-/*
-if (transformer != nullptr)
-	{
-		removeChildComponent(transformer.get());
-		transformer = nullptr;
-	}
-	*/
-
-	/*
-	Array<TimeTriggerUI *> uiSelection;
-	if (manager->selectionManager->currentInspectables.size() >= 2)
-	{
-
-	}
-
-	for (auto &i : manager->selectionManager->currentInspectables)
-	{
-		TimeTrigger * k = dynamic_cast<TimeTrigger *>(i.get());
-		if (k == nullptr) continue;
-		TimeTriggerUI * kui = getUIForItem(k);
-		if (kui == nullptr) return;
-
-		uiSelection.add(kui);
-	}
-
-	
-	if (uiSelection.size() >= 2)
-	{
-		transformer.reset(new TimeTriggerMultiTransformer(this, uiSelection));
-		addAndMakeVisible(transformer.get());
-		transformer->grabKeyboardFocus(); // so no specific key has the focus for deleting
-	}
-	*/
 }

@@ -40,5 +40,4 @@ public:
 
 
 	void selectionEnded(Array<Component *> selectedComponents) override;
-	void inspectablesSelectionChanged() override;
 };
