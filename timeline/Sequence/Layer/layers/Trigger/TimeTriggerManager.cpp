@@ -19,6 +19,7 @@ TimeTriggerManager::TimeTriggerManager(TriggerLayer * _layer, Sequence * _sequen
 
 	itemDataType = "TimeTrigger";
 	sequence->addSequenceListener(this);
+
 }
 
 TimeTriggerManager::~TimeTriggerManager()

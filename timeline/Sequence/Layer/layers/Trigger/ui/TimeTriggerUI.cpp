@@ -104,6 +104,7 @@ void TimeTriggerUI::mouseDown(const MouseEvent & e)
 	
 	if (item->isLocked->boolValue()) return;
 
+	item->setMoveTimeReference(true);
 	timeAtMouseDown = item->time->floatValue();
 	posAtMouseDown = getX();
 }
@@ -113,12 +114,6 @@ void TimeTriggerUI::mouseDrag(const MouseEvent & e)
 	if (itemLabel.isBeingEdited()) return;
 
 	BaseItemUI::mouseDrag(e);
-
-	if (!e.mods.isCommandDown())
-	{
-		float ty = flagYAtMouseDown + e.getOffsetFromDragStart().y*1.f / (getHeight() - 20);
-		item->flagY->setValue(ty);
-	}
 	
 	if (item->isLocked->boolValue()) return; //After that, nothing will changed if item is locked
 	
@@ -127,7 +122,11 @@ void TimeTriggerUI::mouseDrag(const MouseEvent & e)
 		triggerUIListeners.call(&TimeTriggerUIListener::timeTriggerDragged, this, e);
 	}
 
-	
+	if (!e.mods.isCommandDown())
+	{
+		float ty = flagYAtMouseDown + e.getOffsetFromDragStart().y * 1.f / (getHeight() - 20);
+		item->flagY->setValue(ty);
+	}
 
 }
 

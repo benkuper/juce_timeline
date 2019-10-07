@@ -153,11 +153,11 @@ void TimeTriggerManagerUI::removeItemUIInternal(TimeTriggerUI * ttui)
 
 void TimeTriggerManagerUI::timeTriggerDragged(TimeTriggerUI * ttui, const MouseEvent & e)
 {
-	float targetTime = ttui->timeAtMouseDown + timeline->getTimeForX(e.getOffsetFromDragStart().x, false);
-	if (e.mods.isShiftDown()) targetTime = timeline->item->sequence->cueManager->getNearestCueForTime(targetTime);
-	ttui->item->time->setValue(targetTime);
-	repaint();
-	
+	float diffTime = timeline->getTimeForX(e.getOffsetFromDragStart().x, false);
+	if (e.mods.isShiftDown()) diffTime = timeline->item->sequence->cueManager->getNearestCueForTime(ttui->timeAtMouseDown + diffTime) - ttui->timeAtMouseDown;
+
+	ttui->item->moveTime(diffTime, true);
+
 }
 
 void TimeTriggerManagerUI::timeTriggerTimeChanged(TimeTriggerUI * ttui)
