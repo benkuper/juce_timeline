@@ -136,10 +136,18 @@ void TimeTriggerUI::mouseUp(const MouseEvent & e)
 
 	if (flagYAtMouseDown == item->flagY->floatValue() && timeAtMouseDown == item->time->floatValue()) return;
 
-	Array<UndoableAction *> actions;
-	actions.add(item->flagY->setUndoableValue(flagYAtMouseDown, item->flagY->floatValue(), true));
-	if (!item->isLocked->boolValue()) actions.add(item->time->setUndoableValue(timeAtMouseDown, item->time->floatValue(), true));
-	UndoMaster::getInstance()->performActions("Move Trigger \""+item->niceName+"\"", actions);
+	if (item->selectionManager->currentInspectables.size() >= 2)
+	{
+		item->addMoveToUndoManager(true);
+	}
+	else
+	{
+		Array<UndoableAction*> actions;
+		actions.add(item->flagY->setUndoableValue(flagYAtMouseDown, item->flagY->floatValue(), true));
+		if (!item->isLocked->boolValue()) actions.add(item->time->setUndoableValue(timeAtMouseDown, item->time->floatValue(), true));
+		UndoMaster::getInstance()->performActions("Move Trigger \"" + item->niceName + "\"", actions);
+	}
+	
 }
 
 void TimeTriggerUI::containerChildAddressChangedAsync(ControllableContainer * cc)
