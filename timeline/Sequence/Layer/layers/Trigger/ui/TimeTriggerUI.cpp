@@ -122,7 +122,7 @@ void TimeTriggerUI::mouseDrag(const MouseEvent & e)
 		triggerUIListeners.call(&TimeTriggerUIListener::timeTriggerDragged, this, e);
 	}
 
-	if (!e.mods.isCommandDown())
+	if (!e.mods.isCommandDown() && item->selectionManager->currentInspectables.size() == 1)
 	{
 		float ty = flagYAtMouseDown + e.getOffsetFromDragStart().y * 1.f / (getHeight() - 20);
 		item->flagY->setValue(ty);
