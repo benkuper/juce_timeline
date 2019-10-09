@@ -305,7 +305,7 @@ void Sequence::hiResTimerCallback()
 			sequenceListeners.call(&SequenceListener::sequenceLooped, this);
 			//setCurrentTime(0); //to change in trigger layer to avoid doing that
 			prevTime = 0;
-			setCurrentTime(offset);
+			setCurrentTime(offset, true, true);
 		}
 		else finishTrigger->trigger();
 	}
