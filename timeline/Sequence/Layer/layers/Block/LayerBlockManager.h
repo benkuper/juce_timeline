@@ -36,7 +36,7 @@ public:
 	void addItemInternal(LayerBlock* item, var) override;
 	void removeItemInternal(LayerBlock* item) override;
 
-	void askForPlaceBlockTime(LayerBlock* block, float desiredTime);
+    void askForPlaceBlockTime(LayerBlock* block, float desiredTime) override;
 	void placeBlockAt(LayerBlock * block, float desiredTime);
 
 	static int compareTime(LayerBlock * t1, LayerBlock * t2);
