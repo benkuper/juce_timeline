@@ -129,15 +129,30 @@ void AudioLayer::updateCurrentClip()
 
 }
 
-void AudioLayer::itemAdded(LayerBlock*)
+void AudioLayer::itemAdded(LayerBlock* item)
 {
-	if (Engine::mainEngine->isLoadingFile) return;
+	((AudioLayerClip*)item)->addClipListener(this);
+
+	if (isCurrentlyLoadingData || Engine::mainEngine->isLoadingFile) return;
 	updateSelectedOutChannels();
 }
 
-void AudioLayer::itemRemoved(LayerBlock* clip)
+void AudioLayer::itemRemoved(LayerBlock* item)
 {
-	if (clip == currentClip) updateCurrentClip();
+	((AudioLayerClip*)item)->removeClipListener(this);
+
+	if (item == currentClip) updateCurrentClip();
+}
+
+void AudioLayer::clipSourceLoaded(AudioLayerClip* clip)
+{
+	if (isCurrentlyLoadingData || Engine::mainEngine->isLoadingFile) return;
+	if (clipManager.items.size() == 1 && clip->getTotalLength() > sequence->totalTime->floatValue())
+	{
+		clip->time->setValue(0);
+		sequence->totalTime->setUndoableValue(sequence->totalTime->floatValue(), clip->getTotalLength());
+		NLOG(niceName, "Imported audio file is longer than the sequence, expanding total time to match the audio file length.");
+	}
 }
 
 void AudioLayer::updateSelectedOutChannels()
@@ -236,6 +251,7 @@ void AudioLayer::loadJSONDataInternal(var data)
 
 	SequenceLayer::loadJSONDataInternal(data);
 	clipManager.loadJSONData(data.getProperty("clipManager", var()));
+	updateSelectedOutChannels();
 }
 
 SequenceLayerPanel * AudioLayer::getPanel()

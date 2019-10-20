@@ -14,6 +14,7 @@ class AudioLayerProcessor;
 
 class AudioLayer :
 	public SequenceLayer,
+	public AudioLayerClip::ClipListener,
 	public AudioLayerClipManager::ManagerListener
 {
 public:
@@ -48,6 +49,8 @@ public:
 
 	void itemAdded(LayerBlock*) override;
 	void itemRemoved(LayerBlock* clip) override;
+
+	void clipSourceLoaded(AudioLayerClip* clip) override;
 
 	void updateSelectedOutChannels();
 

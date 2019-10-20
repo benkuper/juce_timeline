@@ -11,10 +11,17 @@
 
 SequenceTransportUI::SequenceTransportUI(Sequence * _sequence) :
 	sequence(_sequence),
-	timeLabel(_sequence->currentTime)
+	timeLabel(_sequence->currentTime),
+	totalTimeLabel(_sequence->totalTime)
 {
 	timeLabel.maxFontHeight = 16;
+	timeLabel.maxFontHeight = 14;
+	totalTimeLabel.useCustomTextColor = true;
+	totalTimeLabel.customTextColor = TEXT_COLOR.darker();
+	totalTimeLabel.updateUIParams();
+
 	addAndMakeVisible(&timeLabel);
+	addAndMakeVisible(&totalTimeLabel);
 	sequence->addSequenceListener(this);
 	 
 	
@@ -54,7 +61,9 @@ void SequenceTransportUI::paint(Graphics &g)
 void SequenceTransportUI::resized()
 {
 	Rectangle<int> r = getLocalBounds().reduced(2);
-	timeLabel.setBounds(r.removeFromTop(20).removeFromLeft(110));
+	Rectangle<int> tr = r.removeFromTop(20);
+	timeLabel.setBounds(tr.removeFromLeft(110));
+	totalTimeLabel.setBounds(tr.removeFromRight(100));
 	r.removeFromTop(2);
 	
 	

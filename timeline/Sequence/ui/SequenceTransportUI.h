@@ -20,6 +20,7 @@ public:
 
 	Sequence * sequence;
 	TimeLabel timeLabel;
+	TimeLabel totalTimeLabel;
 	
 	std::unique_ptr<TriggerImageUI> togglePlayUI;
 	std::unique_ptr<TriggerImageUI> stopUI;
