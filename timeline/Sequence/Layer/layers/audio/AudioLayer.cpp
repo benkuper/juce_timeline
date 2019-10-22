@@ -351,7 +351,7 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer & 
 
 	if (layer != nullptr)
 	{
-		if (!layer->enabled->boolValue()) noProcess = true;;
+		if (!layer->enabled->boolValue() || !layer->sequence->enabled->boolValue()) noProcess = true;
 		currentClip = layer->currentClip;
 		if (currentClip.wasObjectDeleted() || currentClip.get() == nullptr) noProcess = true;
 		else if (currentClip->filePath->stringValue().isEmpty()) noProcess = true;
