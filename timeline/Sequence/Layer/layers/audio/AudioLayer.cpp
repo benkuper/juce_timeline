@@ -45,6 +45,7 @@ AudioLayer::~AudioLayer()
 
 void AudioLayer::clearItem()
 {
+	BaseItem::clearItem();
 	setAudioProcessorGraph(nullptr);
 	clipManager.clear();
 	SequenceLayer::clearItem();
