@@ -77,6 +77,8 @@ Sequence::~Sequence()
 
 void Sequence::clearItem()
 {
+	BaseItem::clearItem();
+
 	setAudioDeviceManager(nullptr);
 
 	stopTimer();
