@@ -43,7 +43,7 @@ AudioLayerClip::AudioLayerClip(float _time) :
 
 	resetStretch = addTrigger("Reset Stretch", "Reset the stretch factor to 1");
 
-	volume = addFloatParameter("Volume", "Volume multiplier", 1, 0, 50);
+	volume = addFloatParameter("Volume", "Volume multiplier", 1, 0);
 
 
 

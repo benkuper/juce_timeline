@@ -393,13 +393,22 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer & 
 		else if (panning > 0) buffer.applyGain(0, bufferToFill.startSample, bufferToFill.numSamples, 1 - panning);
 	}
 	
+	
 	float rms = 0;
 	for (int i = 0; i < buffer.getNumChannels(); i++)
 	{
 		rms = jmax(rms, buffer.getRMSLevel(i, bufferToFill.startSample, bufferToFill.numSamples));
 	}
 
-	layer->enveloppe->setValue(rms);
+	tempRMS += rms;
+	rmsCount++;
+	if (rmsCount* bufferToFill.numSamples >= minEnveloppeSamples)
+	{
+		 currentEnveloppe = tempRMS / rmsCount;
+		 rmsCount = 0;
+		 tempRMS = 0;
+	}
+
 
 }
 
