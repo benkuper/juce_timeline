@@ -158,7 +158,7 @@ bool TimelineAppCommands::perform(const ApplicationCommandTarget::InvocationInfo
 
 Sequence* TimelineAppCommands::getCurrentEditingSequence()
 {
-	ShapeShifterContent* sContent = ShapeShifterManager::getInstance()->getContentForName("Sequence Editor");
+	ShapeShifterContent* sContent = ShapeShifterManager::getInstance()->getContentForType<TimeMachineView>();
 	if (sContent != nullptr)
 	{
 		Component* c = sContent->contentComponent;
