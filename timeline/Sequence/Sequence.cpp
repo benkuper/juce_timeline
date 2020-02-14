@@ -154,9 +154,9 @@ var Sequence::getJSONData()
 {
 	var data = BaseItem::getJSONData();
 	var layerData = layerManager->getJSONData();
-	if(!layerData.isVoid()) data.getDynamicObject()->setProperty("layerManager", layerData );
+	if(!layerData.isVoid()) data.getDynamicObject()->setProperty(layerManager->shortName, layerData );
 	var cueData = cueManager->getJSONData();
-	if(!cueData.isVoid()) data.getDynamicObject()->setProperty("cueManager", cueData);
+	if(!cueData.isVoid()) data.getDynamicObject()->setProperty(cueManager->shortName, cueData);
 	if(isBeingEdited) data.getDynamicObject()->setProperty("editing", true);
 	return data;
 }
@@ -164,8 +164,8 @@ var Sequence::getJSONData()
 void Sequence::loadJSONDataInternal(var data)
 {
 	BaseItem::loadJSONDataInternal(data);
-	layerManager->loadJSONData(data.getProperty("layerManager", var()));
-	cueManager->loadJSONData(data.getProperty("cueManager", var()));
+	layerManager->loadJSONData(data.getProperty(layerManager->shortName, var()));
+	cueManager->loadJSONData(data.getProperty(cueManager->shortName, var()));
 	isBeingEdited = data.getProperty("editing", false);
 
 	if (Engine::mainEngine->isLoadingFile)

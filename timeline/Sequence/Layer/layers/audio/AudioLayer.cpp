@@ -237,7 +237,7 @@ void AudioLayer::selectAll(bool addToSelection)
 var AudioLayer::getJSONData()
 {
 	var data = SequenceLayer::getJSONData();
-	data.getDynamicObject()->setProperty("clipManager", clipManager.getJSONData());
+	data.getDynamicObject()->setProperty(clipManager.shortName, clipManager.getJSONData());
 	if (currentGraph != nullptr)
 	{
 		data.getDynamicObject()->setProperty("channels", channelsCC.getJSONData());
@@ -251,7 +251,7 @@ void AudioLayer::loadJSONDataInternal(var data)
 	channelsData = data.getProperty("channels", var());
 
 	SequenceLayer::loadJSONDataInternal(data);
-	clipManager.loadJSONData(data.getProperty("clipManager", var()));
+	clipManager.loadJSONData(data.getProperty(clipManager.shortName, var()));
 	updateSelectedOutChannels();
 }
 
