@@ -82,7 +82,7 @@ void Sequence::clearItem()
 	setAudioDeviceManager(nullptr);
 
 	stopTimer();
-	if(!Engine::mainEngine->isClearing) stopTrigger->trigger();
+	//if(!Engine::mainEngine->isClearing) stopTrigger->trigger();
 	if (Engine::mainEngine != nullptr) Engine::mainEngine->removeEngineListener(this);
 }
 
