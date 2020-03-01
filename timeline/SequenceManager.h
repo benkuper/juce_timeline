@@ -14,7 +14,8 @@ class SequenceLayer;
 class TimeCue;
 
 class SequenceManager :
-	public BaseManager<Sequence>
+	public BaseManager<Sequence>,
+	public Sequence::SequenceListener
 {
 public:
 #if TIMELINE_USE_SEQUENCEMANAGER_SINGLETON
@@ -24,9 +25,17 @@ public:
 	SequenceManager();
 	~SequenceManager();
 
+	Trigger* stopAllTrigger;
+	BoolParameter* onlyOneSequencePlaying;
+
 	Factory<SequenceLayer>* defaultLayerFactory;
 
 	virtual void addItemInternal(Sequence* item, var data) override;
+	virtual void removeItemInternal(Sequence* s) override;
+
+	virtual void onContainerTriggerTriggered(Trigger*) override;
+
+	virtual void sequencePlayStateChanged(Sequence* s) override;
 
 	Sequence * showMenuAndGetSequence();
 	Sequence * getSequenceForItemID(int itemID);
