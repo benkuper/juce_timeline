@@ -19,6 +19,9 @@ SequenceManager::SequenceManager() :
 {
 	itemDataType = "Sequence";
 	helpID = "TimeMachine";
+
+	stopAllTrigger = addTrigger("Stop All", "Stop all sequences");
+	onlyOneSequencePlaying = addBoolParameter("Only one sequence playing", "If checked, as soon as one sequence is playing, all the other ones stop", false);
 }
 
 SequenceManager::~SequenceManager()
@@ -29,6 +32,30 @@ SequenceManager::~SequenceManager()
 void SequenceManager::addItemInternal(Sequence* item, var data)
 {
 	if (defaultLayerFactory != nullptr) item->layerManager->managerFactory = defaultLayerFactory;
+	item->addSequenceListener(this);
+}
+
+void SequenceManager::removeItemInternal(Sequence* item)
+{
+	item->removeSequenceListener(this);
+}
+
+void SequenceManager::onContainerTriggerTriggered(Trigger* t)
+{
+	BaseManager::onContainerTriggerTriggered(t);
+	if (t == stopAllTrigger)
+	{
+		for (auto& i : items) i->stopTrigger->trigger();
+	}
+}
+
+void SequenceManager::sequencePlayStateChanged(Sequence* s)
+{
+	if (Engine::mainEngine->isClearing) return;
+	if (s->isPlaying->boolValue() && onlyOneSequencePlaying->boolValue())
+	{
+		for (auto& i : items) if (i != s) i->stopTrigger->trigger();
+	}
 }
 
 Sequence * SequenceManager::showMenuAndGetSequence()

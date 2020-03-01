@@ -17,6 +17,9 @@ public:
 	SequenceManagerUI(const String &contentName, SequenceManager *_manager);
 	~SequenceManagerUI();
 
+	std::unique_ptr<TriggerButtonUI> stopAllUI;
+
+	void resizedInternalHeader(Rectangle<int>& r) override;
 	void mouseDoubleClick(const MouseEvent &e) override;
 
 #if TIMELINE_USE_SEQUENCEMANAGER_SINGLETON
