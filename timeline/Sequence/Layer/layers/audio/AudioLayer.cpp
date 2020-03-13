@@ -14,11 +14,11 @@ int AudioLayer::graphIDIncrement = 10;
 AudioLayer::AudioLayer(Sequence * _sequence, var params) :
 	SequenceLayer(_sequence, "Audio"),
 	clipManager(this),
-	enveloppe(nullptr),
 	currentGraph(nullptr),
 	currentProcessor(nullptr),
 	channelsCC("Channels"),
-	numActiveOutputs(0), 
+    enveloppe(nullptr),
+    numActiveOutputs(0),
     graphID(0) //was -1 but since 5.2.1, generated warning. Should do otherwise ?
 {
 
