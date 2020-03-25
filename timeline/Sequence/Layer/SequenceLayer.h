@@ -28,7 +28,7 @@ public:
 	ColorParameter * color;
 
 
-	//Handlers
+	virtual void addDefaultContent() {}
 
 	//Factory
 	virtual String getTypeString() const override { jassert(false); return ""; } //should be overriden
