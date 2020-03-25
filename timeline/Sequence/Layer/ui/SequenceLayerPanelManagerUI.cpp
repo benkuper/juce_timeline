@@ -1,4 +1,3 @@
-#include "SequenceLayerPanelManagerUI.h"
 /*
   ==============================================================================
 
@@ -25,4 +24,10 @@ SequenceLayerPanelManagerUI::~SequenceLayerPanelManagerUI()
 SequenceLayerPanel * SequenceLayerPanelManagerUI::createUIForItem(SequenceLayer * layer)
 {
 	return layer->getPanel();
+}
+
+void SequenceLayerPanelManagerUI::addItemFromMenu(SequenceLayer* item, bool fromAddButton, Point<int> pos)
+{
+    BaseManagerUI::addItemFromMenu(item, fromAddButton, pos);
+    item->addDefaultContent();
 }

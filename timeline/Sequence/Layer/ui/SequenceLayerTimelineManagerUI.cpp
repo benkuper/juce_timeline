@@ -11,6 +11,7 @@
 SequenceLayerTimelineManagerUI::SequenceLayerTimelineManagerUI(SequenceLayerManager * _manager) :
 	BaseManagerUI<SequenceLayerManager, SequenceLayer, SequenceLayerTimeline>("Layers", _manager)
 {
+	addItemBT->setVisible(false);
 	animateItemOnAdd = false;
 	addExistingItems();
 }
