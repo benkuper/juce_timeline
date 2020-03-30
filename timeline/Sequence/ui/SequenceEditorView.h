@@ -14,7 +14,8 @@ class SequenceEditorView :
 	public Component,
 	public Sequence::SequenceListener,
 	public ScrollBar::Listener,
-	public GapGrabber::Listener
+	public GapGrabber::Listener,
+	public SequenceTimelineSeeker::SeekerListener
 {
 public:
 	SequenceEditorView(Sequence * _sequence, SequenceTimelineNavigationUI * navigationUI = nullptr, SequenceTransportUI * transportUI = nullptr) ;
@@ -48,12 +49,11 @@ public:
 	void mouseMagnify(const MouseEvent& e, float scaleFactor) override;
 	bool keyPressed(const KeyPress &key) override;
 
+	void seekerManipulationChanged(bool isManipulating) override;
+
 	// Inherited via Listener
 	virtual void grabberGrabUpdate(GapGrabber *, int relativeDist) override;
 
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceEditorView)
-
-		
-
 };

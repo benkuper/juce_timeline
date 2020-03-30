@@ -91,7 +91,6 @@ public:
 	virtual var getJSONData() override;
 	virtual void loadJSONDataInternal(var data) override;
 
-
 	class SequenceListener
 	{
 	public:

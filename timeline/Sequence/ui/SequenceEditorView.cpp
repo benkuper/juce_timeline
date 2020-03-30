@@ -1,4 +1,3 @@
-#include "SequenceEditorView.h"
 /*
   ==============================================================================
 
@@ -27,6 +26,7 @@ SequenceEditorView::SequenceEditorView(Sequence * _sequence, SequenceTimelineNav
 	panelContainer.addAndMakeVisible(&panelManagerUI);
 	
 	if (this->navigationUI == nullptr) this->navigationUI.reset(new SequenceTimelineNavigationUI(sequence));
+	this->navigationUI->seeker->addSeekerListener(this);
 	timelineContainer.addAndMakeVisible(this->navigationUI.get());
 	timelineContainer.addAndMakeVisible(&timelineManagerUI);
 
@@ -41,6 +41,8 @@ SequenceEditorView::SequenceEditorView(Sequence * _sequence, SequenceTimelineNav
 
 	addAndMakeVisible(&grabber);
 	grabber.addGrabberListener(this);
+
+	
 }
 
 SequenceEditorView::~SequenceEditorView()
@@ -145,6 +147,14 @@ bool SequenceEditorView::keyPressed(const KeyPress& key)
 
 
 	return false;
+}
+
+void SequenceEditorView::seekerManipulationChanged(bool isManipulating)
+{
+	for (auto& layerUI : timelineManagerUI.itemsUI)
+	{
+		layerUI->setSeekManipulationMode(isManipulating);
+	}
 }
 
 void SequenceEditorView::grabberGrabUpdate(GapGrabber *, int relativeDist)

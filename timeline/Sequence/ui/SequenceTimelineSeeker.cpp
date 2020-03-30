@@ -59,6 +59,8 @@ void SequenceTimelineSeeker::mouseDown(const MouseEvent & e)
 
 	//e.source.enableUnboundedMouseMovement(true, true);
 	setMouseCursor(MouseCursor::NoCursor);
+	seekerListeners.call(&SeekerListener::seekerManipulationChanged, true);
+
 	//DBG("viewStartAtMouseDown : " << viewStartAtMouseDown << "/ viewEndAtMouseDown : " << viewEndAtMouseDown << "/ timeAnchorAtMouseDown : " << timeAnchorAtMouseDown);
 }
 
@@ -111,6 +113,7 @@ void SequenceTimelineSeeker::mouseUp(const MouseEvent & e)
 {
 	//e.source.enableUnboundedMouseMovement(false, true);
 	setMouseCursor(MouseCursor::NormalCursor);
+	seekerListeners.call(&SeekerListener::seekerManipulationChanged, false);
 }
 
 

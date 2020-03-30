@@ -19,6 +19,7 @@ public:
 	virtual ~SequenceLayerTimeline();
 
 	bool shouldUpdateNeedle;
+    bool seekManipulationMode;
 	
 	int getXForTime(float time);
 	float getTimeForX(int tx, bool offsetStart = true);
@@ -26,6 +27,8 @@ public:
     void updateNeedlePosition();
 	virtual void updateContent() {} // to be overriden
 	virtual void mouseDown(const MouseEvent &e) override;
+
+    virtual void setSeekManipulationMode(bool isManipulating);
 
 	void controllableFeedbackUpdateInternal(Controllable * c) override;
 

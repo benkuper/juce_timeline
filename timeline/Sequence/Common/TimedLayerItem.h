@@ -3,7 +3,6 @@
 class TimedLayerItem
 {
 public:
-	
 	TimedLayerItem();
 	virtual ~TimedLayerItem() {}
 	
@@ -21,6 +20,4 @@ public:
 	void addMoveToUndoManager(bool addOtherSelectedItems = false);
 
 	virtual UndoableAction* getUndoableMoveAction() = 0;
-
-
 };

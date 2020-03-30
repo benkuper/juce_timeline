@@ -45,6 +45,8 @@ void SequenceTimelineHeader::paint(Graphics & g)
 	float start = floorf(sequence->viewStartTime->floatValue());
 	float end = floorf(sequence->viewEndTime->floatValue());
 
+	if (end <= start) return;
+
 	int minGap = 10;
 	int fadeGap = 25;
 

@@ -43,8 +43,6 @@ public:
 	const float minActionDistY = 15;
 	const float zoomSensitivity = .002f;
 
-	
-
 	void paint(Graphics &g) override;
 	void resized() override;
 
@@ -57,6 +55,15 @@ public:
 
 	void newMessage(const ContainerAsyncEvent &e) override;
 
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceTimelineSeeker)
+	class SeekerListener
+	{
+	public:
+		virtual ~SeekerListener() {}
+		virtual void seekerManipulationChanged(bool isManipulating) {}
+	};
+
+	ListenerList<SeekerListener> seekerListeners;
+	void addSeekerListener(SeekerListener* newListener) { seekerListeners.add(newListener); }
+	void removeSeekerListener(SeekerListener* listener) { seekerListeners.remove(listener); }
 
 };

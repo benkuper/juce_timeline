@@ -8,10 +8,9 @@
   ==============================================================================
 */
 
-#include "SequenceLayerTimeline.h"
-
 SequenceLayerTimeline::SequenceLayerTimeline(SequenceLayer * layer) :
-	BaseItemMinimalUI<SequenceLayer>(layer)
+	BaseItemMinimalUI<SequenceLayer>(layer),
+	seekManipulationMode(false)
 {
 	bgColor = item->color->getColor();
 
@@ -73,6 +72,11 @@ void SequenceLayerTimeline::mouseDown(const MouseEvent &e)
 			else if (e.mods.isCommandDown()) item->deselectThis();
 		}
 	}
+}
+
+void SequenceLayerTimeline::setSeekManipulationMode(bool isManipulating)
+{
+	seekManipulationMode = isManipulating;
 }
 
 void SequenceLayerTimeline::controllableFeedbackUpdateInternal(Controllable * c)
