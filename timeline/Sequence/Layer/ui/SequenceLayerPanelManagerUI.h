@@ -20,4 +20,5 @@ public:
 
 	SequenceLayerPanel * createUIForItem(SequenceLayer * layer) override;
 
+    void addItemFromMenu(SequenceLayer* item, bool, Point<int>) override;
 };

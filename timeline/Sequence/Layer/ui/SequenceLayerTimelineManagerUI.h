@@ -11,7 +11,8 @@
 #pragma once
 
 class SequenceLayerTimelineManagerUI :
-	public BaseManagerUI<SequenceLayerManager, SequenceLayer, SequenceLayerTimeline>
+	public BaseManagerUI<SequenceLayerManager, SequenceLayer, SequenceLayerTimeline>,
+	public FileDragAndDropTarget
 {
 public:
 
@@ -22,5 +23,6 @@ public:
 
 	void resized() override;
 
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceLayerTimelineManagerUI)
+	virtual bool isInterestedInFileDrag(const StringArray& files) override;
+	virtual void filesDropped(const StringArray& files, int x, int y) override;
 };

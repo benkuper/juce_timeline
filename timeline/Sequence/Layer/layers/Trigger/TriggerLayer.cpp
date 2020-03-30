@@ -52,14 +52,14 @@ void TriggerLayer::onContainerTriggerTriggered(Trigger * t)
 var TriggerLayer::getJSONData()
 {
 	var data = SequenceLayer::getJSONData();
-	if(ttm != nullptr) data.getDynamicObject()->setProperty("triggerManager", ttm->getJSONData());
+	if(ttm != nullptr) data.getDynamicObject()->setProperty(ttm->shortName, ttm->getJSONData());
 	return data;
 }
 
 void TriggerLayer::loadJSONDataInternal(var data)
 {
 	SequenceLayer::loadJSONDataInternal(data);
-	if(ttm != nullptr) ttm->loadJSONData(data.getProperty("triggerManager", var()));
+	if(ttm != nullptr) ttm->loadJSONData(data.getProperty(ttm->shortName, var()));
 }
 
 SequenceLayerPanel * TriggerLayer::getPanel()

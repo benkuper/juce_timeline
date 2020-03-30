@@ -12,9 +12,9 @@
 AudioLayerClip::AudioLayerClip(float _time) :
 	LayerBlock("AudioClip"),
 	Thread("AudioClipReader"),
-	channelRemapAudioSource(&transportSource, false),
 	resamplingAudioSource(&channelRemapAudioSource, false),
-	clipDuration(0),
+    channelRemapAudioSource(&transportSource, false),
+    clipDuration(0),
 	sampleRate(0),
 	clipSamplePos(0),
 	isCurrent(false),

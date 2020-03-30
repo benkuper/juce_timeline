@@ -11,6 +11,7 @@
 SequenceLayerTimelineManagerUI::SequenceLayerTimelineManagerUI(SequenceLayerManager * _manager) :
 	BaseManagerUI<SequenceLayerManager, SequenceLayer, SequenceLayerTimeline>("Layers", _manager)
 {
+	addItemBT->setVisible(false);
 	animateItemOnAdd = false;
 	addExistingItems();
 }
@@ -28,4 +29,22 @@ void SequenceLayerTimelineManagerUI::resized()
 {
 	BaseManagerUI::resized();
 
+}
+
+bool SequenceLayerTimelineManagerUI::isInterestedInFileDrag(const StringArray& files)
+{
+	for (int i = 0; i < files.size(); i++)
+	{
+		if (files[i].endsWith("mp3") || files[i].endsWith("wav") || files[i].endsWith("aiff")) return true;
+	}
+
+	return false;
+}
+
+void SequenceLayerTimelineManagerUI::filesDropped(const StringArray& files, int x, int y)
+{
+	for (int i = 0; i < files.size(); i++)
+	{
+		manager->fileDropped(files[i]);
+	}
 }

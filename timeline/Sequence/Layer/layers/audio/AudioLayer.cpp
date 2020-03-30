@@ -14,11 +14,11 @@ int AudioLayer::graphIDIncrement = 10;
 AudioLayer::AudioLayer(Sequence * _sequence, var params) :
 	SequenceLayer(_sequence, "Audio"),
 	clipManager(this),
-	enveloppe(nullptr),
 	currentGraph(nullptr),
 	currentProcessor(nullptr),
 	channelsCC("Channels"),
-	numActiveOutputs(0), 
+    enveloppe(nullptr),
+    numActiveOutputs(0),
     graphID(0) //was -1 but since 5.2.1, generated warning. Should do otherwise ?
 {
 
@@ -237,7 +237,7 @@ void AudioLayer::selectAll(bool addToSelection)
 var AudioLayer::getJSONData()
 {
 	var data = SequenceLayer::getJSONData();
-	data.getDynamicObject()->setProperty("clipManager", clipManager.getJSONData());
+	data.getDynamicObject()->setProperty(clipManager.shortName, clipManager.getJSONData());
 	if (currentGraph != nullptr)
 	{
 		data.getDynamicObject()->setProperty("channels", channelsCC.getJSONData());
@@ -251,7 +251,7 @@ void AudioLayer::loadJSONDataInternal(var data)
 	channelsData = data.getProperty("channels", var());
 
 	SequenceLayer::loadJSONDataInternal(data);
-	clipManager.loadJSONData(data.getProperty("clipManager", var()));
+	clipManager.loadJSONData(data.getProperty(clipManager.shortName, var()));
 	updateSelectedOutChannels();
 }
 
