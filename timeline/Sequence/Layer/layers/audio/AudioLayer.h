@@ -55,7 +55,7 @@ public:
 	void clipSourceLoaded(AudioLayerClip* clip) override;
 
 	void updateSelectedOutChannels();
-	void updateClipConfig(AudioLayerClip* clip);
+	void updateClipConfig(AudioLayerClip* clip, bool updateOutputChannelRemapping = true);
 
 	virtual float getVolumeFactor();
 
