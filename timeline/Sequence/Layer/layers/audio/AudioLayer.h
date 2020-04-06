@@ -45,6 +45,8 @@ public:
 	virtual void clearItem() override;
 
 	void setAudioProcessorGraph(AudioProcessorGraph * graph, int audioOutputGraphID = 2);
+	virtual AudioLayerProcessor* createAudioLayerProcessor();
+
 	void updateCurrentClip();
 
 	void itemAdded(LayerBlock*) override;
@@ -53,6 +55,7 @@ public:
 	void clipSourceLoaded(AudioLayerClip* clip) override;
 
 	void updateSelectedOutChannels();
+	void updateClipConfig(AudioLayerClip* clip);
 
 	virtual float getVolumeFactor();
 
