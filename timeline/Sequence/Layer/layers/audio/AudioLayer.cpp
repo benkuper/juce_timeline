@@ -140,14 +140,14 @@ void AudioLayer::itemAdded(LayerBlock* item)
 	((AudioLayerClip*)item)->addClipListener(this);
 
 	if (isCurrentlyLoadingData || Engine::mainEngine->isLoadingFile) return;
-	updateClipConfig((AudioLayerClip*)item);
+	updateClipConfig((AudioLayerClip*)item, true);
 }
 
 void AudioLayer::itemRemoved(LayerBlock* item)
 {
 	((AudioLayerClip*)item)->removeClipListener(this);
 
-	if (item == currentClip) updateCurrentClip();
+	updateCurrentClip();
 }
 
 void AudioLayer::clipSourceLoaded(AudioLayerClip* clip)
@@ -182,7 +182,7 @@ void AudioLayer::updateSelectedOutChannels()
 	
 	for (auto & c : clipManager.items)
 	{
-		updateClipConfig((AudioLayerClip *)c);
+		updateClipConfig((AudioLayerClip *)c, false);
 	}
 
 	int index = 0;
@@ -201,7 +201,7 @@ void AudioLayer::updateSelectedOutChannels()
 
 }
 
-void AudioLayer::updateClipConfig(AudioLayerClip* clip)
+void AudioLayer::updateClipConfig(AudioLayerClip* clip, bool updateOutputChannelRemapping)
 {
 	if (clip == nullptr) return;
 
@@ -209,6 +209,19 @@ void AudioLayer::updateClipConfig(AudioLayerClip* clip)
 	//clip->channelRemapAudioSource.prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
 	clip->setPlaySpeed(sequence->playSpeed->floatValue());
 	clip->resamplingAudioSource.prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
+
+	if (updateOutputChannelRemapping)
+	{
+		int index = 0;
+		for (int i = 0; i < channelsCC.controllables.size(); i++)
+		{
+			if (((BoolParameter*)channelsCC.controllables[i])->boolValue())
+			{
+				clip->channelRemapAudioSource.setOutputChannelMapping(index, index);
+			}
+			index++;
+		}
+	}
 }
 
 float AudioLayer::getVolumeFactor()
