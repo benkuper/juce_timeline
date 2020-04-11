@@ -15,7 +15,7 @@ class TimeCueManager;
 
 class Sequence :
 	public BaseItem,
-	public HighResolutionTimer,
+	public Thread,
 	public AudioIODeviceCallback,
 	public EngineListener
 {
@@ -52,9 +52,10 @@ public:
 
 	bool isSeeking;
 
-	//Temp variables
-	double prevMillis; 
+	//Playback
 	double prevTime;
+	double timeAtSetTime;
+	double millisAtSetTime;
 
 	//UI
 	const float minSequenceTime = 1; //in seconds
@@ -84,7 +85,7 @@ public:
 	virtual void onContainerParameterChangedInternal(Parameter*) override;
 	virtual void onContainerTriggerTriggered(Trigger*) override;
 	
-	virtual void hiResTimerCallback() override;
+	virtual void run() override;
 
 	virtual void endLoadFile() override;
 

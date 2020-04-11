@@ -10,7 +10,10 @@
 
 Sequence::Sequence() :
 	BaseItem("Sequence",true),
+	Thread("Sequence"),
 	currentManager(nullptr),
+	timeAtSetTime(0),
+	millisAtSetTime(0),
 	hiResAudioTime(0),
 	sampleRate(44100),
 	isSeeking(false),
@@ -80,7 +83,9 @@ void Sequence::clearItem()
 
 	setAudioDeviceManager(nullptr);
 
-	stopTimer();
+	signalThreadShouldExit();
+	waitForThreadToExit(500);
+	
 	//if(!Engine::mainEngine->isClearing) stopTrigger->trigger();
 	if (Engine::mainEngine != nullptr) Engine::mainEngine->removeEngineListener(this);
 }
@@ -92,6 +97,10 @@ void Sequence::setCurrentTime(float time, bool forceOverPlaying, bool seekMode)
 	if (isPlaying->boolValue() && !forceOverPlaying) return;
 
 	isSeeking = seekMode;
+	
+	millisAtSetTime = Time::getMillisecondCounterHiRes();
+	timeAtSetTime = time;
+
 	if (timeIsDrivenByAudio())
 	{
 		hiResAudioTime = time;
@@ -101,6 +110,7 @@ void Sequence::setCurrentTime(float time, bool forceOverPlaying, bool seekMode)
 	{
 		currentTime->setValue(time);
 	}
+
 	isSeeking = false;
 }
 
@@ -132,7 +142,6 @@ void Sequence::setAudioDeviceManager(AudioDeviceManager * manager)
 
 	//resync values between audio/non-audio driving variables
 	hiResAudioTime = (double)currentTime->floatValue();
-	prevMillis = Time::getMillisecondCounterHiRes();
 	
 	sequenceListeners.call(&SequenceListener::sequenceMasterAudioModuleChanged, this);
 }
@@ -213,28 +222,22 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 	}
 	else if (p == isPlaying)
 	{
+		if (getCurrentThreadId() != getThreadId())
+		{
+			signalThreadShouldExit();
+			waitForThreadToExit(300);
+		}
+		
 		if (isPlaying->boolValue())
 		{
-			prevMillis = Time::getMillisecondCounterHiRes();
 			prevTime = currentTime->floatValue();
-			startTimer(1000/fps->intValue());
-		}
-		else
-		{
-			stopTimer();
+			if(!isThreadRunning()) startThread();
 		}
 
 		sequenceListeners.call(&SequenceListener::sequencePlayStateChanged, this);
 
 
-	} else if (p == fps)
-	{
-		if (isPlaying->boolValue())
-		{
-			stopTimer();
-			startTimer(1000/fps->intValue());
-		}
-	}
+	} 
 	else if (p == playSpeed)
 	{
 		sequenceListeners.call(&SequenceListener::sequencePlaySpeedChanged, this);
@@ -276,39 +279,47 @@ void Sequence::onContainerTriggerTriggered(Trigger * t)
 	}
 }
 
-void Sequence::hiResTimerCallback()
+void Sequence::run()
 {
-	if (!isPlaying->boolValue()) return;
+	millisAtSetTime = Time::getMillisecondCounterHiRes();
+	timeAtSetTime = timeIsDrivenByAudio()? hiResAudioTime : currentTime->floatValue();
 
-	double targetTime = 0;
-    
-    //DBG("Hi res callback here");
-    
-    if (timeIsDrivenByAudio())
+	while (!threadShouldExit())
 	{
-		targetTime = hiResAudioTime;
-        currentTime->setValue(hiResAudioTime);
-	}
-	else
-	{
+		double targetTime = 0;
+
 		double millis = Time::getMillisecondCounterHiRes();
-		double deltaTime = (millis - prevMillis) / 1000;
-		targetTime = currentTime->floatValue() + deltaTime * playSpeed->floatValue();
-		currentTime->setValue(targetTime);
-		prevMillis = millis;
-	}
+		double millisSinceSetTime = millis - millisAtSetTime;
+		targetTime = timeAtSetTime + (millisSinceSetTime / 1000.0) * playSpeed->floatValue();
 
-	if (targetTime >= totalTime->floatValue())
-	{
-		if (loopParam->boolValue())
+		if (timeIsDrivenByAudio())
 		{
-			float offset = targetTime - totalTime->floatValue();
-			sequenceListeners.call(&SequenceListener::sequenceLooped, this);
-			//setCurrentTime(0); //to change in trigger layer to avoid doing that
-			prevTime = 0;
-			setCurrentTime(offset, true, true);
+			DBG("Diff (ms): " << abs(hiResAudioTime - currentTime->floatValue()));
+			//targetTime = hiResAudioTime;
 		}
-		else finishTrigger->trigger();
+		//DBG(deltaMillis << " : " << (targetTime - currentTime->floatValue()));
+
+		currentTime->setValue(targetTime);
+
+		if (targetTime >= totalTime->floatValue())
+		{
+			if (loopParam->boolValue())
+			{
+				float offset = targetTime - totalTime->floatValue();
+				sequenceListeners.call(&SequenceListener::sequenceLooped, this);
+				//setCurrentTime(0); //to change in trigger layer to avoid doing that
+				prevTime = 0;
+				setCurrentTime(offset, true, true);
+			}
+			else finishTrigger->trigger();
+		}
+
+		double millisPerCycle = 1000.0 / fps->floatValue();
+		double millisAfterProcess = Time::getMillisecondCounterHiRes();
+		double relAbsMillis = millisAfterProcess - millisAtSetTime;
+		double millisToWait = ceil(millisPerCycle - fmod(relAbsMillis, millisPerCycle));
+
+		if(millisToWait >= 0) sleep(millisToWait);
 	}
 }
 
@@ -328,7 +339,6 @@ void Sequence::audioDeviceIOCallback(const float ** , int , float ** outputChann
 {
 	for(int i=0;i<numOutputChannels;i++) FloatVectorOperations::clear(outputChannelData[i], numSamples);
 
-	
 	if (isPlaying->boolValue()) hiResAudioTime += (numSamples / sampleRate) * playSpeed->floatValue();
 }
 
