@@ -83,7 +83,7 @@ void LayerBlockManagerUI::blockUIDragged(LayerBlockUI * cui, const MouseEvent & 
 {
 	float targetOffsetTime = timeline->getTimeForX(e.getOffsetFromDragStart().x, false);
 	//float targetTime = cui->timeAtMouseDown + targetOffsetTime;
-	cui->item->moveTime(targetOffsetTime, true);
+	cui->item->movePosition(Point<float>(targetOffsetTime, 0), true);
 	
 	cui->setViewRange(timeline->item->sequence->viewStartTime->floatValue() - cui->item->time->floatValue(), timeline->item->sequence->viewEndTime->floatValue() - cui->item->time->floatValue());
 	cui->resized(); //force resize because changing time will not resize it, just move it
@@ -92,7 +92,7 @@ void LayerBlockManagerUI::blockUIDragged(LayerBlockUI * cui, const MouseEvent & 
 void LayerBlockManagerUI::blockUIStartDragged(LayerBlockUI * cui, const MouseEvent & e)
 {
 	float timeDiff = timeline->getTimeForX(e.getOffsetFromDragStart().x, false);
-	float targetTime = cui->item->moveTimeReference + timeDiff;
+	float targetTime = cui->item->movePositionReference.x +timeDiff;
 
 	int itemIndex = manager->items.indexOf(cui->item);
 	float minTime = (itemIndex > 0 && !manager->blocksCanOverlap) ? manager->items[itemIndex - 1]->getEndTime() : 0;
@@ -100,7 +100,7 @@ void LayerBlockManagerUI::blockUIStartDragged(LayerBlockUI * cui, const MouseEve
 
 	manager->placeBlockAt(cui->item, targetTime);
 
-	float realTimeDiff = cui->item->time->floatValue() - cui->item->moveTimeReference;
+	float realTimeDiff = cui->item->time->floatValue() - cui->item->movePositionReference.x;
 	float targetCoreLength = cui->coreLengthAtMouseDown - realTimeDiff;
 
 	cui->item->setCoreLength(targetCoreLength,e.mods.isShiftDown(), !e.mods.isAltDown());

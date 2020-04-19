@@ -21,9 +21,6 @@ TimeTrigger::TimeTrigger(StringRef name) :
 	flagY = addFloatParameter("Flag Y", "Position of the trigger's flag", 0,0,1);
 	isTriggered = addBoolParameter("Is Triggered", "Is this Time Trigger already triggered during this playing ?", false);
 	
-
-	isLocked = addBoolParameter("Locked", "When locked, you can't change time or flag values by dragging it", false);
-
 	isTriggered->hideInEditor = true;
 	isTriggered->isSavable = false;
 }
@@ -35,31 +32,34 @@ TimeTrigger::~TimeTrigger()
 
 void TimeTrigger::onContainerParameterChangedInternal(Parameter * p)
 {
-	if (p == isLocked)
+	if (p == isUILocked)
 	{
-		time->setControllableFeedbackOnly(isLocked->boolValue());
+		time->setControllableFeedbackOnly(isUILocked->boolValue());
 		//flagY->setControllableFeedbackOnly(isLocked->boolValue());
 	}
 }
 
-void TimeTrigger::setMoveTimeReferenceInternal()
+void TimeTrigger::setMovePositionReferenceInternal()
 {
-	moveTimeReference = time->floatValue();
+	movePositionReference = Point<float>(time->floatValue(), flagY->floatValue());
 }
 
-void TimeTrigger::setTime(float targetTime)
+void TimeTrigger::setPosition(Point<float> targetPosition)
 {
-	time->setValue(targetTime);
+	time->setValue(targetPosition.x);
+	flagY->setValue(targetPosition.y);
 }
 
-float TimeTrigger::getTime()
+Point<float> TimeTrigger::getPosition()
 {
-	return time->floatValue();
+	return Point<float>(time->floatValue(), flagY->floatValue());
 }
 
-UndoableAction* TimeTrigger::getUndoableMoveAction()
+void TimeTrigger::addUndoableMoveAction(Array<UndoableAction*>& actions)
 {
-	return time->setUndoableValue(moveTimeReference, time->floatValue(), true);
+	actions.add(time->setUndoableValue(movePositionReference.x, time->floatValue(), true));
+	actions.add(flagY->setUndoableValue(movePositionReference.y, flagY->floatValue(), true));
+
 }
 
 void TimeTrigger::trigger()

@@ -45,8 +45,8 @@ void TriggerLayer::onContainerTriggerTriggered(Trigger * t)
 	
 	if (ttm == nullptr) return;
 
-	if (t == lockAll) for (auto &i : ttm->items) i->isLocked->setValue(true);
-	else if (t == unlockAll) for (auto &i : ttm->items) i->isLocked->setValue(false);
+	if (t == lockAll) for (auto &i : ttm->items) i->isUILocked->setValue(true);
+	else if (t == unlockAll) for (auto &i : ttm->items) i->isUILocked->setValue(false);
 }
 
 var TriggerLayer::getJSONData()

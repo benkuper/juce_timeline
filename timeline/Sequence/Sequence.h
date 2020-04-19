@@ -23,7 +23,6 @@ public:
 	Sequence();
 	virtual ~Sequence();
 
-
 	std::unique_ptr<TimeCueManager> cueManager;
 	std::unique_ptr<SequenceLayerManager> layerManager;
 

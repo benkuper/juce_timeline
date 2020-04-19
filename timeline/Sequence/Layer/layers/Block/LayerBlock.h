@@ -12,8 +12,7 @@
 
 
 class LayerBlock :
-	public BaseItem,
-	public TimedLayerItem
+	public BaseItem
 {
 public:
 	LayerBlock(StringRef name = "Block", float time = 0);
@@ -30,11 +29,11 @@ public:
 	float getEndTime();
 	bool isInRange(float time);
 
-	void setMoveTimeReferenceInternal() override;
-	void setTime(float targetTime) override;
-	float getTime() override;
+	void setMovePositionReferenceInternal() override;
+	void setPosition(Point<float> targetPosition) override;
+	Point<float> getPosition() override;
 
-	UndoableAction *getUndoableMoveAction() override;
+	void addUndoableMoveAction(Array<UndoableAction *> &actions) override;
 
 	virtual void setCoreLength(float newLength, bool stretch, bool stickToCoreEnd = false);
 	virtual void setLoopLength(float newLength);

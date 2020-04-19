@@ -1,4 +1,3 @@
-#include "LayerBlock.h"
 /*
   ==============================================================================
 
@@ -53,24 +52,24 @@ bool LayerBlock::isInRange(float _time)
 	return _time >= time->floatValue() && _time < getEndTime();
 }
 
-void LayerBlock::setMoveTimeReferenceInternal()
+void LayerBlock::setMovePositionReferenceInternal()
 {
-	moveTimeReference = time->floatValue();
+	movePositionReference.setX(time->floatValue());
 }
 
-void LayerBlock::setTime(float targetTime)
+void LayerBlock::setPosition(Point<float> targetPosition)
 {
-	blockListeners.call(&BlockListener::askForPlaceBlockTime, this, targetTime);
+	blockListeners.call(&BlockListener::askForPlaceBlockTime, this, targetPosition.x);
 }
 
-float LayerBlock::getTime()
+Point<float> LayerBlock::getPosition()
 {
-	return time->floatValue();
+	return Point<float>(time->floatValue(),0);
 }
 
-UndoableAction* LayerBlock::getUndoableMoveAction()
+void LayerBlock::addUndoableMoveAction(Array<UndoableAction *> &actions)
 {
-	return time->setUndoableValue(moveTimeReference, time->floatValue(), true);
+	actions.add(time->setUndoableValue(movePositionReference.x, time->floatValue(), true));
 }
 
 

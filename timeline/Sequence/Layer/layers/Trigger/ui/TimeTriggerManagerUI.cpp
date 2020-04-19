@@ -136,13 +136,13 @@ void TimeTriggerManagerUI::timeTriggerDragged(TimeTriggerUI * ttui, const MouseE
 
 	if (e.mods.isAltDown())
 	{
-		ttui->item->scaleTime(diffTime, true);
+		ttui->item->scalePosition(Point<float>(diffTime, 0), true);
 	}
 	else
 	{
-		ttui->item->moveTime(diffTime, true);
+		Point<float> offset(diffTime, e.getDistanceFromDragStartY()*1.0f / (getHeight() -20)); //-20 is for subtracting flag height
+		ttui->item->movePosition(offset, true);
 	}
-
 }
 
 void TimeTriggerManagerUI::timeTriggerTimeChanged(TimeTriggerUI * ttui)

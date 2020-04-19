@@ -24,8 +24,6 @@
 #include "timeline/Sequence/Sequence.cpp"
 #include "timeline/SequenceManager.cpp"
 
-#include "timeline/Sequence/Common/TimedLayerItem.cpp"
-
 #include "timeline/Sequence/Layer/layers/Block/LayerBlock.cpp"
 #include "timeline/Sequence/Layer/layers/Block/LayerBlockManager.cpp"
 

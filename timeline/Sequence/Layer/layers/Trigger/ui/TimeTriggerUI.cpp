@@ -17,7 +17,7 @@ TimeTriggerUI::TimeTriggerUI(TimeTrigger * _tt) :
 	autoDrawContourWhenSelected = false;
 	setName(_tt->niceName);
 
-	lockUI.reset(item->isLocked->createImageToggle(AssetManager::getInstance()->getToggleBTImage(ImageCache::getFromMemory(TimelineBinaryData::padlock_png, TimelineBinaryData::padlock_pngSize))));
+	lockUI.reset(item->isUILocked->createImageToggle(AssetManager::getInstance()->getToggleBTImage(ImageCache::getFromMemory(TimelineBinaryData::padlock_png, TimelineBinaryData::padlock_pngSize))));
 	addAndMakeVisible(lockUI.get());
 
 	removeBT->setVisible(item->isSelected);
@@ -42,7 +42,7 @@ void TimeTriggerUI::paint(Graphics & g)
 	g.fillRect(flagRect);
 
 
-	if (item->isLocked->boolValue())
+	if (item->isUILocked->boolValue())
 	{
 		g.setTiledImageFill(ImageCache::getFromMemory(TimelineBinaryData::smallstripe_png, TimelineBinaryData::smallstripe_pngSize), 0, 0, .1f); 
 		g.fillRect(flagRect);
@@ -102,9 +102,9 @@ void TimeTriggerUI::mouseDown(const MouseEvent & e)
 	
 	flagYAtMouseDown = item->flagY->floatValue();
 	
-	if (item->isLocked->boolValue()) return;
+	if (item->isUILocked->boolValue()) return;
 
-	item->setMoveTimeReference(true);
+	item->setMovePositionReference(true);
 	timeAtMouseDown = item->time->floatValue();
 	posAtMouseDown = getX();
 }
@@ -115,19 +115,19 @@ void TimeTriggerUI::mouseDrag(const MouseEvent & e)
 
 	BaseItemUI::mouseDrag(e);
 	
-	if (item->isLocked->boolValue()) return; //After that, nothing will changed if item is locked
+	if (item->isUILocked->boolValue()) return; //After that, nothing will changed if item is locked
 	
 	if (!e.mods.isShiftDown())
 	{
 		triggerUIListeners.call(&TimeTriggerUIListener::timeTriggerDragged, this, e);
 	}
 
-	if (!e.mods.isCommandDown() && item->selectionManager->currentInspectables.size() == 1)
+/*	if (!e.mods.isCommandDown() && item->selectionManager->currentInspectables.size() == 1)
 	{
 		float ty = flagYAtMouseDown + e.getOffsetFromDragStart().y * 1.f / (getHeight() - 20);
 		item->flagY->setValue(ty);
 	}
-
+	*/
 }
 
 void TimeTriggerUI::mouseUp(const MouseEvent & e)
@@ -144,10 +144,9 @@ void TimeTriggerUI::mouseUp(const MouseEvent & e)
 	{
 		Array<UndoableAction*> actions;
 		actions.add(item->flagY->setUndoableValue(flagYAtMouseDown, item->flagY->floatValue(), true));
-		if (!item->isLocked->boolValue()) actions.add(item->time->setUndoableValue(timeAtMouseDown, item->time->floatValue(), true));
+		if (!item->isUILocked->boolValue()) actions.add(item->time->setUndoableValue(timeAtMouseDown, item->time->floatValue(), true));
 		UndoMaster::getInstance()->performActions("Move Trigger \"" + item->niceName + "\"", actions);
 	}
-	
 }
 
 void TimeTriggerUI::containerChildAddressChangedAsync(ControllableContainer * cc)
@@ -168,7 +167,7 @@ void TimeTriggerUI::controllableFeedbackUpdateInternal(Controllable * c)
 	} else if (c == item->isTriggered)
 	{
 		repaint();
-	} else if (c == item->isLocked)
+	} else if (c == item->isUILocked)
 	{
 		repaint();
 	}

@@ -118,7 +118,7 @@ void LayerBlockUI::mouseDown(const MouseEvent & e)
 
 	if (canBeGrabbed && !item->isLocked->boolValue())
 	{
-		item->setMoveTimeReference(true);
+		item->setMovePositionReference(true);
 		coreLengthAtMouseDown = item->coreLength->floatValue();
 		loopLengthAtMouseDown = item->loopLength->floatValue();
 
@@ -164,12 +164,12 @@ void LayerBlockUI::mouseUp(const MouseEvent & e)
 		}
 		else if (e.eventComponent == &grabber)
 		{
-			item->time->setUndoableValue(item->moveTimeReference, item->time->floatValue());
+			item->time->setUndoableValue(item->movePositionReference.x, item->time->floatValue());
 			item->coreLength->setUndoableValue(coreLengthAtMouseDown, item->coreLength->floatValue());
 		}
 		else if (e.eventComponent == &coreGrabber)
 		{
-			item->time->setUndoableValue(item->moveTimeReference, item->time->floatValue());
+			item->time->setUndoableValue(item->movePositionReference.x, item->time->floatValue());
 			item->coreLength->setUndoableValue(coreLengthAtMouseDown, item->coreLength->floatValue());
 		}
 		else if (e.eventComponent == &loopGrabber)
