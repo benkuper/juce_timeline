@@ -141,6 +141,7 @@ void AudioLayer::itemAdded(LayerBlock* item)
 
 	if (isCurrentlyLoadingData || Engine::mainEngine->isLoadingFile) return;
 	updateClipConfig((AudioLayerClip*)item, true);
+	updateSelectedOutChannels();
 }
 
 void AudioLayer::itemRemoved(LayerBlock* item)
@@ -171,8 +172,9 @@ void AudioLayer::updateSelectedOutChannels()
 	int newNumActiveOutputs = 0;
 	for (int i = 0; i < channelsCC.controllables.size(); i++) if (((BoolParameter *)channelsCC.controllables[i])->boolValue()) newNumActiveOutputs++;
 	
-	if (numActiveOutputs == newNumActiveOutputs) return;
+	//bool numOutputChanged = numActiveOutputs != newNumActiveOutputs;
 	numActiveOutputs = newNumActiveOutputs;
+
 
 	currentGraph->disconnectNode(graphID);
 
