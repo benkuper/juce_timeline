@@ -175,7 +175,6 @@ void AudioLayer::updateSelectedOutChannels()
 	//bool numOutputChanged = numActiveOutputs != newNumActiveOutputs;
 	numActiveOutputs = newNumActiveOutputs;
 
-
 	currentGraph->disconnectNode(graphID);
 
 	currentProcessor->setPlayConfigDetails(0, numActiveOutputs, currentGraph->getSampleRate(), currentGraph->getBlockSize());
