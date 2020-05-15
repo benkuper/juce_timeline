@@ -18,6 +18,9 @@ SequenceLayerPanel::SequenceLayerPanel(SequenceLayer * layer) :
 	bgColor = item->color->getColor(); 
 	colorUI.reset(item->color->createColorParamUI());
 
+	lockUI.reset(item->isUILocked->createImageToggle(AssetManager::getInstance()->getToggleBTImage(ImageCache::getFromMemory(OrganicUIBinaryData::padlock_png, OrganicUIBinaryData::padlock_pngSize))));
+	addAndMakeVisible(lockUI.get());
+
 	addAndMakeVisible(colorUI.get());
 	setSize(100, item->uiHeight->intValue());
 }
@@ -42,6 +45,8 @@ void SequenceLayerPanel::resized()
 
 void SequenceLayerPanel::resizedInternalHeader(Rectangle<int>& r)
 {
+	lockUI->setBounds(r.removeFromRight(r.getHeight()).reduced(2));
+	r.removeFromRight(2);
 	colorUI->setBounds(r.removeFromRight(r.getHeight()).reduced(2));
 }
 

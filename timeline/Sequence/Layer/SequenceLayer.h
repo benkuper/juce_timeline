@@ -30,6 +30,15 @@ public:
 
 	virtual void addDefaultContent() {}
 
+	Array<Inspectable *> selectAllItemsBetween(float start, float end);
+	virtual Array<Inspectable*> selectAllItemsBetweenInternal(float start, float end);
+	Array<UndoableAction*> getRemoveAllItemsBetween(float start, float end);
+	virtual Array<UndoableAction*> getRemoveAllItemsBetweenInternal(float start, float end);
+	Array<UndoableAction*> getInsertTimespan(float start, float length);
+	virtual Array<UndoableAction*> getInsertTimespanInternal(float start, float length);
+	Array<UndoableAction*> getRemoveTimespan(float start, float end);
+	virtual Array<UndoableAction*> getRemoveTimespanInternal(float start, float end);
+
 	//Factory
 	virtual String getTypeString() const override { jassert(false); return ""; } //should be overriden
 

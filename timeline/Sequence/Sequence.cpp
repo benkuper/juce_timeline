@@ -1,3 +1,4 @@
+#include "Sequence.h"
 /*
   ==============================================================================
 
@@ -120,6 +121,36 @@ void Sequence::setBeingEdited(bool value)
 	isBeingEdited = value;
 	sequenceListeners.call(&SequenceListener::sequenceEditingStateChanged, this);
 	sequenceNotifier.addMessage(new SequenceEvent(SequenceEvent::EDITING_STATE_CHANGED, this));
+}
+
+void Sequence::selectAllItemsBetween(float start, float end)
+{
+	Array<Inspectable*> selection;
+	for (auto& l : layerManager->items) selection.addArray(l->selectAllItemsBetween(start, end));
+	InspectableSelectionManager::mainSelectionManager->selectInspectables(selection);
+}
+
+void Sequence::removeAllItemsBetween(float start, float end)
+{
+	Array<UndoableAction*> actions;
+	for (auto& l : layerManager->items)  actions.addArray(l->getRemoveAllItemsBetween(start, end));
+	UndoMaster::getInstance()->performActions("Remove items between timespan", actions);
+}
+
+void Sequence::removeTimespan(float start, float end)
+{
+	Array<UndoableAction*> actions;
+	for (auto& l : layerManager->items)  actions.addArray(l->getRemoveTimespan(start, end));
+	actions.add(totalTime->setUndoableValue(totalTime->floatValue(), totalTime->floatValue() - (end - start)));
+	UndoMaster::getInstance()->performActions("Remove timespan", actions);
+}
+
+void Sequence::insertTimespan(float start, float length)
+{
+	Array<UndoableAction*> actions;
+	actions.add(totalTime->setUndoableValue(totalTime->floatValue(), totalTime->floatValue() + length));
+	for (auto& l : layerManager->items)  actions.addArray(l->getInsertTimespan(start, length));
+	UndoMaster::getInstance()->performActions("Insert timespan", actions);
 }
 
 bool Sequence::paste()

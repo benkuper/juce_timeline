@@ -11,7 +11,8 @@
 SequenceTimelineHeader::SequenceTimelineHeader(Sequence * _sequence, TimeCueManagerUI * cueManagerUI, TimeNeedleUI * needleUI) :
 	sequence(_sequence),
     needle(needleUI),
-    cueManagerUI(cueManagerUI)
+    cueManagerUI(cueManagerUI),
+	selectionZoomMode(false)
 {
 	sequence->addAsyncContainerListener(this);
 	
@@ -130,8 +131,21 @@ void SequenceTimelineHeader::paint(Graphics & g)
 	g.setColour(BG_COLOR.darker());
 	g.drawText(String(floor(start / 60)) + "'", 2, 2, 18, 14, Justification::centred);
 
+	if (!selectionSpan.isOrigin())
+	{
+		Colour c = (selectionZoomMode ? BLUE_COLOR : GREEN_COLOR);
+		float minPos = jmin(getXForTime(selectionSpan.x), getXForTime(selectionSpan.y));
+		float maxPos = jmax(getXForTime(selectionSpan.x), getXForTime(selectionSpan.y));
+		Rectangle<int> sr = Rectangle<int>(minPos,0, maxPos-minPos,getHeight()).reduced(1);
+		g.setColour(c.withAlpha(.3f));
+		g.fillRect(sr);
+		g.setColour(c.withAlpha(.7f));
+		g.drawRect(sr);
+	}
+
 	g.setColour(BG_COLOR.darker(.6f));
 	g.drawRoundedRectangle(getLocalBounds().toFloat(), 2, 2);
+
 }
 
 void SequenceTimelineHeader::resized()
@@ -152,7 +166,13 @@ void SequenceTimelineHeader::updateNeedlePosition()
 
 void SequenceTimelineHeader::mouseDown(const MouseEvent & e)
 {
-	if (e.mods.isLeftButtonDown())
+	if (e.mods.isRightButtonDown() || (e.mods.isLeftButtonDown() && e.mods.isShiftDown()))
+	{
+		float pos = getTimeForX(e.getPosition().x);
+		selectionSpan.setXY(pos, pos);
+		selectionZoomMode = e.mods.isRightButtonDown();
+
+	}else if (e.mods.isLeftButtonDown())
 	{
 		sequence->setCurrentTime(getTimeForX(e.getPosition().x), true, true);	
 	}
@@ -160,7 +180,13 @@ void SequenceTimelineHeader::mouseDown(const MouseEvent & e)
 
 void SequenceTimelineHeader::mouseDrag(const MouseEvent & e)
 {
-	if(e.mods.isLeftButtonDown())
+	if(e.mods.isRightButtonDown() || (e.mods.isLeftButtonDown() && e.mods.isShiftDown()))
+	{
+		float pos = getTimeForX(e.getPosition().x);
+		selectionSpan.setY(pos);
+		repaint();
+	}
+	else if(e.mods.isLeftButtonDown())
 	{
 		sequence->setCurrentTime(getTimeForX(e.getPosition().x), true, true);
 	}
@@ -171,6 +197,56 @@ void SequenceTimelineHeader::mouseDoubleClick(const MouseEvent & e)
 	if (e.mods.isLeftButtonDown())
 	{
 		cueManagerUI->addCueAtPos(e.getMouseDownX());
+	}
+}
+
+void SequenceTimelineHeader::mouseUp(const MouseEvent& e)
+{
+	if (e.mods.isRightButtonDown() || (e.mods.isLeftButtonDown() && e.mods.isShiftDown()))
+	{
+		if (e.mouseWasDraggedSinceMouseDown())
+		{
+			float minPos = jmin(selectionSpan.x, selectionSpan.y);
+			float maxPos = jmax(selectionSpan.x, selectionSpan.y);
+
+			if (selectionZoomMode)
+			{
+				sequence->viewStartTime->setValue(minPos);
+				sequence->viewEndTime->setValue(maxPos);
+			}
+			else
+			{
+				PopupMenu m;
+				m.addItem(1, "Select items in this range");
+				m.addItem(2, "Remove items in this range");
+				m.addSeparator();
+				m.addItem(3, "Remove timespan");
+				m.addItem(4, "Insert timespan");
+
+				int result = m.show();
+				switch (result)
+				{
+				case 1:
+					sequence->selectAllItemsBetween(minPos, maxPos);
+					break;
+
+				case 2:
+					sequence->removeAllItemsBetween(minPos, maxPos);
+					break;
+
+				case 3:
+					sequence->removeTimespan(minPos, maxPos);
+					break;
+
+				case 4:
+					sequence->insertTimespan(minPos, maxPos - minPos);
+					break;
+				}
+			}
+
+			selectionSpan.setXY(0, 0);
+			repaint();
+		}
 	}
 }
 

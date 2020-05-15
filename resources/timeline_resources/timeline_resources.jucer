@@ -2,13 +2,13 @@
 
 <JUCERPROJECT id="nJCeN1" name="timeline_resources" projectType="guiapp" version="1.0.0"
               bundleIdentifier="com.benkuper.timeline_resources" includeBinaryInAppConfig="1"
-              jucerVersion="5.4.3" displaySplashScreen="1" reportAppUsage="1"
+              jucerVersion="5.4.7" displaySplashScreen="1" reportAppUsage="1"
               splashScreenColour="Dark" cppLanguageStandard="11" companyCopyright=""
               binaryDataNamespace="TimelineBinaryData">
   <MAINGROUP id="gdPnjI" name="timeline_resources">
     <GROUP id="{471DD8BF-5339-7ED5-BF79-1FCB0A8A6B3D}" name="Resources">
+      <FILE id="x93MjG" name="loop.png" compile="0" resource="1" file="Resources/loop.png"/>
       <FILE id="ymvdhk" name="nextcue.png" compile="0" resource="1" file="Resources/nextcue.png"/>
-      <FILE id="mMr5Fc" name="padlock.png" compile="0" resource="1" file="Resources/padlock.png"/>
       <FILE id="FH0wuo" name="play.png" compile="0" resource="1" file="Resources/play.png"/>
       <FILE id="IA3Rrz" name="prevcue.png" compile="0" resource="1" file="Resources/prevcue.png"/>
       <FILE id="LCBk8D" name="smallstripe.png" compile="0" resource="1" file="Resources/smallstripe.png"/>

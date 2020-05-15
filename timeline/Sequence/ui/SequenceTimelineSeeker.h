@@ -43,6 +43,9 @@ public:
 	const float minActionDistY = 15;
 	const float zoomSensitivity = .002f;
 
+	Point<float> selectionSpan;
+
+
 	void paint(Graphics &g) override;
 	void resized() override;
 

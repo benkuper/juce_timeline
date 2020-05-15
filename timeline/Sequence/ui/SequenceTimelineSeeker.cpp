@@ -32,6 +32,18 @@ void SequenceTimelineSeeker::paint(Graphics & g)
 	g.setColour(HIGHLIGHT_COLOR);
 	float tx = getXForTime(sequence->currentTime->floatValue());
 	g.drawLine(tx, 0, tx, getHeight(), 2);
+
+	if (!selectionSpan.isOrigin())
+	{
+		Colour c = BLUE_COLOR;
+		float minPos = jmin(getXForTime(selectionSpan.x), getXForTime(selectionSpan.y));
+		float maxPos = jmax(getXForTime(selectionSpan.x), getXForTime(selectionSpan.y));
+		Rectangle<int> sr = Rectangle<int>(minPos, 0, maxPos - minPos, getHeight()).reduced(1);
+		g.setColour(c.withAlpha(.3f));
+		g.fillRect(sr);
+		g.setColour(c.withAlpha(.7f));
+		g.drawRect(sr);
+	}
 }
 
 void SequenceTimelineSeeker::resized()
@@ -44,17 +56,17 @@ void SequenceTimelineSeeker::resized()
 
 void SequenceTimelineSeeker::mouseDown(const MouseEvent & e)
 {
-	if (e.mods.isLeftButtonDown())
+	if (e.mods.isRightButtonDown())
+	{
+		float pos = getTimeForX(e.getEventRelativeTo(this).getPosition().x);
+		selectionSpan.setXY(pos, pos);
+	}
+	else if (e.mods.isLeftButtonDown())
 	{
 		viewStartAtMouseDown = sequence->viewStartTime->floatValue();
 		viewEndAtMouseDown = sequence->viewEndTime->floatValue();
 		timeAnchorAtMouseDown = getTimeForX(e.getEventRelativeTo(this).x);
 		viewTimeAtMouseDown = (viewEndAtMouseDown - viewStartAtMouseDown);
-	}
-	else
-	{
-		sequence->viewStartTime->setValue(0);
-		sequence->viewEndTime->setValue(sequence->totalTime->floatValue());
 	}
 
 	//e.source.enableUnboundedMouseMovement(true, true);
@@ -68,7 +80,13 @@ void SequenceTimelineSeeker::mouseDown(const MouseEvent & e)
 void SequenceTimelineSeeker::mouseDrag(const MouseEvent & e)
 {
 
-	if (e.mods.isLeftButtonDown())
+	if (e.mods.isRightButtonDown())
+	{
+		float pos = getTimeForX(e.getEventRelativeTo(this).getPosition().x);
+		selectionSpan.setY(pos);
+		repaint();
+	}
+	else if (e.mods.isLeftButtonDown())
 	{
 		if (e.originalComponent == &handle)
 		{
@@ -112,6 +130,25 @@ void SequenceTimelineSeeker::mouseDrag(const MouseEvent & e)
 void SequenceTimelineSeeker::mouseUp(const MouseEvent & e)
 {
 	//e.source.enableUnboundedMouseMovement(false, true);
+
+	if (e.mods.isRightButtonDown())
+	{
+		float start = 0;
+		float end = sequence->totalTime->floatValue();
+
+		if (e.mouseWasDraggedSinceMouseDown())
+		{
+			start = jmin(selectionSpan.x, selectionSpan.y);
+			end = jmax(selectionSpan.x, selectionSpan.y);
+		}
+
+		selectionSpan.setXY(0, 0);
+
+		sequence->viewStartTime->setValue(start);
+		sequence->viewEndTime->setValue(end);
+
+	}
+	
 	setMouseCursor(MouseCursor::NormalCursor);
 	seekerListeners.call(&SeekerListener::seekerManipulationChanged, false);
 }

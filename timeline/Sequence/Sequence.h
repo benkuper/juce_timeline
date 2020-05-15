@@ -68,6 +68,11 @@ public:
 
 	void setBeingEdited(bool value);
 
+	void selectAllItemsBetween(float start, float end);
+	void removeAllItemsBetween(float start, float end);
+	void removeTimespan(float start, float end);
+	void insertTimespan(float start, float length);
+
 	virtual bool paste() override;
 
 	void setAudioDeviceManager(AudioDeviceManager * am);
@@ -79,7 +84,6 @@ public:
 	virtual void audioDeviceStopped() override;
 
 	virtual bool timeIsDrivenByAudio();
-	
 	
 	virtual void onContainerParameterChangedInternal(Parameter*) override;
 	virtual void onContainerTriggerTriggered(Trigger*) override;
