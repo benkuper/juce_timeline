@@ -1,3 +1,4 @@
+#include "TimeTriggerManager.h"
 /*
   ==============================================================================
 
@@ -79,6 +80,23 @@ Array<TimeTrigger*> TimeTriggerManager::getTriggersInTimespan(float startTime, f
 		}
 	}
 	return result;
+}
+
+Array<UndoableAction*> TimeTriggerManager::getMoveKeysBy(float start, float offset)
+{
+	Array<UndoableAction*> actions;
+	Array<TimeTrigger*> triggers = getTriggersInTimespan(start, sequence->totalTime->floatValue());
+	for (auto& t : triggers) actions.add(t->time->setUndoableValue(t->time->floatValue(), t->time->floatValue() + offset, true));
+	return actions;
+}
+
+Array<UndoableAction*> TimeTriggerManager::getRemoveTimespan(float start, float end)
+{
+	Array<UndoableAction*> actions;
+	Array<TimeTrigger*> triggers = getTriggersInTimespan(start, end);
+	actions.addArray(getRemoveItemsUndoableAction(triggers));
+	actions.addArray(getMoveKeysBy(end, start - end));
+	return actions;
 }
 
 void TimeTriggerManager::onControllableFeedbackUpdate(ControllableContainer * cc, Controllable * c)

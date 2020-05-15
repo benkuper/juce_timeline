@@ -1,3 +1,4 @@
+#include "TriggerLayer.h"
 /*
   ==============================================================================
 
@@ -29,6 +30,28 @@ void TriggerLayer::setManager(TimeTriggerManager * _ttm)
 {
 	ttm.reset(_ttm);
 	if (ttm != nullptr) addChildControllableContainer(ttm.get());
+}
+
+Array<Inspectable*> TriggerLayer::selectAllItemsBetweenInternal(float start, float end)
+{
+	Array<Inspectable*> result;
+	result.addArray(ttm->getTriggersInTimespan(start, end, true));
+	return result;
+}
+
+Array<UndoableAction*> TriggerLayer::getRemoveAllItemsBetweenInternal(float start, float end)
+{
+	return ttm->getRemoveItemsUndoableAction(ttm->getTriggersInTimespan(start, end, true));
+}
+
+Array<UndoableAction*> TriggerLayer::getInsertTimespanInternal(float start, float length)
+{
+	return ttm->getMoveKeysBy(start, length);
+}
+
+Array<UndoableAction*> TriggerLayer::getRemoveTimespanInternal(float start, float end)
+{
+	return ttm->getRemoveTimespan(start, end);
 }
 
 bool TriggerLayer::paste()

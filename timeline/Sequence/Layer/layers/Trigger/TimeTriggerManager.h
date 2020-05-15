@@ -33,6 +33,9 @@ public:
 
 	Array<TimeTrigger *> getTriggersInTimespan(float startTime, float endTime, bool includeAlreadyTriggered = false);
 
+	Array<UndoableAction*> getMoveKeysBy(float start, float offset);
+	Array<UndoableAction*> getRemoveTimespan(float start, float end);
+
 	void onControllableFeedbackUpdate(ControllableContainer * cc, Controllable * c) override;
 
 	void sequenceCurrentTimeChanged(Sequence * _sequence, float prevTime, bool evaluateSkippedData) override;

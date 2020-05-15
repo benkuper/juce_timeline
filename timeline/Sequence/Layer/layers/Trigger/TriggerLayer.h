@@ -25,6 +25,11 @@ public :
 
 	void setManager(TimeTriggerManager * ttm);
 
+	Array<Inspectable*> selectAllItemsBetweenInternal(float start, float end) override;
+	Array<UndoableAction*> getRemoveAllItemsBetweenInternal(float start, float end) override;
+	Array<UndoableAction*>  getInsertTimespanInternal(float start, float length) override;
+	Array<UndoableAction*>  getRemoveTimespanInternal(float start, float end) override;
+
 	virtual bool paste() override;
 
 	virtual void onContainerTriggerTriggered(Trigger *) override;
