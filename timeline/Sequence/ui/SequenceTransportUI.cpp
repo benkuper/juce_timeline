@@ -15,8 +15,8 @@ SequenceTransportUI::SequenceTransportUI(Sequence* _sequence) :
 	totalTimeLabel(_sequence->totalTime),
 	timeStepLabel(_sequence->currentTime)
 {
-	timeLabel.maxFontHeight = 16;
-	timeLabel.maxFontHeight = 14;
+	timeLabel.maxFontHeight = 20;
+	totalTimeLabel.maxFontHeight = 14;
 	totalTimeLabel.useCustomTextColor = true;
 	totalTimeLabel.customTextColor = TEXT_COLOR.darker();
 	totalTimeLabel.updateUIParams();
@@ -72,19 +72,19 @@ void SequenceTransportUI::paint(Graphics &g)
 void SequenceTransportUI::resized()
 {
 	Rectangle<int> r = getLocalBounds().reduced(2);
-	Rectangle<int> tr = r.removeFromTop(20);
-	timeLabel.setBounds(tr.removeFromLeft(110));
-	timeStepLabel.setBounds(tr.removeFromLeft(50));
-	totalTimeLabel.setBounds(tr.removeFromRight(100));
+	Rectangle<int> tr = r.removeFromTop(30);
+	timeStepLabel.setBounds(tr.removeFromRight(40));
+	tr.removeFromLeft(40);
+	timeLabel.setBounds(tr);
 	r.removeFromTop(2);
 	
-	
-	Rectangle<int> pr = r.removeFromTop(24);
-	togglePlayUI->setBounds(pr.removeFromLeft(pr.getHeight()).reduced(4));
-	stopUI->setBounds(pr.removeFromLeft(pr.getHeight()).reduced(4));
-	prevCueUI->setBounds(pr.removeFromLeft(pr.getHeight()).reduced(4));
-	nextCueUI->setBounds(pr.removeFromLeft(pr.getHeight()).reduced(4));
+	Rectangle<int> pr = r.removeFromBottom(24);
+	togglePlayUI->setBounds(pr.removeFromLeft(pr.getHeight()).reduced(4,2));
+	stopUI->setBounds(pr.removeFromLeft(pr.getHeight()).reduced(4, 2));
+	prevCueUI->setBounds(pr.removeFromLeft(pr.getHeight()).reduced(2));
+	nextCueUI->setBounds(pr.removeFromLeft(pr.getHeight()).reduced(2));
 	loopUI->setBounds(pr.removeFromLeft(30).reduced(4));
+	totalTimeLabel.setBounds(pr.removeFromRight(100));
 
 }
 
