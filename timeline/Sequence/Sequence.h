@@ -66,6 +66,8 @@ public:
 
 	void setCurrentTime(float time, bool forceOverPlaying = true, bool seekMode = false);
 
+	int getFrameForTime(float time);
+
 	void setBeingEdited(bool value);
 
 	void selectAllItemsBetween(float start, float end);

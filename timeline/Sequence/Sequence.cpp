@@ -1,4 +1,3 @@
-#include "Sequence.h"
 /*
   ==============================================================================
 
@@ -52,6 +51,7 @@ Sequence::Sequence() :
 									This setting also sets how many messages per seconds are sent from layer with automations.", 50, 1,500);
 	loopParam = addBoolParameter("Loop", "Whether the sequence plays again from the start when reached the end while playing", false);
 
+	currentTime->unitSteps = fps->intValue();
 	
 	prevCue = addTrigger("Prev Cue", "Jump to previous cue, if previous cue is less than 1 sec before, jump to the one before that.");
 	nextCue = addTrigger("Next Cue", "Jump to the next cue");
@@ -113,6 +113,11 @@ void Sequence::setCurrentTime(float time, bool forceOverPlaying, bool seekMode)
 	}
 
 	isSeeking = false;
+}
+
+int Sequence::getFrameForTime(float time)
+{
+	return round(time * fps->floatValue());
 }
 
 void Sequence::setBeingEdited(bool value)
@@ -277,6 +282,10 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 	{
 		float minViewTime = jmax(minSequenceTime, totalTime->floatValue() / 100.f); //small hack to avoid UI hang when zooming too much
 		viewEndTime->setRange(viewStartTime->floatValue() + minViewTime, totalTime->floatValue()); //Should be a range value
+	}
+	else if (p == fps)
+	{
+		currentTime->unitSteps = fps->intValue();
 	}
 }
 

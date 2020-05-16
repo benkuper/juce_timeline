@@ -9,10 +9,11 @@
 */
 
 
-SequenceTransportUI::SequenceTransportUI(Sequence * _sequence) :
+SequenceTransportUI::SequenceTransportUI(Sequence* _sequence) :
 	sequence(_sequence),
 	timeLabel(_sequence->currentTime),
-	totalTimeLabel(_sequence->totalTime)
+	totalTimeLabel(_sequence->totalTime),
+	timeStepLabel(_sequence->currentTime)
 {
 	timeLabel.maxFontHeight = 16;
 	timeLabel.maxFontHeight = 14;
@@ -20,8 +21,15 @@ SequenceTransportUI::SequenceTransportUI(Sequence * _sequence) :
 	totalTimeLabel.customTextColor = TEXT_COLOR.darker();
 	totalTimeLabel.updateUIParams();
 
+	timeStepLabel.maxFontHeight = 12;
+	timeStepLabel.useCustomTextColor = true;
+	timeStepLabel.customTextColor = TEXT_COLOR.darker(.2f);
+	timeStepLabel.setShowStepsMode(true);
+	timeStepLabel.updateUIParams();
+
 	addAndMakeVisible(&timeLabel);
 	addAndMakeVisible(&totalTimeLabel);
+	addAndMakeVisible(&timeStepLabel);
 	sequence->addSequenceListener(this);
 	 
 	
@@ -29,11 +37,13 @@ SequenceTransportUI::SequenceTransportUI(Sequence * _sequence) :
 	stopUI.reset(sequence->stopTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::stop_png, TimelineBinaryData::stop_pngSize)));
 	nextCueUI.reset(sequence->nextCue->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::nextcue_png, TimelineBinaryData::nextcue_pngSize)));
 	prevCueUI.reset(sequence->prevCue->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::prevcue_png, TimelineBinaryData::prevcue_pngSize)));
-	
+	loopUI.reset(sequence->loopParam->createImageToggle(AssetManager::getInstance()->getToggleBTImage(ImageCache::getFromMemory(TimelineBinaryData::loop_png, TimelineBinaryData::loop_pngSize))));
+
 	addAndMakeVisible(togglePlayUI.get());
 	addAndMakeVisible(stopUI.get());
 	addAndMakeVisible(nextCueUI.get());
 	addAndMakeVisible(prevCueUI.get());
+	addAndMakeVisible(loopUI.get());
 }
 
 SequenceTransportUI::~SequenceTransportUI()
@@ -42,6 +52,7 @@ SequenceTransportUI::~SequenceTransportUI()
 	stopUI = nullptr;
 	nextCueUI = nullptr;
 	prevCueUI = nullptr;
+	loopUI = nullptr;
 
 	sequence->removeSequenceListener(this);
 }
@@ -63,6 +74,7 @@ void SequenceTransportUI::resized()
 	Rectangle<int> r = getLocalBounds().reduced(2);
 	Rectangle<int> tr = r.removeFromTop(20);
 	timeLabel.setBounds(tr.removeFromLeft(110));
+	timeStepLabel.setBounds(tr.removeFromLeft(50));
 	totalTimeLabel.setBounds(tr.removeFromRight(100));
 	r.removeFromTop(2);
 	
@@ -72,7 +84,7 @@ void SequenceTransportUI::resized()
 	stopUI->setBounds(pr.removeFromLeft(pr.getHeight()).reduced(4));
 	prevCueUI->setBounds(pr.removeFromLeft(pr.getHeight()).reduced(4));
 	nextCueUI->setBounds(pr.removeFromLeft(pr.getHeight()).reduced(4));
-	
+	loopUI->setBounds(pr.removeFromLeft(30).reduced(4));
 
 }
 

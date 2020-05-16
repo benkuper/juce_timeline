@@ -20,12 +20,14 @@ public:
 
 	Sequence * sequence;
 	TimeLabel timeLabel;
+	TimeLabel timeStepLabel;
 	TimeLabel totalTimeLabel;
 	
 	std::unique_ptr<TriggerImageUI> togglePlayUI;
 	std::unique_ptr<TriggerImageUI> stopUI;
 	std::unique_ptr<TriggerImageUI> prevCueUI;
 	std::unique_ptr<TriggerImageUI> nextCueUI;
+	std::unique_ptr<BoolImageToggleUI> loopUI;
 	
 	void paint(Graphics &g) override;
 	void resized() override;

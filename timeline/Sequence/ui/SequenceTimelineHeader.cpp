@@ -50,11 +50,17 @@ void SequenceTimelineHeader::paint(Graphics & g)
 
 	int minGap = 10;
 	int fadeGap = 25;
+	int minFrameGap = 2;
+	int fadeFrameGap = 10;
+
+	int fps = sequence->fps->floatValue();
 
 	float secondGap = getWidth() / (end - start);
-	float minuteGap = (getWidth() / (end - start)) * 60;
+	float frameGap = secondGap / fps;
+	float minuteGap = secondGap * 60;
 
 	bool showSeconds = minuteGap > minGap;
+	bool showFrames = frameGap > minFrameGap;
 	
 	int secondSteps = 1;
 	int minuteSteps = 1;
@@ -87,41 +93,62 @@ void SequenceTimelineHeader::paint(Graphics & g)
 	{
 		int mtx = getXForTime(i*60);
 
-		//Draw minute
-		g.setColour(BG_COLOR.brighter(.6f));
-		//g.drawLine(tx, 0, tx, getHeight(), 1);
-		g.drawVerticalLine(mtx, 0, (float)getHeight());
-		g.setColour(BG_COLOR.darker(.6f));
-		g.drawRoundedRectangle(getLocalBounds().toFloat(), 2, 2);
+		if (mtx >= 0 && mtx < getWidth())
+		{
+			//Draw minute
+			g.setColour(BG_COLOR.brighter(.6f));
+			//g.drawLine(tx, 0, tx, getHeight(), 1);
+			g.drawVerticalLine(mtx, 0, (float)getHeight());
+			g.setColour(BG_COLOR.darker(.6f));
+			g.drawRoundedRectangle(getLocalBounds().toFloat(), 2, 2);
 
-		g.setColour(BG_COLOR.brighter(.7f));
-		g.fillRoundedRectangle(mtx - 10, 0, 20, 14, 2);
-		g.setColour(BG_COLOR.darker());
-		g.drawText(String(i) + "'", mtx - 10, 2, 20, 14, Justification::centred);
+			g.setColour(BG_COLOR.brighter(.7f));
+			g.fillRoundedRectangle(mtx - 10, 0, 20, 14, 2);
+			g.setColour(BG_COLOR.darker());
+			g.drawText(String(i) + "'", mtx - 10, 2, 20, 14, Justification::centred);
 
+		}
+		
 		if (showSeconds)
 		{
 			int sIndex = 0;
-			for (int s = secondSteps; s < 60 && i*60+s <= end; s += secondSteps)
+			for (int s = 0; s < 60 && i*60+s <= end; s += secondSteps)
 			{
 				int stx = getXForTime(i * 60 + s);
 
-				float alpha = 1;
-				if (sIndex % 2 == 0) alpha = fadeAlpha;
-				g.setColour(BG_COLOR.brighter(.1f).withAlpha(alpha));
-				//g.drawLine(tx, 0, tx, getHeight(), 1);
-				g.drawVerticalLine(stx, 0, (float)getHeight());
-				g.setColour(BG_COLOR.brighter(.5f).withAlpha(alpha));
-				g.drawText(String(s), stx - 10, 2, 20, 14, Justification::centred);
+				if (showFrames)
+				{
+					float fadeFrameAlpha = jlimit<float>(0, 1, jmap<float>(frameGap, minFrameGap, fadeFrameGap, 0, 1));
 
-				//show subsecond ?
-				/*
-				g.setColour(BG_COLOR);
-				g.drawVerticalLine(tx, 0, (float)getHeight());
-				*/
+					for (int f = 0; f < fps; f += 2)
+					{
+						int ftx = getXForTime(i * 60 + s + (f * 1.0f) / fps);
+						int ftx2 = getXForTime(i * 60 + s + (f * 1.0f + 1) / fps);
 
-				sIndex++;
-				
+						if (ftx >= 0 && ftx2 < getWidth())
+						{
+
+							g.setColour(BG_COLOR.brighter(.02f).withAlpha(fadeFrameAlpha));
+							g.fillRect(ftx, getHeight() / 2, ftx2 - ftx, getHeight());
+						}
+					}
+				}
+
+				if (s >= secondSteps)
+				{
+					if (stx >= 0 && stx < getWidth())
+					{
+						float alpha = 1;
+						if (sIndex % 2 == 0) alpha = fadeAlpha;
+						g.setColour(BG_COLOR.brighter(.1f).withAlpha(alpha));
+						//g.drawLine(tx, 0, tx, getHeight(), 1);
+						g.drawVerticalLine(stx, 0, (float)getHeight());
+						g.setColour(BG_COLOR.brighter(.5f).withAlpha(alpha));
+						g.drawText(String(s), stx - 10, 2, 20, 14, Justification::centred);
+					}
+
+					sIndex++;
+				}
 			}
 		}
 	}
