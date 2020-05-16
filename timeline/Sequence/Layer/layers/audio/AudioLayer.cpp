@@ -209,7 +209,7 @@ void AudioLayer::updateClipConfig(AudioLayerClip* clip, bool updateOutputChannel
 	clip->channelRemapAudioSource.clearAllMappings();
 	//clip->channelRemapAudioSource.prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
 	clip->setPlaySpeed(sequence->playSpeed->floatValue());
-	clip->resamplingAudioSource.prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
+	if(currentGraph != nullptr)	clip->resamplingAudioSource.prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
 
 	if (updateOutputChannelRemapping)
 	{
