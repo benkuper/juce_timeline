@@ -12,13 +12,13 @@ namespace TimelineBinaryData
     const int            loop_pngSize = 1008;
 
     extern const char*   nextcue_png;
-    const int            nextcue_pngSize = 2624;
+    const int            nextcue_pngSize = 2273;
 
     extern const char*   play_png;
-    const int            play_pngSize = 1849;
+    const int            play_pngSize = 2007;
 
     extern const char*   prevcue_png;
-    const int            prevcue_pngSize = 2536;
+    const int            prevcue_pngSize = 2227;
 
     extern const char*   smallstripe_png;
     const int            smallstripe_pngSize = 1959;
