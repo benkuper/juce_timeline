@@ -13,7 +13,7 @@ SequenceUI::SequenceUI(Sequence * sequence) :
 {
 	minContentHeight = 20; //To fix : need to pass in constructor of BaseItemUI
 
-	togglePlayUI.reset(item->togglePlayTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::play_png, TimelineBinaryData::play_pngSize)));
+	togglePlayUI.reset(item->isPlaying->createImageToggle(AssetManager::getInstance()->getToggleBTImage(ImageCache::getFromMemory(TimelineBinaryData::play_png, TimelineBinaryData::play_pngSize))));
 	stopUI.reset(item->stopTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::stop_png, TimelineBinaryData::stop_pngSize)));
 	addAndMakeVisible(togglePlayUI.get());
 	addAndMakeVisible(stopUI.get());
@@ -23,8 +23,9 @@ SequenceUI::SequenceUI(Sequence * sequence) :
 	timeUI->showLabel = false;
 	timeUI->showValue = false;
 	timeUI->useCustomBGColor = true;
+	timeUI->useCustomFGColor = true;
 	timeUI->customBGColor = BG_COLOR.darker(.1f);
-	timeUI->customFGColor = HIGHLIGHT_COLOR;
+	timeUI->customFGColor = NORMAL_COLOR.brighter();
 
 	addAndMakeVisible(timeUI.get());
 
@@ -62,7 +63,7 @@ void SequenceUI::controllableFeedbackUpdateInternal(Controllable * c)
 {
 	if (c == item->isPlaying)
 	{
-		timeUI->useCustomFGColor = item->isPlaying->boolValue();
+		timeUI->customFGColor = item->isPlaying->boolValue() ? Colour(252,212,98) : NORMAL_COLOR.brighter();
 		timeUI->repaint();
 	}
 }

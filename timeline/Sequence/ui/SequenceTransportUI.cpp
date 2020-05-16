@@ -33,7 +33,7 @@ SequenceTransportUI::SequenceTransportUI(Sequence* _sequence) :
 	sequence->addSequenceListener(this);
 	 
 	
-	togglePlayUI.reset(sequence->togglePlayTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::play_png, TimelineBinaryData::play_pngSize)));
+	togglePlayUI.reset(sequence->isPlaying->createImageToggle(AssetManager::getInstance()->getToggleBTImage(ImageCache::getFromMemory(TimelineBinaryData::play_png, TimelineBinaryData::play_pngSize))));
 	stopUI.reset(sequence->stopTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::stop_png, TimelineBinaryData::stop_pngSize)));
 	nextCueUI.reset(sequence->nextCue->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::nextcue_png, TimelineBinaryData::nextcue_pngSize)));
 	prevCueUI.reset(sequence->prevCue->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::prevcue_png, TimelineBinaryData::prevcue_pngSize)));
@@ -79,7 +79,7 @@ void SequenceTransportUI::resized()
 	r.removeFromTop(2);
 	
 	Rectangle<int> pr = r.removeFromBottom(24);
-	togglePlayUI->setBounds(pr.removeFromLeft(pr.getHeight()).reduced(4,2));
+	togglePlayUI->setBounds(pr.removeFromLeft(pr.getHeight()).reduced(2,0));
 	stopUI->setBounds(pr.removeFromLeft(pr.getHeight()).reduced(4, 2));
 	prevCueUI->setBounds(pr.removeFromLeft(pr.getHeight()).reduced(2));
 	nextCueUI->setBounds(pr.removeFromLeft(pr.getHeight()).reduced(2));

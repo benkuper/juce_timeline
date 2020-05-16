@@ -14,7 +14,9 @@ SequenceManagerUI::SequenceManagerUI(const String &contentName, SequenceManager 
 	addItemText = "Add Sequence";
 	noItemText = "Add timed animation and control by creating a sequence";
 
-	stopAllUI.reset(manager->stopAllTrigger->createButtonUI());
+	playAllUI.reset(manager->playAllTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::play_png, TimelineBinaryData::play_pngSize)));
+	stopAllUI.reset(manager->stopAllTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::stop_png, TimelineBinaryData::stop_pngSize)));
+	addAndMakeVisible(playAllUI.get());
 	addAndMakeVisible(stopAllUI.get());
 
 	addExistingItems();
@@ -27,7 +29,8 @@ SequenceManagerUI::~SequenceManagerUI()
 void SequenceManagerUI::resizedInternalHeader(Rectangle<int>& r)
 {
 	BaseManagerShapeShifterUI::resizedInternalHeader(r);
-	stopAllUI->setBounds(r.removeFromLeft(80).reduced(2));
+	playAllUI->setBounds(r.removeFromLeft(r.getHeight()).reduced(2));
+	stopAllUI->setBounds(r.removeFromLeft(r.getHeight()).reduced(2));
 }
 
 void SequenceManagerUI::mouseDoubleClick(const MouseEvent & e)

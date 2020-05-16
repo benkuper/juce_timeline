@@ -19,7 +19,7 @@ public:
 	virtual ~SequenceUI();
 
 	std::unique_ptr<FloatSliderUI> timeUI;
-	std::unique_ptr<TriggerImageUI> togglePlayUI;
+	std::unique_ptr<BoolImageToggleUI> togglePlayUI;
 	std::unique_ptr<TriggerImageUI> stopUI;
 
 	void resizedInternalHeader(Rectangle<int> &r) override;

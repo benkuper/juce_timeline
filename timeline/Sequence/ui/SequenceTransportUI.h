@@ -23,7 +23,7 @@ public:
 	TimeLabel timeStepLabel;
 	TimeLabel totalTimeLabel;
 	
-	std::unique_ptr<TriggerImageUI> togglePlayUI;
+	std::unique_ptr<BoolImageToggleUI> togglePlayUI;
 	std::unique_ptr<TriggerImageUI> stopUI;
 	std::unique_ptr<TriggerImageUI> prevCueUI;
 	std::unique_ptr<TriggerImageUI> nextCueUI;

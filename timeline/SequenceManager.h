@@ -25,6 +25,7 @@ public:
 	SequenceManager();
 	~SequenceManager();
 
+	Trigger* playAllTrigger;
 	Trigger* stopAllTrigger;
 	BoolParameter* onlyOneSequencePlaying;
 

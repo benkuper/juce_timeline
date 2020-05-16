@@ -19,6 +19,7 @@ SequenceManager::SequenceManager() :
 	itemDataType = "Sequence";
 	helpID = "TimeMachine";
 
+	playAllTrigger = addTrigger("Play All", "Play all sequences");
 	stopAllTrigger = addTrigger("Stop All", "Stop all sequences");
 	onlyOneSequencePlaying = addBoolParameter("Only one sequence playing", "If checked, as soon as one sequence is playing, all the other ones stop", false);
 }
@@ -42,7 +43,10 @@ void SequenceManager::removeItemInternal(Sequence* item)
 void SequenceManager::onContainerTriggerTriggered(Trigger* t)
 {
 	BaseManager::onContainerTriggerTriggered(t);
-	if (t == stopAllTrigger)
+	if (t == playAllTrigger)
+	{
+		for (auto& i : items) i->playTrigger->trigger();
+	}else if (t == stopAllTrigger)
 	{
 		for (auto& i : items) i->stopTrigger->trigger();
 	}

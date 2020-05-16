@@ -17,7 +17,8 @@ public:
 	SequenceManagerUI(const String &contentName, SequenceManager *_manager);
 	~SequenceManagerUI();
 
-	std::unique_ptr<TriggerButtonUI> stopAllUI;
+	std::unique_ptr<TriggerImageUI> playAllUI;
+	std::unique_ptr<TriggerImageUI> stopAllUI;
 
 	void resizedInternalHeader(Rectangle<int>& r) override;
 	void mouseDoubleClick(const MouseEvent &e) override;

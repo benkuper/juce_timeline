@@ -24,7 +24,7 @@ Sequence::Sequence() :
 	helpID = "Sequence";
 
 	isPlaying = addBoolParameter("Is Playing", "Is the sequence playing ?", false);
-	isPlaying->setControllableFeedbackOnly(true);
+	//isPlaying->setControllableFeedbackOnly(true);
 	isPlaying->isSavable = false;
 	isPlaying->hideInEditor = true;
 
@@ -266,6 +266,8 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 		
 		if (isPlaying->boolValue())
 		{
+			if (currentTime->floatValue() >= totalTime->floatValue()) currentTime->setValue(0); //if reached the end when hit play, go to 0
+
 			prevTime = currentTime->floatValue();
 			if(!isThreadRunning()) startThread();
 		}
@@ -293,7 +295,6 @@ void Sequence::onContainerTriggerTriggered(Trigger * t)
 {
 	if (t == playTrigger)
 	{
-		if (currentTime->floatValue() >= totalTime->floatValue()) currentTime->setValue(0); //if reached the end when hit play, go to 0
 		isPlaying->setValue(true);
 	} else if(t == stopTrigger)
 	{
