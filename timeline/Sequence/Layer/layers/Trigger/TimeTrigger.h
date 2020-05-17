@@ -19,7 +19,7 @@ public:
 
 	FloatParameter * time;
 	BoolParameter * isTriggered;
-	
+	ColorParameter* color;
 
 	//ui
 	FloatParameter * flagY;

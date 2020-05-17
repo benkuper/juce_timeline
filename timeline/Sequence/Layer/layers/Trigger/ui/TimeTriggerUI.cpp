@@ -34,7 +34,7 @@ TimeTriggerUI::~TimeTriggerUI()
 
 void TimeTriggerUI::paint(Graphics & g)
 {
-	Colour c = BG_COLOR.brighter(.1f);
+	Colour c = item->color->getColor();
 	if (!item->enabled->boolValue()) c = c.darker(.6f).withAlpha(.7f);
 
 	g.setColour(c);
@@ -168,6 +168,10 @@ void TimeTriggerUI::controllableFeedbackUpdateInternal(Controllable * c)
 	{
 		repaint();
 	} else if (c == item->isUILocked)
+	{
+		repaint();
+	}
+	else if (c == item->color)
 	{
 		repaint();
 	}

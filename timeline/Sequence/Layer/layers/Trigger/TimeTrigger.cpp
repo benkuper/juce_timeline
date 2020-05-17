@@ -1,4 +1,3 @@
-#include "TimeTrigger.h"
 /*
   ==============================================================================
 
@@ -21,6 +20,8 @@ TimeTrigger::TimeTrigger(StringRef name) :
 	flagY = addFloatParameter("Flag Y", "Position of the trigger's flag", 0,0,1);
 	isTriggered = addBoolParameter("Is Triggered", "Is this Time Trigger already triggered during this playing ?", false);
 	
+	color = addColorParameter("Color", "Color of the trigger", BG_COLOR.brighter(.1f));
+
 	isTriggered->hideInEditor = true;
 	isTriggered->isSavable = false;
 }
