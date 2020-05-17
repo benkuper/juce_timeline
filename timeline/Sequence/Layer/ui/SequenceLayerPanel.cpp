@@ -60,7 +60,11 @@ void SequenceLayerPanel::controllableFeedbackUpdateInternal(Controllable * c)
 	}
 	else if (c == item->color)
 	{
-		if (!item->isCurrentlyLoadingData) repaint();
+		if (!item->isCurrentlyLoadingData)
+		{
+			bgColor = item->color->getColor();
+			repaint();
+		}
 	}
 
 }

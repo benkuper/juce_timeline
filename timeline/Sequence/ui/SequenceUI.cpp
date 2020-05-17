@@ -25,7 +25,7 @@ SequenceUI::SequenceUI(Sequence * sequence) :
 	timeUI->useCustomBGColor = true;
 	timeUI->useCustomFGColor = true;
 	timeUI->customBGColor = BG_COLOR.darker(.1f);
-	timeUI->customFGColor = NORMAL_COLOR.brighter();
+	timeUI->customFGColor = FEEDBACK_COLOR.withSaturation(.3f);
 
 	addAndMakeVisible(timeUI.get());
 
@@ -63,7 +63,7 @@ void SequenceUI::controllableFeedbackUpdateInternal(Controllable * c)
 {
 	if (c == item->isPlaying)
 	{
-		timeUI->customFGColor = item->isPlaying->boolValue() ? Colour(252,212,98) : NORMAL_COLOR.brighter();
+		timeUI->customFGColor = item->isPlaying->boolValue() ? Colour(252,212,98) : FEEDBACK_COLOR.withSaturation(.3f);
 		timeUI->repaint();
 	}
 }
