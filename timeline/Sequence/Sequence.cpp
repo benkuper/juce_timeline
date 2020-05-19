@@ -335,7 +335,7 @@ void Sequence::run()
 
 		if (timeIsDrivenByAudio())
 		{
-			DBG("Diff (ms): " << abs(hiResAudioTime - currentTime->floatValue()));
+			//DBG("Diff (ms): " << abs(hiResAudioTime - currentTime->floatValue()));
 			//targetTime = hiResAudioTime;
 		}
 		//DBG(deltaMillis << " : " << (targetTime - currentTime->floatValue()));
