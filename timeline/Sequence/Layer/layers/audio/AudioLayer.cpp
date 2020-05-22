@@ -171,14 +171,16 @@ void AudioLayer::updateSelectedOutChannels()
 	int newNumActiveOutputs = 0;
 	for (int i = 0; i < channelsCC.controllables.size(); i++) if (((BoolParameter *)channelsCC.controllables[i])->boolValue()) newNumActiveOutputs++;
 	
-	//bool numOutputChanged = numActiveOutputs != newNumActiveOutputs;
+	bool numOutputChanged = numActiveOutputs != newNumActiveOutputs;
 	numActiveOutputs = newNumActiveOutputs;
 
-	currentGraph->disconnectNode(graphID);
-
-	currentProcessor->setPlayConfigDetails(0, numActiveOutputs, currentGraph->getSampleRate(), currentGraph->getBlockSize());
-	currentProcessor->prepareToPlay(currentGraph->getSampleRate(), currentGraph->getBlockSize());
-
+	
+	if (numOutputChanged)
+	{
+		currentGraph->disconnectNode(graphID);
+		currentProcessor->setPlayConfigDetails(0, numActiveOutputs, currentGraph->getSampleRate(), currentGraph->getBlockSize());
+		currentProcessor->prepareToPlay(currentGraph->getSampleRate(), currentGraph->getBlockSize());
+	}
 	
 	for (auto & c : clipManager.items)
 	{
@@ -190,8 +192,9 @@ void AudioLayer::updateSelectedOutChannels()
 	{
 		if (((BoolParameter *)channelsCC.controllables[i])->boolValue())
 		{
+			if(numOutputChanged) currentGraph->addConnection({ {AudioProcessorGraph::NodeID(graphID), index }, {(AudioProcessorGraph::NodeID)audioOutputGraphID, i } });
+			
 			selectedOutChannels.add(i);
-			currentGraph->addConnection({{AudioProcessorGraph::NodeID(graphID), index }, {(AudioProcessorGraph::NodeID)audioOutputGraphID, i } });
 			for (auto & c : clipManager.items) ((AudioLayerClip *)c)->channelRemapAudioSource.setOutputChannelMapping(index, index);
 			index++;
 		}
