@@ -25,7 +25,7 @@ LayerBlock::LayerBlock(StringRef name, float _time) :
 	isActive = addBoolParameter("Is Active", "This is a feedback to know if block is currently active in the timeline", false);
 	isActive->setControllableFeedbackOnly(true);
 
-	isLocked = addBoolParameter("Locked", "When locked, you can't change time or flag values", false);
+	isUILocked->hideInEditor = false;
 }
 
 LayerBlock::~LayerBlock()

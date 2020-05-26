@@ -54,7 +54,7 @@ void TimeCueUI::paint(Graphics & g)
 	Colour c = item->isSelected ? HIGHLIGHT_COLOR : item->pauseOnCue->boolValue()?YELLOW_COLOR:bgColor;
 	if (isMouseOver()) c = c.brighter();
 
-	if (item->isLocked->boolValue()) c = c.interpolatedWith(RED_COLOR, .5f);
+	if (item->isUILocked->boolValue()) c = c.interpolatedWith(RED_COLOR, .5f);
 	
 	g.setColour(c);
 	g.fillPath(drawPath);
@@ -98,7 +98,7 @@ void TimeCueUI::mouseDown(const MouseEvent & e)
 void TimeCueUI::mouseDrag(const MouseEvent & e)
 {
 	BaseItemMinimalUI::mouseDrag(e);
-	if(!item->isLocked->boolValue() && e.eventComponent != &itemLabel) cueUIListeners.call(&TimeCueUIListener::cueDragged, this, e);
+	if(!item->isUILocked->boolValue() && e.eventComponent != &itemLabel) cueUIListeners.call(&TimeCueUIListener::cueDragged, this, e);
 }
 
 void TimeCueUI::mouseUp(const MouseEvent & e)

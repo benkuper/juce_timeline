@@ -18,7 +18,6 @@ public:
 	~TimeCue();
 
 	FloatParameter * time;
-	BoolParameter * isLocked;
 	BoolParameter * pauseOnCue;
 
 	Sequence * getSequence();

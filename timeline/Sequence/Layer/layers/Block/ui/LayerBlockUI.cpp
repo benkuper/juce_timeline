@@ -50,7 +50,7 @@ void LayerBlockUI::paintOverChildren(Graphics& g)
 	if (inspectable.wasObjectDeleted()) return;
 	BaseItemMinimalUI::paintOverChildren(g);
 
-	if (item->isLocked->boolValue())
+	if (item->isUILocked->boolValue())
 	{
 		g.setTiledImageFill(ImageCache::getFromMemory(TimelineBinaryData::stripe_png, TimelineBinaryData::stripe_pngSize),0,0,.1f);
 		g.fillAll();
@@ -84,7 +84,7 @@ void LayerBlockUI::mouseEnter(const MouseEvent & e)
 	if (inspectable.wasObjectDeleted()) return;
 
 
-	if (canBeGrabbed && !item->isLocked->boolValue() && getWidth() > 24)
+	if (canBeGrabbed && !item->isUILocked->boolValue() && getWidth() > 24)
 	{
 		grabber.setVisible(true);
 		coreGrabber.setVisible(true);
@@ -116,7 +116,7 @@ void LayerBlockUI::mouseDown(const MouseEvent & e)
 {
 	BaseItemMinimalUI::mouseDown(e);
 
-	if (canBeGrabbed && !item->isLocked->boolValue())
+	if (canBeGrabbed && !item->isUILocked->boolValue())
 	{
 		item->setMovePositionReference(true);
 		coreLengthAtMouseDown = item->coreLength->floatValue();
@@ -129,7 +129,7 @@ void LayerBlockUI::mouseDown(const MouseEvent & e)
 
 void LayerBlockUI::mouseDrag(const MouseEvent & e)
 {
-	if (canBeGrabbed && !item->isLocked->boolValue())
+	if (canBeGrabbed && !item->isUILocked->boolValue())
 	{
 		if (isDragging)
 		{
@@ -155,7 +155,7 @@ void LayerBlockUI::mouseDrag(const MouseEvent & e)
 void LayerBlockUI::mouseUp(const MouseEvent & e)
 {
 
-	if (canBeGrabbed && !item->isLocked->boolValue())
+	if (canBeGrabbed && !item->isUILocked->boolValue())
 	{
 		if (isDragging)
 		{
@@ -209,7 +209,7 @@ void LayerBlockUI::controllableFeedbackUpdateInternal(Controllable * c)
 	{
 		bgColor = item->isActive->boolValue() ? baseColor : highlightColor; 
 	}
-	else if (c == item->isLocked)
+	else if (c == item->isUILocked)
 	{
 		repaint();
 	}

@@ -243,6 +243,11 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 		}
 		
 		if ((!isPlaying->boolValue() || isSeeking) && timeIsDrivenByAudio()) hiResAudioTime = currentTime->floatValue();
+		else if (getCurrentThreadId() != getThreadId())
+		{
+			millisAtSetTime = Time::getMillisecondCounterHiRes();
+			timeAtSetTime = timeIsDrivenByAudio() ? hiResAudioTime : currentTime->floatValue();
+		}
 
 		sequenceListeners.call(&SequenceListener::sequenceCurrentTimeChanged, this, (float)prevTime, isPlaying->boolValue());
 		prevTime = currentTime->floatValue();
@@ -258,9 +263,9 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 	}
 	else if (p == isPlaying)
 	{
+		signalThreadShouldExit();
 		if (getCurrentThreadId() != getThreadId())
 		{
-			signalThreadShouldExit();
 			waitForThreadToExit(300);
 		}
 		
@@ -338,6 +343,7 @@ void Sequence::run()
 			//DBG("Diff (ms): " << abs(hiResAudioTime - currentTime->floatValue()));
 			//targetTime = hiResAudioTime;
 		}
+
 		//DBG(deltaMillis << " : " << (targetTime - currentTime->floatValue()));
 
 		currentTime->setValue(targetTime);

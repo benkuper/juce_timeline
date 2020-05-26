@@ -18,7 +18,7 @@ TimeCue::TimeCue(const float & _time) :
 	time->setValue(_time, true, true);
 	time->defaultUI = FloatParameter::TIME;
 
-	isLocked = addBoolParameter("Locked", "When locked, you can't change time by dragging it values", false);
+	isUILocked->hideInEditor = false;
 
 	pauseOnCue = addBoolParameter("Pause On Cue", "If checked, the sequence will pause when the time is on this cue", false);
 }
