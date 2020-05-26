@@ -124,7 +124,7 @@ void TimeCueUI::controllableFeedbackUpdateInternal(Controllable * c)
 	{
 		cueUIListeners.call(&TimeCueUIListener::cueTimeChanged, this);
 	}
-	else if (c == item->isLocked || c == item->pauseOnCue)
+	else if (c == item->isUILocked || c == item->pauseOnCue)
 	{
 		repaint();
 	}
