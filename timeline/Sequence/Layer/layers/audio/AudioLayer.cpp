@@ -10,15 +10,16 @@
 
 int AudioLayer::graphIDIncrement = 10;
 
-AudioLayer::AudioLayer(Sequence * _sequence, var params) :
+AudioLayer::AudioLayer(Sequence* _sequence, var params) :
 	SequenceLayer(_sequence, "Audio"),
 	clipManager(this),
 	currentGraph(nullptr),
 	currentProcessor(nullptr),
 	channelsCC("Channels"),
-    enveloppe(nullptr),
-    numActiveOutputs(0),
-    graphID(0) //was -1 but since 5.2.1, generated warning. Should do otherwise ?
+	enveloppe(nullptr),
+	numActiveOutputs(0),
+    graphID(0), //was -1 but since 5.2.1, generated warning. Should do otherwise ?
+	audioOutputGraphID(2)
 {
 
 	helpID = "AudioLayer";
@@ -35,6 +36,7 @@ AudioLayer::AudioLayer(Sequence * _sequence, var params) :
 	clipManager.addBaseManagerListener(this);
 	helpID = "AudioLayer";
 
+	updateSelectedOutChannels();
 }
 
 AudioLayer::~AudioLayer()
@@ -61,7 +63,6 @@ void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph * graph, int outputG
 		if (!isCurrentlyLoadingData)
 		{
 			channelsData = channelsCC.getJSONData();
-			DBG("KEEP ghost " << channelsData.toString());
 		}
 		
 		channelsCC.clear();
@@ -174,7 +175,6 @@ void AudioLayer::updateSelectedOutChannels()
 	bool numOutputChanged = numActiveOutputs != newNumActiveOutputs;
 	numActiveOutputs = newNumActiveOutputs;
 
-	
 	if (numOutputChanged)
 	{
 		currentGraph->disconnectNode(graphID);
@@ -192,8 +192,11 @@ void AudioLayer::updateSelectedOutChannels()
 	{
 		if (((BoolParameter *)channelsCC.controllables[i])->boolValue())
 		{
-			if(numOutputChanged) currentGraph->addConnection({ {AudioProcessorGraph::NodeID(graphID), index }, {(AudioProcessorGraph::NodeID)audioOutputGraphID, i } });
-			
+			if (numOutputChanged)
+			{
+				currentGraph->addConnection({ {graphID, index }, {(AudioProcessorGraph::NodeID)audioOutputGraphID, i}});
+			}
+
 			selectedOutChannels.add(i);
 			for (auto & c : clipManager.items) ((AudioLayerClip *)c)->channelRemapAudioSource.setOutputChannelMapping(index, index);
 			index++;
