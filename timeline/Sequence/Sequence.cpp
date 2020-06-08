@@ -52,7 +52,8 @@ Sequence::Sequence() :
 	loopParam = addBoolParameter("Loop", "Whether the sequence plays again from the start when reached the end while playing", false);
 
 	currentTime->unitSteps = fps->intValue();
-	
+	totalTime->unitSteps = fps->intValue();
+
 	prevCue = addTrigger("Prev Cue", "Jump to previous cue, if previous cue is less than 1 sec before, jump to the one before that.");
 	nextCue = addTrigger("Next Cue", "Jump to the next cue");
 
@@ -293,6 +294,9 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 	else if (p == fps)
 	{
 		currentTime->unitSteps = fps->intValue();
+		totalTime->unitSteps = fps->intValue();
+		totalTime->setValue(totalTime->floatValue()); //force update
+		currentTime->setValue(currentTime->floatValue()); //force update
 	}
 }
 
