@@ -30,7 +30,6 @@ SequenceTransportUI::SequenceTransportUI(Sequence* _sequence) :
 	addAndMakeVisible(&timeLabel);
 	addAndMakeVisible(&totalTimeLabel);
 	addAndMakeVisible(&timeStepLabel);
-	sequence->addSequenceListener(this);
 	 
 	
 	togglePlayUI.reset(sequence->isPlaying->createImageToggle(AssetManager::getInstance()->getToggleBTImage(ImageCache::getFromMemory(TimelineBinaryData::play_png, TimelineBinaryData::play_pngSize))));
@@ -53,20 +52,6 @@ SequenceTransportUI::~SequenceTransportUI()
 	nextCueUI = nullptr;
 	prevCueUI = nullptr;
 	loopUI = nullptr;
-
-	sequence->removeSequenceListener(this);
-}
-
-void SequenceTransportUI::paint(Graphics &g)
-{
-	/*
-	if (sequence->masterAudioModule != nullptr)
-	{
-		Rectangle<int> r = getLocalBounds().reduced(2).removeFromTop(timeLabel.getHeight()).withLeft(timeLabel.getRight() + 5);
-		g.setColour(sequence->timeIsDrivenByAudio()?AUDIO_COLOR.brighter(.7f):HIGHLIGHT_COLOR);
-		g.drawFittedText(sequence->masterAudioModule->niceName, r.reduced(2), Justification::centred, 1);
-	}
-	*/
 }
 
 void SequenceTransportUI::resized()
@@ -88,7 +73,3 @@ void SequenceTransportUI::resized()
 
 }
 
-void SequenceTransportUI::sequenceMasterAudioModuleChanged(Sequence *)
-{
-	repaint();
-}

@@ -11,12 +11,11 @@
 #pragma once
 
 class SequenceTransportUI :
-	public Component,
-	public Sequence::SequenceListener
+	public Component
 {
 public:
 	SequenceTransportUI(Sequence * _sequence);
-	~SequenceTransportUI();
+	virtual ~SequenceTransportUI();
 
 	Sequence * sequence;
 	TimeLabel timeLabel;
@@ -29,10 +28,7 @@ public:
 	std::unique_ptr<TriggerImageUI> nextCueUI;
 	std::unique_ptr<BoolImageToggleUI> loopUI;
 	
-	void paint(Graphics &g) override;
 	void resized() override;
-
-	void sequenceMasterAudioModuleChanged(Sequence *) override;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceTransportUI)
 };
