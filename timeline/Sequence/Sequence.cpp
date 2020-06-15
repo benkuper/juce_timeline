@@ -26,7 +26,7 @@ Sequence::Sequence() :
 	isPlaying = addBoolParameter("Is Playing", "Is the sequence playing ?", false);
 	//isPlaying->setControllableFeedbackOnly(true);
 	isPlaying->isSavable = false;
-	isPlaying->hideInEditor = true;
+	//isPlaying->hideInEditor = true;
 
 	playTrigger = addTrigger("Play", "Play the sequence");
 	stopTrigger = addTrigger("Stop", "Stops the sequence and set the current time at 0.");
@@ -52,7 +52,8 @@ Sequence::Sequence() :
 	loopParam = addBoolParameter("Loop", "Whether the sequence plays again from the start when reached the end while playing", false);
 
 	currentTime->unitSteps = fps->intValue();
-	
+	totalTime->unitSteps = fps->intValue();
+
 	prevCue = addTrigger("Prev Cue", "Jump to previous cue, if previous cue is less than 1 sec before, jump to the one before that.");
 	nextCue = addTrigger("Next Cue", "Jump to the next cue");
 
@@ -243,6 +244,11 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 		}
 		
 		if ((!isPlaying->boolValue() || isSeeking) && timeIsDrivenByAudio()) hiResAudioTime = currentTime->floatValue();
+		else if (getCurrentThreadId() != getThreadId())
+		{
+			millisAtSetTime = Time::getMillisecondCounterHiRes();
+			timeAtSetTime = timeIsDrivenByAudio() ? hiResAudioTime : currentTime->floatValue();
+		}
 
 		sequenceListeners.call(&SequenceListener::sequenceCurrentTimeChanged, this, (float)prevTime, isPlaying->boolValue());
 		prevTime = currentTime->floatValue();
@@ -258,9 +264,9 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 	}
 	else if (p == isPlaying)
 	{
+		signalThreadShouldExit();
 		if (getCurrentThreadId() != getThreadId())
 		{
-			signalThreadShouldExit();
 			waitForThreadToExit(300);
 		}
 		
@@ -288,6 +294,9 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 	else if (p == fps)
 	{
 		currentTime->unitSteps = fps->intValue();
+		totalTime->unitSteps = fps->intValue();
+		totalTime->setValue(totalTime->floatValue()); //force update
+		currentTime->setValue(currentTime->floatValue()); //force update
 	}
 }
 
@@ -335,9 +344,10 @@ void Sequence::run()
 
 		if (timeIsDrivenByAudio())
 		{
-			DBG("Diff (ms): " << abs(hiResAudioTime - currentTime->floatValue()));
+			//DBG("Diff (ms): " << abs(hiResAudioTime - currentTime->floatValue()));
 			//targetTime = hiResAudioTime;
 		}
+
 		//DBG(deltaMillis << " : " << (targetTime - currentTime->floatValue()));
 
 		currentTime->setValue(targetTime);

@@ -13,7 +13,7 @@ TriggerLayer::TriggerLayer(Sequence * _sequence, StringRef name, var params) :
 	ttm(nullptr)
 {
 	helpID = "TriggerLayer";
-	color->setColor(ACTION_COLOR.darker());
+	//color->setColor(ACTION_COLOR.darker());
 
 	lockAll = addTrigger("Lock All", "Lock all existing triggers in this layer");
 	unlockAll = addTrigger("Unlock All", "Unlock all existing triggers in this layer");

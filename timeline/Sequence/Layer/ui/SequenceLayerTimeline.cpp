@@ -21,6 +21,8 @@ SequenceLayerTimeline::SequenceLayerTimeline(SequenceLayer * layer) :
 	//setInterceptsMouseClicks(true, true);
 	setWantsKeyboardFocus(false);
 	setMouseClickGrabsKeyboardFocus(false);
+	autoSelectWithChildRespect = false;
+	autoDrawContourWhenSelected = false;
 
     addAndMakeVisible(&needle);
     
@@ -63,6 +65,8 @@ void SequenceLayerTimeline::updateNeedlePosition()
 
 void SequenceLayerTimeline::mouseDown(const MouseEvent &e)
 {
+	BaseItemMinimalUI::mouseDown(e);
+	/*
 	if (e.mods.isLeftButtonDown() && e.eventComponent->getParentComponent() == this)
 	{
 		if(e.mods.isShiftDown()) item->selectThis(true);
@@ -72,6 +76,7 @@ void SequenceLayerTimeline::mouseDown(const MouseEvent &e)
 			else if (e.mods.isCommandDown()) item->deselectThis();
 		}
 	}
+	*/
 }
 
 void SequenceLayerTimeline::setSeekManipulationMode(bool isManipulating)

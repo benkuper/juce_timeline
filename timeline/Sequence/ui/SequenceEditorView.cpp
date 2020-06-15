@@ -41,13 +41,17 @@ SequenceEditorView::SequenceEditorView(Sequence * _sequence, SequenceTimelineNav
 
 	addAndMakeVisible(&grabber);
 	grabber.addGrabberListener(this);
-
-	
 }
 
 SequenceEditorView::~SequenceEditorView()
 {
-	if (!sequenceRef.wasObjectDeleted()) sequence->setBeingEdited(false); 
+	//@Tom : on linux in Release mode (-O3), sequenceRef doesn't advertise as wasObjectDeleted() 
+	//but sequence pointer is still fucked up (debuggin sequence->currentTime->floatvalue() will crash)
+	//it's still showing "isClearing" as 1 so we can use that but's it's not proper
+	if (!sequenceRef.wasObjectDeleted() && !sequence->isClearing) 
+	{
+		sequence->setBeingEdited(false); 
+	}
 }
 
 void SequenceEditorView::paint(Graphics &)
