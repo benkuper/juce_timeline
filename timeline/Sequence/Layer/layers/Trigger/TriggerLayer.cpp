@@ -1,4 +1,3 @@
-#include "TriggerLayer.h"
 /*
   ==============================================================================
 
@@ -57,9 +56,8 @@ Array<UndoableAction*> TriggerLayer::getRemoveTimespanInternal(float start, floa
 bool TriggerLayer::paste()
 {
 	if (ttm == nullptr) return false;
-	Array<TimeTrigger *> p = ttm->addItemsFromClipboard(false);
-	if (p.isEmpty()) return SequenceLayer::paste();
-	return true;
+	if (!ttm->addItemsFromClipboard(false).isEmpty()) return true;
+	return SequenceLayer::paste();
 }
 
 void TriggerLayer::onContainerTriggerTriggered(Trigger * t)

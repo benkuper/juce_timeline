@@ -34,7 +34,6 @@ AudioLayer::AudioLayer(Sequence * _sequence, var params) :
 	addChildControllableContainer(&clipManager);
 
 	clipManager.addBaseManagerListener(this);
-	helpID = "AudioLayer";
 
 }
 

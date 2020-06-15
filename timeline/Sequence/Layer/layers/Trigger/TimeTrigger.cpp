@@ -12,6 +12,7 @@ TimeTrigger::TimeTrigger(StringRef name) :
 	BaseItem(name)
 {
 	itemDataType = "TimeTrigger"; 
+
 	showWarningInUI = true;
 
 	time = addFloatParameter("Time", "Time at which the action is triggered", 0, 0, 3600);

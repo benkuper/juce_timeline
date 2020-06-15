@@ -1,4 +1,3 @@
-#include "TimeTriggerManager.h"
 /*
   ==============================================================================
 
@@ -15,10 +14,11 @@ TimeTriggerManager::TimeTriggerManager(TriggerLayer * _layer, Sequence * _sequen
 	sequence(_sequence)
 {
 	hideInEditor = true;
-
+	
 	comparator.compareFunc = &TimeTriggerManager::compareTime;
 
 	itemDataType = "TimeTrigger";
+
 	sequence->addSequenceListener(this);
 
 }
@@ -45,7 +45,8 @@ void TimeTriggerManager::addItemInternal(TimeTrigger * t, var data)
 Array<TimeTrigger *> TimeTriggerManager::addItemsFromClipboard(bool showWarning)
 {
 	Array<TimeTrigger *> triggers = BaseManager::addItemsFromClipboard(showWarning);
-	if (triggers.isEmpty()) return nullptr;
+	if (triggers.isEmpty()) return triggers;
+	if (triggers[0] == nullptr) return Array<TimeTrigger *>();
 
 	float minTime = triggers[0]->time->floatValue();
 	for (auto &tt : triggers)

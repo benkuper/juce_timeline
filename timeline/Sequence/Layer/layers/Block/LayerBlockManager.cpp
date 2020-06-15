@@ -119,8 +119,8 @@ Array<LayerBlock*> LayerBlockManager::getBlocksInRange(float start, float end, b
 Array<LayerBlock*> LayerBlockManager::addItemsFromClipboard(bool showWarning)
 {
 	Array<LayerBlock*> blocks = BaseManager::addItemsFromClipboard(showWarning);
-	if (blocks.isEmpty()) return nullptr;
-	if (blocks[0] == nullptr) return nullptr;
+	if (blocks.isEmpty()) return blocks;
+	if (blocks[0] == nullptr) return Array<LayerBlock *>();
 
 	float minTime = blocks[0]->time->floatValue();
 	for (auto& b : blocks)
