@@ -28,6 +28,8 @@ public:
 	virtual void updateContent() {} // to be overriden
 	virtual void mouseDown(const MouseEvent &e) override;
 
+    virtual void addSelectableComponentsAndInspectables(Array<Component*>& selectables, Array<Inspectable*>& inspectables) {}
+
     virtual void setSeekManipulationMode(bool isManipulating);
 
 	void controllableFeedbackUpdateInternal(Controllable * c) override;

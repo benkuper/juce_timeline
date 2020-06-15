@@ -22,4 +22,6 @@ public:
 
 	void resized() override;
 	void updateContent() override;
+
+	virtual void addSelectableComponentsAndInspectables(Array<Component*>& selectables, Array<Inspectable*>& inspectables) override;
 };
