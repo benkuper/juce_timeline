@@ -8,11 +8,12 @@
   ==============================================================================
 */
 
-SequenceTimelineHeader::SequenceTimelineHeader(Sequence * _sequence, TimeCueManagerUI * cueManagerUI, TimeNeedleUI * needleUI) :
+SequenceTimelineHeader::SequenceTimelineHeader(Sequence* _sequence, TimeCueManagerUI* cueManagerUI, TimeNeedleUI* needleUI) :
 	sequence(_sequence),
-    needle(needleUI),
-    cueManagerUI(cueManagerUI),
-	selectionZoomMode(false)
+	needle(needleUI),
+	cueManagerUI(cueManagerUI),
+	selectionZoomMode(false),
+	selectionSpan(-1, -1)
 {
 	sequence->addAsyncContainerListener(this);
 	
@@ -193,7 +194,7 @@ void SequenceTimelineHeader::updateNeedlePosition()
 
 void SequenceTimelineHeader::mouseDown(const MouseEvent & e)
 {
-	if (e.mods.isRightButtonDown() || (e.mods.isLeftButtonDown() && e.mods.isShiftDown()))
+	if (e.mods.isRightButtonDown() || (e.mods.isLeftButtonDown() && e.mods.isCommandDown()))
 	{
 		float pos = getTimeForX(e.getPosition().x);
 		selectionSpan.setXY(pos, pos);
@@ -207,9 +208,10 @@ void SequenceTimelineHeader::mouseDown(const MouseEvent & e)
 
 void SequenceTimelineHeader::mouseDrag(const MouseEvent & e)
 {
-	if(e.mods.isRightButtonDown() || (e.mods.isLeftButtonDown() && e.mods.isShiftDown()))
+	if(e.mods.isRightButtonDown() || (e.mods.isLeftButtonDown() && e.mods.isCommandDown()))
 	{
 		float pos = getTimeForX(e.getPosition().x);
+		if (selectionSpan.x < 0) selectionSpan.setX(pos);
 		selectionSpan.setY(pos);
 		repaint();
 	}
@@ -229,7 +231,7 @@ void SequenceTimelineHeader::mouseDoubleClick(const MouseEvent & e)
 
 void SequenceTimelineHeader::mouseUp(const MouseEvent& e)
 {
-	if (e.mods.isRightButtonDown() || (e.mods.isLeftButtonDown() && e.mods.isShiftDown()))
+	if (e.mods.isRightButtonDown() || (e.mods.isLeftButtonDown() && e.mods.isCommandDown()))
 	{
 		if (e.mouseWasDraggedSinceMouseDown())
 		{
@@ -271,7 +273,7 @@ void SequenceTimelineHeader::mouseUp(const MouseEvent& e)
 				}
 			}
 
-			selectionSpan.setXY(0, 0);
+			selectionSpan.setXY(-1, 0);
 			repaint();
 		}
 	}
