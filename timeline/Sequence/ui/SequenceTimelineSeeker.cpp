@@ -69,7 +69,7 @@ void SequenceTimelineSeeker::mouseDown(const MouseEvent & e)
 		viewTimeAtMouseDown = (viewEndAtMouseDown - viewStartAtMouseDown);
 	}
 
-	//e.source.enableUnboundedMouseMovement(true, true);
+	e.source.enableUnboundedMouseMovement(true, false);
 	setMouseCursor(MouseCursor::NoCursor);
 	seekerListeners.call(&SeekerListener::seekerManipulationChanged, true);
 
@@ -79,7 +79,6 @@ void SequenceTimelineSeeker::mouseDown(const MouseEvent & e)
 
 void SequenceTimelineSeeker::mouseDrag(const MouseEvent & e)
 {
-
 	if (e.mods.isRightButtonDown())
 	{
 		float pos = getTimeForX(e.getEventRelativeTo(this).getPosition().x);
@@ -129,8 +128,6 @@ void SequenceTimelineSeeker::mouseDrag(const MouseEvent & e)
 
 void SequenceTimelineSeeker::mouseUp(const MouseEvent & e)
 {
-	//e.source.enableUnboundedMouseMovement(false, true);
-
 	if (e.mods.isRightButtonDown())
 	{
 		float start = 0;
@@ -150,6 +147,8 @@ void SequenceTimelineSeeker::mouseUp(const MouseEvent & e)
 	}
 	
 	setMouseCursor(MouseCursor::NormalCursor);
+	e.source.enableUnboundedMouseMovement(false, true);
+
 	seekerListeners.call(&SeekerListener::seekerManipulationChanged, false);
 }
 
