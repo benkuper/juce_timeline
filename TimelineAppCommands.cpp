@@ -15,6 +15,8 @@ namespace TimelineCommandIDs
 	const int goToStart = 0x80005;
 	const int goToEnd = 0x80006;
 	const int addCueAtPosition = 0x80007;
+	const int moveOneFrameAfter = 0x80008;
+	const int moveOneFrameBefore = 0x80009;
 }
 
 void TimelineAppCommands::init()
@@ -71,6 +73,16 @@ void TimelineAppCommands::getCommandInfo(CommandID commandID, ApplicationCommand
 		result.setInfo("Add Cue at position", "", "Timeline", 0);
 		result.addDefaultKeypress(KeyPress::createFromDescription("b").getKeyCode(), ModifierKeys::ctrlModifier);
 		break;
+
+	case TimelineCommandIDs::moveOneFrameAfter:
+		result.setInfo("Move one frame after", "", "Timeline", 0);
+		result.addDefaultKeypress(KeyPress::rightKey, ModifierKeys::ctrlModifier);
+		break;
+
+	case TimelineCommandIDs::moveOneFrameBefore:
+		result.setInfo("Move one frame before", "", "Timeline", 0);
+		result.addDefaultKeypress(KeyPress::leftKey, ModifierKeys::ctrlModifier);
+		break;
 	}
 }
 
@@ -86,7 +98,9 @@ void TimelineAppCommands::getAllCommands(Array<CommandID>& commands) {
 		TimelineCommandIDs::nextTimeStep,
 		TimelineCommandIDs::goToStart,
 		TimelineCommandIDs::goToEnd,
-		TimelineCommandIDs::addCueAtPosition
+		TimelineCommandIDs::addCueAtPosition,
+		TimelineCommandIDs::moveOneFrameAfter,
+		TimelineCommandIDs::moveOneFrameBefore
 	};
 
 	commands.addArray(ids, numElementsInArray(ids));
@@ -103,6 +117,9 @@ void TimelineAppCommands::fillMenu(ApplicationCommandManager* commandManager, Po
 		menu->addCommandItem(commandManager, TimelineCommandIDs::prevCue);
 		menu->addCommandItem(commandManager, TimelineCommandIDs::nextCue);
 		menu->addCommandItem(commandManager, TimelineCommandIDs::addCueAtPosition);
+		menu->addSeparator();
+		menu->addCommandItem(commandManager, TimelineCommandIDs::moveOneFrameAfter);
+		menu->addCommandItem(commandManager, TimelineCommandIDs::moveOneFrameBefore);
 	}
 }
 
@@ -165,6 +182,25 @@ bool TimelineAppCommands::perform(const ApplicationCommandTarget::InvocationInfo
 		if (s != nullptr) s->cueManager->addCueAt(s->currentTime->floatValue());
 	}
 	break;
+
+	case TimelineCommandIDs::moveOneFrameAfter:
+	case TimelineCommandIDs::moveOneFrameBefore:
+	{
+		Sequence* s = getCurrentEditingSequence();
+		if (s != nullptr)
+		{
+			BaseItem* i = InspectableSelectionManager::mainSelectionManager->getInspectableAs<BaseItem>();
+			if (i != nullptr)
+			{
+				float step = 1.0f / s->fps->intValue();
+				if (info.commandID == TimelineCommandIDs::moveOneFrameBefore) step = -step;
+				i->setMovePositionReference(true);
+				i->movePosition(Point<float>(step, 0), true);
+			}
+		}
+	}
+	break;
+
 	}
 
 	return true;
