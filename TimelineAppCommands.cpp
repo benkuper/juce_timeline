@@ -14,7 +14,7 @@ namespace TimelineCommandIDs
 	const int nextTimeStep = 0x80004;
 	const int goToStart = 0x80005;
 	const int goToEnd = 0x80006;
-
+	const int addCueAtPosition = 0x80007;
 }
 
 void TimelineAppCommands::init()
@@ -66,6 +66,11 @@ void TimelineAppCommands::getCommandInfo(CommandID commandID, ApplicationCommand
 		result.setInfo("Go toend", "", "Timeline", 0);
 		result.addDefaultKeypress(KeyPress::endKey, ModifierKeys::noModifiers);
 		break;
+
+	case TimelineCommandIDs::addCueAtPosition:
+		result.setInfo("Add Cue at position", "", "Timeline", 0);
+		result.addDefaultKeypress(KeyPress::createFromDescription("b").getKeyCode(), ModifierKeys::ctrlModifier);
+		break;
 	}
 }
 
@@ -80,7 +85,8 @@ void TimelineAppCommands::getAllCommands(Array<CommandID>& commands) {
 		TimelineCommandIDs::prevTimeStep,
 		TimelineCommandIDs::nextTimeStep,
 		TimelineCommandIDs::goToStart,
-		TimelineCommandIDs::goToEnd
+		TimelineCommandIDs::goToEnd,
+		TimelineCommandIDs::addCueAtPosition
 	};
 
 	commands.addArray(ids, numElementsInArray(ids));
@@ -96,6 +102,7 @@ void TimelineAppCommands::fillMenu(ApplicationCommandManager* commandManager, Po
 		menu->addCommandItem(commandManager, TimelineCommandIDs::nextTimeStep);
 		menu->addCommandItem(commandManager, TimelineCommandIDs::prevCue);
 		menu->addCommandItem(commandManager, TimelineCommandIDs::nextCue);
+		menu->addCommandItem(commandManager, TimelineCommandIDs::addCueAtPosition);
 	}
 }
 
@@ -149,6 +156,13 @@ bool TimelineAppCommands::perform(const ApplicationCommandTarget::InvocationInfo
 	{
 		Sequence* s = getCurrentEditingSequence();
 		if (s != nullptr) s->currentTime->setValue(s->totalTime->floatValue());
+	}
+	break;
+
+	case TimelineCommandIDs::addCueAtPosition:
+	{
+		Sequence* s = getCurrentEditingSequence();
+		if (s != nullptr) s->cueManager->addCueAt(s->currentTime->floatValue());
 	}
 	break;
 	}
