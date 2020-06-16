@@ -50,7 +50,7 @@ void TimeTriggerUI::paint(Graphics & g)
 
 	if (item->isTriggered->boolValue()) c = GREEN_COLOR.darker();
 
-	g.setColour(item->isSelected?HIGHLIGHT_COLOR:c.brighter());
+	g.setColour(item->isSelected?HIGHLIGHT_COLOR:item->isPreselected?PRESELECT_COLOR:c.brighter());
 	g.drawRect(flagRect);
 	g.drawVerticalLine(flagXOffset, 0, (float)getHeight());
 
@@ -117,7 +117,7 @@ void TimeTriggerUI::mouseDrag(const MouseEvent & e)
 	
 	if (item->isUILocked->boolValue()) return; //After that, nothing will changed if item is locked
 	
-	if (!e.mods.isShiftDown())
+	if (e.mods.isLeftButtonDown())
 	{
 		triggerUIListeners.call(&TimeTriggerUIListener::timeTriggerDragged, this, e);
 	}

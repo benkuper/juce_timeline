@@ -1,3 +1,4 @@
+#include "TriggerLayerTimeline.h"
 /*
   ==============================================================================
 
@@ -32,4 +33,10 @@ void TriggerLayerTimeline::resized()
 void TriggerLayerTimeline::updateContent()
 {
 	if(ttmui != nullptr) ttmui->updateContent();
+}
+
+void TriggerLayerTimeline::addSelectableComponentsAndInspectables(Array<Component*>& selectables, Array<Inspectable*>& inspectables)
+{
+	if (ttmui == nullptr) return;
+	ttmui->addSelectableComponentsAndInspectables(selectables, inspectables);
 }

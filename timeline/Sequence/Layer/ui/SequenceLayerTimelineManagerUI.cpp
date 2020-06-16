@@ -1,3 +1,4 @@
+#include "SequenceLayerTimelineManagerUI.h"
 /*
   ==============================================================================
 
@@ -28,6 +29,18 @@ SequenceLayerTimeline * SequenceLayerTimelineManagerUI::createUIForItem(Sequence
 void SequenceLayerTimelineManagerUI::resized()
 {
 	BaseManagerUI::resized();
+
+}
+
+void SequenceLayerTimelineManagerUI::addSelectableComponentsAndInspectables(Array<Component*>& selectables, Array<Inspectable*>& inspectables)
+{
+	for (auto& i : itemsUI)
+	{
+		if (i->isVisible() && !i->item->isUILocked->boolValue())
+		{
+			i->addSelectableComponentsAndInspectables(selectables, inspectables);
+		}
+	}
 
 }
 

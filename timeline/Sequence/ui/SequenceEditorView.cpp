@@ -95,7 +95,7 @@ void SequenceEditorView::mouseWheelMove(const MouseEvent& e, const MouseWheelDet
 {
 	//DBG("Mouse wheel move " << (int)panelManagerUI.isMouseOver(true) << ", " << (int)timelineManagerUI.isMouseOver(true) << " / deltaX : " << details.deltaX << ", deltaY : " << details.deltaY);	
 
-	if (details.deltaY != 0)
+	if (details.deltaY != 0 && !e.mods.isCommandDown())
 	{
 		if (e.mods.isShiftDown() || e.originalComponent == navigationUI->seeker.get() || e.originalComponent == &navigationUI->seeker->handle)
 		{
@@ -120,10 +120,11 @@ void SequenceEditorView::mouseWheelMove(const MouseEvent& e, const MouseWheelDet
 		}
 	}
 
-	if (details.deltaX != 0)
+	if (details.deltaX != 0 || (details.deltaY != 0 && e.mods.isCommandDown()))
 	{
+		float wheelVal = details.deltaX == 0 ? details.deltaY : details.deltaX;
 		float initDist = sequence->viewEndTime->floatValue() - sequence->viewStartTime->floatValue();
-		sequence->viewStartTime->setValue(jmin(sequence->viewStartTime->floatValue() - initDist * details.deltaX, sequence->totalTime->floatValue() - initDist));
+		sequence->viewStartTime->setValue(jmin(sequence->viewStartTime->floatValue() - initDist *  wheelVal, sequence->totalTime->floatValue() - initDist));
 		sequence->viewEndTime->setValue(sequence->viewStartTime->floatValue() + initDist);
 	}
 }

@@ -35,3 +35,9 @@ void AudioLayerTimeline::updateContent()
 {
 	cmMUI->updateContent();
 }
+
+void AudioLayerTimeline::addSelectableComponentsAndInspectables(Array<Component*>& selectables, Array<Inspectable*>& inspectables)
+{
+	if (cmMUI == nullptr) return;
+	cmMUI->addSelectableComponentsAndInspectables(selectables, inspectables);
+}

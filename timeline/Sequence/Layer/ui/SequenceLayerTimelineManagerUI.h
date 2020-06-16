@@ -23,6 +23,8 @@ public:
 
 	void resized() override;
 
+	void addSelectableComponentsAndInspectables(Array<Component*>& selectables, Array<Inspectable*>& inspectables) override;
+
 	virtual bool isInterestedInFileDrag(const StringArray& files) override;
 	virtual void filesDropped(const StringArray& files, int x, int y) override;
 };

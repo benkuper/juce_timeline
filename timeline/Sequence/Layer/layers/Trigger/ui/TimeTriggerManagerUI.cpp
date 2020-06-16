@@ -132,7 +132,7 @@ void TimeTriggerManagerUI::removeItemUIInternal(TimeTriggerUI * ttui)
 void TimeTriggerManagerUI::timeTriggerDragged(TimeTriggerUI * ttui, const MouseEvent & e)
 {
 	float diffTime = timeline->getTimeForX(e.getOffsetFromDragStart().x, false);
-	if (e.mods.isShiftDown()) diffTime = timeline->item->sequence->cueManager->getNearestCueForTime(ttui->timeAtMouseDown + diffTime) - ttui->timeAtMouseDown;
+	//if (e.mods.isShiftDown()) diffTime = timeline->item->sequence->cueManager->getNearestCueForTime(ttui->timeAtMouseDown + diffTime) - ttui->timeAtMouseDown;
 
 	if (e.mods.isAltDown())
 	{
@@ -140,7 +140,7 @@ void TimeTriggerManagerUI::timeTriggerDragged(TimeTriggerUI * ttui, const MouseE
 	}
 	else
 	{
-		Point<float> offset(diffTime, e.getDistanceFromDragStartY()*1.0f / (getHeight() -20)); //-20 is for subtracting flag height
+		Point<float> offset(diffTime, e.mods.isShiftDown()?0:e.getDistanceFromDragStartY()*1.0f / (getHeight() -20)); //-20 is for subtracting flag height
 		ttui->item->movePosition(offset, true);
 	}
 }
