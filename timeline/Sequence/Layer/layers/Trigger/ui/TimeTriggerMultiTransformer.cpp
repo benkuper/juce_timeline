@@ -48,12 +48,12 @@ void TimeTriggerMultiTransformer::updateBoundsFromKeys()
 void TimeTriggerMultiTransformer::updateKeysFromBounds()
 {
 	int numKeys = triggersUI.size();
-	for (int i = 0; i < numKeys; i++)
+	for (int i = 0; i < numKeys; ++i)
 	{
 		Point<int> localPos = getLocalBounds().getRelativePoint(triggersRelativePositions[i].x, triggersRelativePositions[i].y);
 		Point<int> timelinePos = tui->getLocalPoint(this, localPos);
 		float targetTime = tui->timeline->getTimeForX(timelinePos.x);
-		float targetFlagY = timelinePos.y*1.f / tui->getHeight();
+		float targetFlagY = timelinePos.y * 1.f / tui->getHeight();
 		triggersUI[i]->item->time->setValue(targetTime);
 		triggersUI[i]->item->flagY->setValue(targetFlagY);
 	}
@@ -65,10 +65,10 @@ void TimeTriggerMultiTransformer::parentHierarchyChanged()
 
 	if (triggersRelativePositions.size() == 0)
 	{
-		for (auto &k : triggersUI)
+		for (auto& k : triggersUI)
 		{
 			k->setEnabled(false);
-			triggersRelativePositions.add(getLocalPoint(k,Point<float>(0,k->item->flagY->floatValue()*tui->getHeight())).toFloat() / Point<float>(getWidth(), getHeight()));
+			triggersRelativePositions.add(getLocalPoint(k, Point<float>(0, k->item->flagY->floatValue() * tui->getHeight())).toFloat() / Point<float>(getWidth(), getHeight()));
 		}
 	}
 }
@@ -79,7 +79,7 @@ void TimeTriggerMultiTransformer::resized()
 	resizer.setBounds(getLocalBounds().reduced(1));
 }
 
-void TimeTriggerMultiTransformer::paint(Graphics & g)
+void TimeTriggerMultiTransformer::paint(Graphics& g)
 {
 	g.setColour(Colours::white.withAlpha(.1f));
 	g.fillRect(getLocalBounds());
@@ -99,30 +99,30 @@ void TimeTriggerMultiTransformer::paint(Graphics & g)
 	g.drawDashedLine(l4, dl, 2, 1);
 }
 
-void TimeTriggerMultiTransformer::mouseDown(const MouseEvent & e)
-{ 
+void TimeTriggerMultiTransformer::mouseDown(const MouseEvent& e)
+{
 	posAtMouseDown = getBounds().getPosition();
 	triggersTimesAndValuesPositions.clear();
-	for (auto &k : triggersUI)
+	for (auto& k : triggersUI)
 	{
 		triggersTimesAndValuesPositions.add(Point<float>(k->item->time->floatValue(), k->item->flagY->floatValue()));
 	}
 }
 
-void TimeTriggerMultiTransformer::mouseDrag(const MouseEvent & e)
+void TimeTriggerMultiTransformer::mouseDrag(const MouseEvent& e)
 {
 	if (e.eventComponent != this) return;
 	setTopLeftPosition(posAtMouseDown + e.getOffsetFromDragStart());
 	updateKeysFromBounds();
 }
 
-void TimeTriggerMultiTransformer::mouseUp(const MouseEvent & e)
+void TimeTriggerMultiTransformer::mouseUp(const MouseEvent& e)
 {
 	if (e.getOffsetFromDragStart().getDistanceFromOrigin() == 0) return;
 
-	Array<UndoableAction *> actions;
+	Array<UndoableAction*> actions;
 	int numKeys = triggersUI.size();
-	for (int i = 0; i < numKeys; i++)
+	for (int i = 0; i < numKeys; ++i)
 	{
 		actions.add(triggersUI[i]->item->time->setUndoableValue(triggersTimesAndValuesPositions[i].x, triggersUI[i]->item->time->floatValue(), true));
 		actions.add(triggersUI[i]->item->flagY->setUndoableValue(triggersTimesAndValuesPositions[i].y, triggersUI[i]->item->flagY->floatValue(), true));

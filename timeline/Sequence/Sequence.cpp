@@ -388,7 +388,7 @@ void Sequence::endLoadFile()
 
 void Sequence::audioDeviceIOCallback(const float ** , int , float ** outputChannelData, int numOutputChannels, int numSamples)
 {
-	for(int i=0;i<numOutputChannels;i++) FloatVectorOperations::clear(outputChannelData[i], numSamples);
+	for(int i=0;i<numOutputChannels; ++i) FloatVectorOperations::clear(outputChannelData[i], numSamples);
 
 	if (isPlaying->boolValue()) hiResAudioTime += (numSamples / sampleRate) * playSpeed->floatValue();
 }

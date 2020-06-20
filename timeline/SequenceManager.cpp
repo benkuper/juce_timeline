@@ -65,7 +65,7 @@ Sequence * SequenceManager::showMenuAndGetSequence()
 {
 	PopupMenu menu;
 	int numItems = items.size();
-	for (int i = 0; i < numItems; i++)
+	for (int i = 0; i < numItems; ++i)
 	{
 		menu.addItem(1 + i, items[i]->niceName);
 	}
@@ -73,22 +73,22 @@ Sequence * SequenceManager::showMenuAndGetSequence()
 	return getSequenceForItemID(result);
 }
 
-Sequence * SequenceManager::getSequenceForItemID(int itemID)
+Sequence* SequenceManager::getSequenceForItemID(int itemID)
 {
 	if (itemID <= 0 || itemID > items.size()) return nullptr;
 	return items[itemID - 1];
 }
 
-SequenceLayer * SequenceManager::showmMenuAndGetLayer()
+SequenceLayer* SequenceManager::showmMenuAndGetLayer()
 {
 	PopupMenu menu;
-	for (int i = 0; i < items.size(); i++)
+	for (int i = 0; i < items.size(); ++i)
 	{
 		PopupMenu sMenu;
 		int numValues = items[i]->layerManager->items.size();
 		for (int j = 0; j < numValues; j++)
 		{
-			SequenceLayer * c = items[i]->layerManager->items[j];
+			SequenceLayer* c = items[i]->layerManager->items[j];
 			sMenu.addItem(i * 1000 + j + 1, c->niceName);
 		}
 		menu.addSubMenu(items[i]->niceName, sMenu);
@@ -99,7 +99,7 @@ SequenceLayer * SequenceManager::showmMenuAndGetLayer()
 	return getLayerForItemID(result);
 }
 
-SequenceLayer * SequenceManager::getLayerForItemID(int itemID)
+SequenceLayer* SequenceManager::getLayerForItemID(int itemID)
 {
 	if (itemID <= 0) return nullptr;
 	int sequenceIndex = (int)floor((itemID - 1) / 1000);
@@ -107,10 +107,10 @@ SequenceLayer * SequenceManager::getLayerForItemID(int itemID)
 	return items[sequenceIndex]->layerManager->items[layerIndex];
 }
 
-TimeCue * SequenceManager::showMenuAndGetCue()
+TimeCue* SequenceManager::showMenuAndGetCue()
 {
 	PopupMenu menu;
-	for (int i = 0; i < items.size(); i++)
+	for (int i = 0; i < items.size(); ++i)
 	{
 		PopupMenu sMenu;
 		int numValues = items[i]->cueManager->items.size();

@@ -53,10 +53,10 @@ float TimeCueManager::getNearestCueForTime(float time, bool includeDisabled)
 	result = items[0]->time->floatValue();
 	int numItems = items.size();
 
-	for (int i = 1; i < numItems; i++)
+	for (int i = 1; i < numItems; ++i)
 	{
 		if (!items[i]->enabled->boolValue() && !includeDisabled) continue;
-		
+
 		float newTime = items[i]->time->floatValue();
 		float newDiff = std::abs(time - newTime);
 		if (newDiff > diffTime) break;
@@ -69,13 +69,13 @@ float TimeCueManager::getNearestCueForTime(float time, bool includeDisabled)
 Array<TimeCue*> TimeCueManager::getCuesInTimespan(float startTime, float endTime, bool includeDisabled)
 {
 	Array<TimeCue*> result;
-	for (auto &tt : items)
+	for (auto& tt : items)
 	{
-		if (!tt->enabled->boolValue() && !includeDisabled) continue; 
+		if (!tt->enabled->boolValue() && !includeDisabled) continue;
 		if (tt->time->floatValue() > startTime && tt->time->floatValue() <= endTime) result.add(tt);
 	}
 	return result;
-	
+
 }
 
 float TimeCueManager::getNextCueForTime(float time, bool includeDisabled)
@@ -84,7 +84,7 @@ float TimeCueManager::getNextCueForTime(float time, bool includeDisabled)
 	float result = time;
 	for (int i = numItems - 1; i >= 0; i--)
 	{
-		if (!items[i]->enabled->boolValue() && !includeDisabled) continue; 
+		if (!items[i]->enabled->boolValue() && !includeDisabled) continue;
 		float t = items[i]->time->floatValue();
 		if (t <= time) break;
 		result = t;
@@ -97,7 +97,7 @@ float TimeCueManager::getPrevCueForTime(float time, float goToPreviousThreshold,
 {
 	int numItems = items.size();
 	float result = time;
-	for (int i = 0; i < numItems; i++)
+	for (int i = 0; i < numItems; ++i)
 	{
 		if (!items[i]->enabled->boolValue() && !includeDisabled) continue;
 		float t = items[i]->time->floatValue();

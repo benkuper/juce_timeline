@@ -80,10 +80,10 @@ void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph * graph, int outputG
 		
 		int numChannels = currentGraph->getMainBusNumOutputChannels();
 		AudioChannelSet channelSet = currentGraph->getChannelLayoutOfBus(false, 0);
-		for (int i = 0; i < numChannels; i++)
+		for (int i = 0; i < numChannels; ++i)
 		{
 			String channelName = AudioChannelSet::getChannelTypeName(channelSet.getTypeOfChannel(i));
-			BoolParameter * b = channelsCC.addBoolParameter("Channel Out : " + channelName, "If enabled, sends audio from this layer to this channel", false);
+			BoolParameter* b = channelsCC.addBoolParameter("Channel Out : " + channelName, "If enabled, sends audio from this layer to this channel", false);
 			b->setValue(i < 2, false);
 		}
 	}
@@ -101,8 +101,8 @@ AudioLayerProcessor* AudioLayer::createAudioLayerProcessor()
 
 void AudioLayer::updateCurrentClip()
 {
-	AudioLayerClip * target = nullptr;
-	
+	AudioLayerClip* target = nullptr;
+
 	if (sequence->currentTime->floatValue() > 0 || sequence->isPlaying->boolValue()) // only find a clip if sequence not at 0 or is playing
 	{
 		if (!currentClip.wasObjectDeleted() && currentClip != nullptr && currentClip->isInRange(sequence->currentTime->floatValue())) return;
@@ -117,15 +117,15 @@ void AudioLayer::updateCurrentClip()
 	}
 
 	currentClip = target;
-	
+
 	if (currentClip != nullptr)
 	{
 		currentClip->setIsCurrent(true);
 		if (sequence->currentManager != nullptr)
-		{			
+		{
 		}
 		float pos = currentClip->clipStartOffset->floatValue() + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue();
-		currentClip->transportSource.setPosition(pos); 
+		currentClip->transportSource.setPosition(pos);
 
 		if (sequence->isPlaying->boolValue()) currentClip->transportSource.start();
 
@@ -163,14 +163,14 @@ void AudioLayer::clipSourceLoaded(AudioLayerClip* clip)
 
 void AudioLayer::updateSelectedOutChannels()
 {
-	
+
 	selectedOutChannels.clear();
 
 	if (currentGraph == nullptr) return;
 
 	int newNumActiveOutputs = 0;
-	for (int i = 0; i < channelsCC.controllables.size(); i++) if (((BoolParameter *)channelsCC.controllables[i])->boolValue()) newNumActiveOutputs++;
-	
+	for (int i = 0; i < channelsCC.controllables.size(); ++i) if (((BoolParameter*)channelsCC.controllables[i])->boolValue()) newNumActiveOutputs++;
+
 	bool numOutputChanged = numActiveOutputs != newNumActiveOutputs;
 	numActiveOutputs = newNumActiveOutputs;
 
@@ -180,24 +180,24 @@ void AudioLayer::updateSelectedOutChannels()
 		currentProcessor->setPlayConfigDetails(0, numActiveOutputs, currentGraph->getSampleRate(), currentGraph->getBlockSize());
 		currentProcessor->prepareToPlay(currentGraph->getSampleRate(), currentGraph->getBlockSize());
 	}
-	
-	for (auto & c : clipManager.items)
+
+	for (auto& c : clipManager.items)
 	{
-		updateClipConfig((AudioLayerClip *)c, false);
+		updateClipConfig((AudioLayerClip*)c, false);
 	}
 
 	int index = 0;
-	for (int i = 0; i < channelsCC.controllables.size(); i++)
+	for (int i = 0; i < channelsCC.controllables.size(); ++i)
 	{
-		if (((BoolParameter *)channelsCC.controllables[i])->boolValue())
+		if (((BoolParameter*)channelsCC.controllables[i])->boolValue())
 		{
 			if (numOutputChanged)
 			{
-				currentGraph->addConnection({ {graphID, index }, {(AudioProcessorGraph::NodeID)audioOutputGraphID, i}});
+				currentGraph->addConnection({ {graphID, index }, {(AudioProcessorGraph::NodeID)audioOutputGraphID, i} });
 			}
 
 			selectedOutChannels.add(i);
-			for (auto & c : clipManager.items) ((AudioLayerClip *)c)->channelRemapAudioSource.setOutputChannelMapping(index, index);
+			for (auto& c : clipManager.items) ((AudioLayerClip*)c)->channelRemapAudioSource.setOutputChannelMapping(index, index);
 			index++;
 		}
 	}
@@ -213,12 +213,12 @@ void AudioLayer::updateClipConfig(AudioLayerClip* clip, bool updateOutputChannel
 	clip->channelRemapAudioSource.clearAllMappings();
 	//clip->channelRemapAudioSource.prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
 	clip->setPlaySpeed(sequence->playSpeed->floatValue());
-	if(currentGraph != nullptr)	clip->resamplingAudioSource.prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
+	if (currentGraph != nullptr)	clip->resamplingAudioSource.prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
 
 	if (updateOutputChannelRemapping)
 	{
 		int index = 0;
-		for (int i = 0; i < channelsCC.controllables.size(); i++)
+		for (int i = 0; i < channelsCC.controllables.size(); ++i)
 		{
 			if (((BoolParameter*)channelsCC.controllables[i])->boolValue())
 			{
@@ -234,7 +234,7 @@ float AudioLayer::getVolumeFactor()
 	return volume->floatValue();// * layer->audioModule->outVolume->floatValue()
 }
 
-void AudioLayer::onControllableFeedbackUpdateInternal(ControllableContainer * cc, Controllable * c)
+void AudioLayer::onControllableFeedbackUpdateInternal(ControllableContainer* cc, Controllable* c)
 {
 	SequenceLayer::onControllableFeedbackUpdateInternal(cc, c);
 
@@ -249,7 +249,7 @@ void AudioLayer::onControllableFeedbackUpdateInternal(ControllableContainer * cc
 		{
 			float pos = currentClip->clipStartOffset->floatValue() + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue();
 			currentClip->transportSource.setPosition(pos);
-			
+
 			if (c == currentClip->stretchFactor)
 			{
 				currentClip->setPlaySpeed(sequence->playSpeed->floatValue());
@@ -286,17 +286,17 @@ void AudioLayer::loadJSONDataInternal(var data)
 	updateSelectedOutChannels();
 }
 
-SequenceLayerPanel * AudioLayer::getPanel()
+SequenceLayerPanel* AudioLayer::getPanel()
 {
 	return new AudioLayerPanel(this);
 }
 
-SequenceLayerTimeline * AudioLayer::getTimelineUI()
+SequenceLayerTimeline* AudioLayer::getTimelineUI()
 {
 	return new AudioLayerTimeline(this);
 }
 
-void AudioLayer::sequenceCurrentTimeChanged(Sequence *, float, bool)
+void AudioLayer::sequenceCurrentTimeChanged(Sequence*, float, bool)
 {
 	if (enveloppe == nullptr) return;
 
@@ -307,12 +307,12 @@ void AudioLayer::sequenceCurrentTimeChanged(Sequence *, float, bool)
 
 	if (currentClip != nullptr && sequence->isSeeking)
 	{
-		float pos = currentClip->clipStartOffset->floatValue() + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue(); 
+		float pos = currentClip->clipStartOffset->floatValue() + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue();
 		currentClip->transportSource.setPosition(pos);
 	}
 }
 
-void AudioLayer::sequencePlayStateChanged(Sequence *)
+void AudioLayer::sequencePlayStateChanged(Sequence*)
 {
 	if (!sequence->isPlaying->boolValue())
 	{
@@ -324,7 +324,7 @@ void AudioLayer::sequencePlayStateChanged(Sequence *)
 
 		if (currentClip != nullptr)
 		{
-			float pos = currentClip->clipStartOffset->floatValue() + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue(); 
+			float pos = currentClip->clipStartOffset->floatValue() + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue();
 			currentClip->transportSource.setPosition(pos);
 			currentClip->transportSource.start();
 		}
@@ -343,7 +343,7 @@ void AudioLayer::sequencePlaySpeedChanged(Sequence*)
 
 //Audio Processor
 
-AudioLayerProcessor::AudioLayerProcessor(AudioLayer * _layer) :
+AudioLayerProcessor::AudioLayerProcessor(AudioLayer* _layer) :
 	layer(_layer),
 	rmsCount(0),
 	tempRMS(0),
@@ -375,7 +375,7 @@ void AudioLayerProcessor::releaseResources()
 
 }
 
-void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer & midiMessages)
+void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
 	bool noProcess = false;
 
@@ -387,7 +387,8 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer & 
 		currentClip = layer->currentClip;
 		if (currentClip.wasObjectDeleted() || currentClip.get() == nullptr) noProcess = true;
 		else if (currentClip->filePath->stringValue().isEmpty()) noProcess = true;
-	} else
+	}
+	else
 	{
 		noProcess = true;
 	}
@@ -402,13 +403,13 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer & 
 		currentEnveloppe = 0;
 		rmsCount = 0;
 		tempRMS = 0;
-        buffer.clear();
-        return;
+		buffer.clear();
+		return;
 	}
-	
+
 	float volumeFactor = currentClip->volume->floatValue() * layer->getVolumeFactor();
 	layer->currentClip->transportSource.setGain(volumeFactor);
-	
+
 	AudioSourceChannelInfo bufferToFill;
 	bufferToFill.buffer = &buffer;
 	bufferToFill.startSample = 0;
@@ -416,17 +417,17 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer & 
 
 	layer->currentClip->channelRemapAudioSource.getNextAudioBlock(bufferToFill);
 
-	
+
 	if (buffer.getNumChannels() >= 2)
 	{
 		float panning = layer->panning->floatValue();
 		if (panning < 0) buffer.applyGain(1, bufferToFill.startSample, bufferToFill.numSamples, 1 + panning);
 		else if (panning > 0) buffer.applyGain(0, bufferToFill.startSample, bufferToFill.numSamples, 1 - panning);
 	}
-	
-	
+
+
 	float rms = 0;
-	for (int i = 0; i < buffer.getNumChannels(); i++)
+	for (int i = 0; i < buffer.getNumChannels(); ++i)
 	{
 		rms = jmax(rms, buffer.getRMSLevel(i, bufferToFill.startSample, bufferToFill.numSamples));
 	}
