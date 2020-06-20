@@ -12,12 +12,12 @@ Sequence::Sequence() :
 	BaseItem("Sequence",true),
 	Thread("Sequence"),
 	currentManager(nullptr),
-	timeAtSetTime(0),
-	millisAtSetTime(0),
 	hiResAudioTime(0),
 	sampleRate(44100),
-	isSeeking(false),
-	isBeingEdited(false),
+    isSeeking(false),
+	timeAtSetTime(0),
+    millisAtSetTime(0),
+    isBeingEdited(false),
 	sequenceNotifier(10)
 {
 	itemDataType = "Sequence";

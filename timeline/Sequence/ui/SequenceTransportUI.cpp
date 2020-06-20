@@ -12,7 +12,7 @@
 SequenceTransportUI::SequenceTransportUI(Sequence* _sequence) :
 	sequence(_sequence),
 	timeLabel(_sequence->currentTime),
-	totalTimeLabel(_sequence->totalTime),
+    totalTimeLabel(_sequence->totalTime),
 	timeStepLabel(_sequence->currentTime)
 {
 	timeLabel.maxFontHeight = 20;
