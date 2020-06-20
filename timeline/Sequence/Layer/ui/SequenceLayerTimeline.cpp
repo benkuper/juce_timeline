@@ -108,6 +108,10 @@ void SequenceLayerTimeline::controllableFeedbackUpdateInternal(Controllable * c)
 		bgColor = item->color->getColor();
         repaint();
 	}
+	else if (c == item->miniMode)
+	{
+		updateMiniModeUI();
+	}
 }
 
 void SequenceLayerTimeline::timerCallback()

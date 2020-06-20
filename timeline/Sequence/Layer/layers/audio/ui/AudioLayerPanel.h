@@ -21,6 +21,7 @@ public:
 
 	std::unique_ptr<FloatSliderUI> enveloppeUI;
 
+	void resizedInternalHeader(Rectangle<int>& r) override;
 	void resizedInternalContent(Rectangle<int> &r) override;
 
 

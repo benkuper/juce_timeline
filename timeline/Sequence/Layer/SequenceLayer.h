@@ -27,7 +27,6 @@ public:
 	IntParameter * uiHeight;
 	ColorParameter * color;
 
-
 	virtual void addDefaultContent() {}
 
 	Array<Inspectable *> selectAllItemsBetween(float start, float end);

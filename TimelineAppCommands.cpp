@@ -1,10 +1,5 @@
 #include "TimelineAppCommands.h"
 
-
-ControllableContainer* TimelineAppCommands::timelineSettingsContainer = nullptr;
-FloatParameter* TimelineAppCommands::stepTime = nullptr;
-
-
 namespace TimelineCommandIDs
 {
 	const int playPauseSequenceEditor = 0x80000;
@@ -17,14 +12,6 @@ namespace TimelineCommandIDs
 	const int addCueAtPosition = 0x80007;
 	const int moveOneFrameAfter = 0x80008;
 	const int moveOneFrameBefore = 0x80009;
-}
-
-void TimelineAppCommands::init()
-{
-	timelineSettingsContainer = new ControllableContainer("Timeline");
-	stepTime = timelineSettingsContainer->addFloatParameter("Step time", "Time to do the stepping using keyboard shortcuts", 1, 0);
-	stepTime->defaultUI = FloatParameter::TIME;
-	GlobalSettings::getInstance()->addChildControllableContainer(timelineSettingsContainer, true, GlobalSettings::getInstance()->controllableContainers.size()-1);
 }
 
 void TimelineAppCommands::getCommandInfo(CommandID commandID, ApplicationCommandInfo& result)
@@ -135,15 +122,15 @@ bool TimelineAppCommands::perform(const ApplicationCommandTarget::InvocationInfo
 	break;
 
 	case TimelineCommandIDs::prevTimeStep:
-	{
-		Sequence* s = getCurrentEditingSequence();
-		if (s != nullptr) s->currentTime->setValue(s->currentTime->floatValue() - (stepTime != nullptr ? stepTime->floatValue() : 1));
-	}
-	break;
 	case TimelineCommandIDs::nextTimeStep:
 	{
 		Sequence* s = getCurrentEditingSequence();
-		if (s != nullptr) s->currentTime->setValue(s->currentTime->floatValue() + (stepTime != nullptr ? stepTime->floatValue() : 1));
+		if (s != nullptr)
+		{
+			float step = 1.0f / s->fps->intValue();
+			if (info.commandID == TimelineCommandIDs::prevTimeStep) step = -step;
+			s->currentTime->setValue(s->currentTime->floatValue() + step);
+		}
 	}
 	break;
 

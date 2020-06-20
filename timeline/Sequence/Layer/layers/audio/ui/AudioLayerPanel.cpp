@@ -1,3 +1,4 @@
+#include "AudioLayerPanel.h"
 /*
   ==============================================================================
 
@@ -12,8 +13,6 @@ AudioLayerPanel::AudioLayerPanel(AudioLayer * layer) :
 	SequenceLayerPanel(layer),
 	audioLayer(layer)
 {
-	bgColor = AUDIO_COLOR.withSaturation(.2f).darker(1);
-
 	enveloppeUI.reset(audioLayer->enveloppe->createSlider());
 	addAndMakeVisible(enveloppeUI.get());
 
@@ -24,9 +23,18 @@ AudioLayerPanel::~AudioLayerPanel()
 }
 
 
+void AudioLayerPanel::resizedInternalHeader(Rectangle<int>& r)
+{
+	SequenceLayerPanel::resizedInternalHeader(r);
+	if (item->miniMode->boolValue()) enveloppeUI->setBounds(r);
+}
+
 void AudioLayerPanel::resizedInternalContent(Rectangle<int>& r)
 {
 	SequenceLayerPanel::resizedInternalContent(r);  
-	Rectangle<int> gr = r.removeFromTop(16).reduced(2);
-	enveloppeUI->setBounds(gr);
+	if (!item->miniMode->boolValue())
+	{
+		Rectangle<int> gr = r.removeFromTop(16).reduced(2);
+		enveloppeUI->setBounds(gr);
+	}
 }

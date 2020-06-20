@@ -17,11 +17,14 @@ SequenceLayerPanel::SequenceLayerPanel(SequenceLayer * layer) :
 
 	bgColor = item->color->getColor(); 
 	colorUI.reset(item->color->createColorParamUI());
+	miniModeUI.reset(item->miniMode->createImageToggle(AssetManager::getInstance()->getToggleBTImage(AssetManager::getInstance()->getMinusImage())));
 
 	lockUI.reset(item->isUILocked->createImageToggle(AssetManager::getInstance()->getToggleBTImage(ImageCache::getFromMemory(OrganicUIBinaryData::padlock_png, OrganicUIBinaryData::padlock_pngSize))));
 	addAndMakeVisible(lockUI.get());
 
 	addAndMakeVisible(colorUI.get());
+	addAndMakeVisible(miniModeUI.get());
+
 	setSize(100, item->uiHeight->intValue());
 }
 
@@ -45,6 +48,9 @@ void SequenceLayerPanel::resized()
 
 void SequenceLayerPanel::resizedInternalHeader(Rectangle<int>& r)
 {
+	BaseItemUI::resizedInternalHeader(r);
+	miniModeUI->setBounds(r.removeFromRight(r.getHeight()));
+	r.removeFromRight(2);
 	lockUI->setBounds(r.removeFromRight(r.getHeight()).reduced(2));
 	r.removeFromRight(2);
 	colorUI->setBounds(r.removeFromRight(r.getHeight()).reduced(2));
@@ -52,7 +58,7 @@ void SequenceLayerPanel::resizedInternalHeader(Rectangle<int>& r)
 
 void SequenceLayerPanel::controllableFeedbackUpdateInternal(Controllable * c)
 {
-	BaseItemMinimalUI::controllableFeedbackUpdateInternal(c);
+	BaseItemUI::controllableFeedbackUpdateInternal(c);
 
 	if (c == item->uiHeight)
 	{
