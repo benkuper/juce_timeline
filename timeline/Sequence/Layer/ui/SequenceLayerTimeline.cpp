@@ -51,7 +51,7 @@ float SequenceLayerTimeline::getTimeForX(int tx, bool offsetStart)
 	float viewEnd = item->sequence->viewEndTime->floatValue();
 	float viewTime = viewEnd - viewStart;
 	float mapStart = offsetStart ? viewStart : 0;
-;	return jmap<float>((float)tx, 0, (float)getWidth(), mapStart,mapStart+viewTime);
+	return item->sequence->currentTime->getStepSnappedValueFor(jmap<float>((float)tx, 0, (float)getWidth(), mapStart, mapStart + viewTime));
 }
 
 

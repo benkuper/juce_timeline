@@ -21,6 +21,8 @@ public:
 
 	void resized() override;
 	virtual void updateContent() override;
+
+	virtual void updateMiniModeUI() override;
 	
 	virtual void addSelectableComponentsAndInspectables(Array<Component*>& selectables, Array<Inspectable*>& inspectables) override;
 	

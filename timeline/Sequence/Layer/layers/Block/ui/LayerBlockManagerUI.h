@@ -22,9 +22,12 @@ public:
 
 	SequenceLayerTimeline * timeline;
 
+	bool miniMode;
 
 	virtual void resized() override;
 	virtual void updateContent();
+
+	virtual void setMiniMode(bool value);
 
 	virtual LayerBlockUI * createUIForItem(LayerBlock * block) override; 
 

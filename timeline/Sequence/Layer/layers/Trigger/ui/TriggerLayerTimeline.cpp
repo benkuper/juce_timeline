@@ -1,4 +1,3 @@
-#include "TriggerLayerTimeline.h"
 /*
   ==============================================================================
 
@@ -19,6 +18,7 @@ TriggerLayerTimeline::TriggerLayerTimeline(TriggerLayer * layer) :
 	}
 
 	updateContent();
+	updateMiniModeUI();
 }
 
 TriggerLayerTimeline::~TriggerLayerTimeline()
@@ -33,6 +33,11 @@ void TriggerLayerTimeline::resized()
 void TriggerLayerTimeline::updateContent()
 {
 	if(ttmui != nullptr) ttmui->updateContent();
+}
+
+void TriggerLayerTimeline::updateMiniModeUI()
+{
+	if (ttmui != nullptr) ttmui->setMiniMode(item->miniMode->boolValue());
 }
 
 void TriggerLayerTimeline::addSelectableComponentsAndInspectables(Array<Component*>& selectables, Array<Inspectable*>& inspectables)

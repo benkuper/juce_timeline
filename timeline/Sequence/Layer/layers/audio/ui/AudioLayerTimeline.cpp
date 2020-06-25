@@ -1,3 +1,4 @@
+#include "AudioLayerTimeline.h"
 /*
   ==============================================================================
 
@@ -17,6 +18,8 @@ AudioLayerTimeline::AudioLayerTimeline(AudioLayer * layer) :
 	cmMUI.reset(new AudioLayerClipManagerUI(this, &layer->clipManager));
 	addAndMakeVisible(cmMUI.get());
 
+	updateMiniModeUI();
+
 	needle.toFront(false);
 	updateContent();
 }
@@ -34,6 +37,11 @@ void AudioLayerTimeline::resized()
 void AudioLayerTimeline::updateContent()
 {
 	cmMUI->updateContent();
+}
+
+void AudioLayerTimeline::updateMiniModeUI()
+{
+	cmMUI->setMiniMode(item->miniMode->boolValue());
 }
 
 void AudioLayerTimeline::addSelectableComponentsAndInspectables(Array<Component*>& selectables, Array<Inspectable*>& inspectables)

@@ -23,6 +23,10 @@ public:
 	TriggerLayerTimeline * timeline;
 	std::unique_ptr<TimeTriggerMultiTransformer> transformer;
 
+	bool miniMode;
+
+	void setMiniMode(bool value);
+
 	void resized() override;
 	void updateContent();
 

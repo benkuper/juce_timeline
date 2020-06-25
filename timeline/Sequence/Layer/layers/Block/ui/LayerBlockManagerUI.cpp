@@ -11,7 +11,8 @@
 
 LayerBlockManagerUI::LayerBlockManagerUI(SequenceLayerTimeline * timeline, LayerBlockManager * manager) :
 	BaseManagerUI("Block Manager", manager, false),
-	timeline(timeline)
+	timeline(timeline),
+	miniMode(false)
 {
 	noItemText = "To add a block to this layer, double-click here";
 	addItemText = "Add Block";
@@ -37,9 +38,19 @@ void LayerBlockManagerUI::updateContent()
 	for (auto &cui : itemsUI) placeBlockUI(cui);
 }
 
+void LayerBlockManagerUI::setMiniMode(bool value)
+{
+	if (miniMode == value) return;
+	miniMode = value;
+
+	for (auto& i : itemsUI) i->setInterceptsMouseClicks(!miniMode, !miniMode);
+}
+
 LayerBlockUI * LayerBlockManagerUI::createUIForItem(LayerBlock * block)
 {
-	return new LayerBlockUI(block);
+	LayerBlockUI * b =  new LayerBlockUI(block);
+	b->setInterceptsMouseClicks(!miniMode, !miniMode);
+	return b;
 }
 
 void LayerBlockManagerUI::placeBlockUI(LayerBlockUI * cui)
@@ -53,12 +64,12 @@ void LayerBlockManagerUI::placeBlockUI(LayerBlockUI * cui)
 
 void LayerBlockManagerUI::mouseDoubleClick(const MouseEvent & e)
 {
-	if(!e.mods.isCommandDown() && !e.mods.isShiftDown() && manager->userCanAddItemsManually) manager->addBlockAt(timeline->getTimeForX(getMouseXYRelative().x));
+	if(!e.mods.isCommandDown() && !e.mods.isShiftDown() && manager->userCanAddItemsManually && !miniMode) manager->addBlockAt(timeline->getTimeForX(getMouseXYRelative().x));
 }
 
 void LayerBlockManagerUI::addItemFromMenu(bool isFromAddButton, Point<int> mouseDownPos)
 {
-	if (!manager->userCanAddItemsManually) return;
+	if (!manager->userCanAddItemsManually || miniMode) return;
 	if (isFromAddButton) return;
 	manager->addBlockAt(timeline->getTimeForX(mouseDownPos.x));
 }
@@ -81,6 +92,8 @@ void LayerBlockManagerUI::blockUITimeChanged(LayerBlockUI * cui)
 
 void LayerBlockManagerUI::blockUIDragged(LayerBlockUI * cui, const MouseEvent & e)
 {
+	if (miniMode) return;
+
 	float targetOffsetTime = timeline->getTimeForX(e.getOffsetFromDragStart().x, false);
 	//float targetTime = cui->timeAtMouseDown + targetOffsetTime;
 	cui->item->movePosition(Point<float>(targetOffsetTime, 0), true);
@@ -91,6 +104,8 @@ void LayerBlockManagerUI::blockUIDragged(LayerBlockUI * cui, const MouseEvent & 
 
 void LayerBlockManagerUI::blockUIStartDragged(LayerBlockUI * cui, const MouseEvent & e)
 {
+	if (miniMode) return;
+	
 	float timeDiff = timeline->getTimeForX(e.getOffsetFromDragStart().x, false);
 	float targetTime = cui->item->movePositionReference.x +timeDiff;
 
@@ -109,6 +124,8 @@ void LayerBlockManagerUI::blockUIStartDragged(LayerBlockUI * cui, const MouseEve
 
 void LayerBlockManagerUI::blockUICoreDragged(LayerBlockUI * cui, const MouseEvent & e)
 {
+	if (miniMode) return;
+	
 	if (e.mods.isCommandDown())
 	{
 		blockUILoopDragged(cui, e);

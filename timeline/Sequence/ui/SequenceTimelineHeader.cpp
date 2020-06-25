@@ -291,7 +291,7 @@ float SequenceTimelineHeader::getTimeForX(int tx)
 {
 	float viewStart = sequence->viewStartTime->floatValue();
 	float viewEnd = sequence->viewEndTime->floatValue();
-	return jmap<float>((float)tx, 0, (float)getWidth(), viewStart, viewEnd);
+	return sequence->currentTime->getStepSnappedValueFor(jmap<float>((float)tx, 0, (float)getWidth(), viewStart, viewEnd));
 }
 
 void SequenceTimelineHeader::newMessage(const ContainerAsyncEvent & e)

@@ -10,7 +10,8 @@
 
 TimeTriggerManagerUI::TimeTriggerManagerUI(TriggerLayerTimeline * _timeline, TimeTriggerManager * manager) :
 	BaseManagerUI("Triggers", manager, false),
-	timeline(_timeline)
+	timeline(_timeline),
+	miniMode(false)
 {
 	addItemText = "Add Trigger";
 	animateItemOnAdd = false;
@@ -30,6 +31,14 @@ TimeTriggerManagerUI::~TimeTriggerManagerUI()
 {
 	manager->selectionManager->removeSelectionListener(this);
 	if (InspectableSelector::getInstanceWithoutCreating()) InspectableSelector::getInstance()->removeSelectorListener(this);
+}
+
+void TimeTriggerManagerUI::setMiniMode(bool value)
+{
+	if (miniMode == value) return;
+	miniMode = value;
+
+	for (auto& i : itemsUI) i->setInterceptsMouseClicks(!miniMode, !miniMode);
 }
 
 void TimeTriggerManagerUI::resized()
@@ -108,13 +117,15 @@ void TimeTriggerManagerUI::mouseDown(const MouseEvent & e)
 
 void TimeTriggerManagerUI::mouseDoubleClick(const MouseEvent & e)
 {
+	if (miniMode) return;
+
 	float time = timeline->getTimeForX(getMouseXYRelative().x);
 	manager->addTriggerAt(time, getMouseXYRelative().y*1.f / getHeight());
 }
 
 void TimeTriggerManagerUI::addItemFromMenu(bool isFromAddButton, Point<int> mouseDownPos)
 {
-	if (isFromAddButton) return;
+	if (isFromAddButton || miniMode) return;
 
 	float time = timeline->getTimeForX(mouseDownPos.x);
 	manager->addTriggerAt(time, mouseDownPos.y*1.f / getHeight());
@@ -131,6 +142,8 @@ void TimeTriggerManagerUI::removeItemUIInternal(TimeTriggerUI * ttui)
 
 void TimeTriggerManagerUI::timeTriggerDragged(TimeTriggerUI * ttui, const MouseEvent & e)
 {
+	if (miniMode) return;
+
 	float diffTime = timeline->getTimeForX(e.getOffsetFromDragStart().x, false);
 	//if (e.mods.isShiftDown()) diffTime = timeline->item->sequence->cueManager->getNearestCueForTime(ttui->timeAtMouseDown + diffTime) - ttui->timeAtMouseDown;
 
