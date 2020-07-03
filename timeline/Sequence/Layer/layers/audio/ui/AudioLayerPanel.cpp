@@ -15,7 +15,7 @@ AudioLayerPanel::AudioLayerPanel(AudioLayer * layer) :
 {
 	enveloppeUI.reset(audioLayer->enveloppe->createSlider());
 	addAndMakeVisible(enveloppeUI.get());
-
+	updateMiniModeUI();
 }
 
 AudioLayerPanel::~AudioLayerPanel()
