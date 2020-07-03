@@ -16,6 +16,11 @@ TriggerLayerPanel::TriggerLayerPanel(TriggerLayer * layer) :
 	unlockAllBT.reset(layer->unlockAll->createButtonUI());
 	addAndMakeVisible(lockAllBT.get());
 	addAndMakeVisible(unlockAllBT.get());
+
+	contentComponents.add(lockAllBT.get());
+	contentComponents.add(unlockAllBT.get());
+
+
 }
 
 TriggerLayerPanel::~TriggerLayerPanel()
