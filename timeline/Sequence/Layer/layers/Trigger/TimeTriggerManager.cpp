@@ -25,7 +25,8 @@ TimeTriggerManager::TimeTriggerManager(TriggerLayer * _layer, Sequence * _sequen
 
 TimeTriggerManager::~TimeTriggerManager()
 {
-	sequence->removeSequenceListener(this);
+	if (!sequence->isClearing)
+		sequence->removeSequenceListener(this);
 }
 
 
