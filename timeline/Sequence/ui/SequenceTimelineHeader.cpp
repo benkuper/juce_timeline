@@ -210,10 +210,13 @@ void SequenceTimelineHeader::mouseDrag(const MouseEvent & e)
 {
 	if(e.mods.isRightButtonDown() || (e.mods.isLeftButtonDown() && e.mods.isCommandDown()))
 	{
-		float pos = getTimeForX(e.getPosition().x);
-		if (selectionSpan.x < 0) selectionSpan.setX(pos);
-		selectionSpan.setY(pos);
-		repaint();
+		if (selectionSpan.x >= 0)
+		{
+			float pos = getTimeForX(e.getPosition().x);
+			selectionSpan.setX(pos);
+			selectionSpan.setY(pos);
+			repaint();
+		}
 	}
 	else if(e.mods.isLeftButtonDown())
 	{
@@ -233,7 +236,7 @@ void SequenceTimelineHeader::mouseUp(const MouseEvent& e)
 {
 	if (e.mods.isRightButtonDown() || (e.mods.isLeftButtonDown() && e.mods.isCommandDown()))
 	{
-		if (e.mouseWasDraggedSinceMouseDown())
+		if (e.mouseWasDraggedSinceMouseDown() && selectionSpan.x >= 0)
 		{
 			float minPos = jmin(selectionSpan.x, selectionSpan.y);
 			float maxPos = jmax(selectionSpan.x, selectionSpan.y);
@@ -272,11 +275,11 @@ void SequenceTimelineHeader::mouseUp(const MouseEvent& e)
 					break;
 				}
 			}
-
-			selectionSpan.setXY(-1, 0);
-			repaint();
 		}
 	}
+
+	selectionSpan.setXY(-1, 0);
+	repaint();
 }
 
 int SequenceTimelineHeader::getXForTime(float time)
