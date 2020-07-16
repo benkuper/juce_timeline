@@ -63,6 +63,8 @@ Sequence::Sequence() :
 	viewEndTime = addFloatParameter("View end time", "End time of the view", initTotalTime, minSequenceTime, initTotalTime);
 	viewEndTime->hideInEditor = true;
 
+	color = addColorParameter("Color", "The color of the sequence in the UI", BG_COLOR.brighter(.1f));
+
 	layerManager.reset(new SequenceLayerManager(this));
 	addChildControllableContainer(layerManager.get());
 
