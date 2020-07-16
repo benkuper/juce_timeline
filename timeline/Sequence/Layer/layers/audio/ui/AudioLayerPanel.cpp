@@ -1,4 +1,3 @@
-#include "AudioLayerPanel.h"
 /*
   ==============================================================================
 
@@ -15,7 +14,6 @@ AudioLayerPanel::AudioLayerPanel(AudioLayer * layer) :
 {
 	enveloppeUI.reset(audioLayer->enveloppe->createSlider());
 	addAndMakeVisible(enveloppeUI.get());
-
 }
 
 AudioLayerPanel::~AudioLayerPanel()
