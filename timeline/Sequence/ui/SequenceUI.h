@@ -21,6 +21,7 @@ public:
 	std::unique_ptr<FloatSliderUI> timeUI;
 	std::unique_ptr<BoolImageToggleUI> togglePlayUI;
 	std::unique_ptr<TriggerImageUI> stopUI;
+	std::unique_ptr<ColorParameterUI> colorUI;
 
 	void resizedInternalHeader(Rectangle<int> &r) override;
 	void resizedInternalContent(Rectangle<int> &r) override;

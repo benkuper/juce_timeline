@@ -15,9 +15,10 @@ SequenceUI::SequenceUI(Sequence * sequence) :
 
 	togglePlayUI.reset(item->isPlaying->createImageToggle(AssetManager::getInstance()->getToggleBTImage(ImageCache::getFromMemory(TimelineBinaryData::play_png, TimelineBinaryData::play_pngSize))));
 	stopUI.reset(item->stopTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::stop_png, TimelineBinaryData::stop_pngSize)));
+	colorUI.reset(item->color->createColorParamUI());
 	addAndMakeVisible(togglePlayUI.get());
 	addAndMakeVisible(stopUI.get());
-
+	addAndMakeVisible(colorUI.get());
 
 	timeUI.reset(item->currentTime->createSlider());
 	timeUI->showLabel = false;
@@ -29,7 +30,7 @@ SequenceUI::SequenceUI(Sequence * sequence) :
 
 	addAndMakeVisible(timeUI.get());
 
-	bgColor = item->isBeingEdited ? BLUE_COLOR.darker() : BG_COLOR.brighter(.1f); 
+	bgColor = item->isBeingEdited ? HIGHLIGHT_COLOR.darker(.2f) : item->color->getColor();
 	
 	item->addAsyncContainerListener(this);
 	item->addAsyncSequenceListener(this);
@@ -43,6 +44,8 @@ SequenceUI::~SequenceUI()
 
 void SequenceUI::resizedInternalHeader(Rectangle<int>& r)
 {
+	colorUI->setBounds(r.removeFromRight(r.getHeight()).reduced(2));
+	r.removeFromRight(2);
 	stopUI->setBounds(r.removeFromRight(r.getHeight()).reduced(2));
 	r.removeFromRight(2);
 	togglePlayUI->setBounds(r.removeFromRight(r.getHeight()).reduced(2));
@@ -66,6 +69,11 @@ void SequenceUI::controllableFeedbackUpdateInternal(Controllable * c)
 		timeUI->customFGColor = item->isPlaying->boolValue() ? Colour(252,212,98) : FEEDBACK_COLOR.withSaturation(.3f);
 		timeUI->repaint();
 	}
+	else if (c == item->color)
+	{
+		bgColor = item->isBeingEdited ? HIGHLIGHT_COLOR.darker(.2f) : item->color->getColor();
+		repaint();
+	}
 }
 
 void SequenceUI::newMessage(const Sequence::SequenceEvent & e)
@@ -74,7 +82,7 @@ void SequenceUI::newMessage(const Sequence::SequenceEvent & e)
 	{
 	case Sequence::SequenceEvent::EDITING_STATE_CHANGED:
 	{
-		bgColor = item->isBeingEdited ? BLUE_COLOR.darker() : BG_COLOR.brighter(.1f);
+		bgColor = item->isBeingEdited ? HIGHLIGHT_COLOR.darker(.2f) : item->color->getColor();
 		repaint();
 	}
 	break;

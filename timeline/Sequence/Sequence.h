@@ -61,6 +61,7 @@ public:
 	FloatParameter * viewStartTime;
 	FloatParameter * viewEndTime;
 	bool isBeingEdited;
+	ColorParameter* color;
 
 	virtual void clearItem() override;
 

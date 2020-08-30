@@ -31,6 +31,7 @@ TimeMachineView::~TimeMachineView()
 void TimeMachineView::paint(Graphics & g)
 {
 	g.fillAll(BG_COLOR.darker(.3f));
+	
 	if (editor == nullptr)
 	{
 		g.setFont(20);
