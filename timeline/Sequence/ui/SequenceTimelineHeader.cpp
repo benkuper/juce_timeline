@@ -210,13 +210,13 @@ void SequenceTimelineHeader::mouseDrag(const MouseEvent & e)
 {
 	if(e.mods.isRightButtonDown() || (e.mods.isLeftButtonDown() && e.mods.isCommandDown()))
 	{
-		if (selectionSpan.x >= 0)
-		{
-			float pos = getTimeForX(e.getPosition().x);
-			selectionSpan.setX(pos);
-			selectionSpan.setY(pos);
-			repaint();
-		}
+		DBG("Selection span : " << selectionSpan.toString());
+
+		float pos = getTimeForX(e.getPosition().x);
+		
+		if (selectionSpan.x < 0) selectionSpan.setX(pos);
+		selectionSpan.setY(pos);
+		repaint();
 	}
 	else if(e.mods.isLeftButtonDown())
 	{
