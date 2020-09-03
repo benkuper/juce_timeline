@@ -214,7 +214,7 @@ void SequenceTimelineHeader::mouseDrag(const MouseEvent & e)
 
 		float pos = getTimeForX(e.getPosition().x);
 		
-		if (selectionSpan.x == 0) selectionSpan.setX(pos);
+		if (selectionSpan.x < 0) selectionSpan.setX(pos);
 		selectionSpan.setY(pos);
 		repaint();
 	}
