@@ -24,6 +24,10 @@ public:
 	float getNearestCueForTime(float time, bool includeDisabled = false);
 
 	Array<TimeCue *> getCuesInTimespan(float startTime, float endTime, bool includeDisabled = false);
+
+	Array<UndoableAction*> getMoveKeysBy(float start, float offset);
+	Array<UndoableAction*> getInsertTimespan(float start, float length);
+	Array<UndoableAction*> getRemoveTimespan(float start, float end);
 	
 	float getNextCueForTime(float time, bool includeDisabled = false);
 	float getPrevCueForTime(float time, float goToPreviousThreshold, bool includeDisabled = false);
