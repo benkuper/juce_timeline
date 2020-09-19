@@ -407,7 +407,26 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 		return;
 	}
 
+	float currentTime = layer->sequence->currentTime->floatValue();
 	float volumeFactor = currentClip->volume->floatValue() * layer->getVolumeFactor();
+	
+	float relClipStart =  currentTime - currentClip->time->floatValue();
+	float relClipEnd = currentClip->getEndTime() - currentTime;
+
+	if (relClipStart < currentClip->fadeIn->floatValue())
+	{
+		float fadeIn = relClipStart / currentClip->fadeIn->floatValue();
+		volumeFactor *= fadeIn * fadeIn; //square to have an ease InOut
+		DBG("Fade in : " << fadeIn << " > " << volumeFactor);
+	}
+
+	if (relClipEnd < currentClip->fadeOut->floatValue())
+	{
+		float fadeOut = relClipEnd / currentClip->fadeOut->floatValue();
+		volumeFactor *= fadeOut * fadeOut;
+		DBG("Fade out : " << fadeOut << " > " << volumeFactor);
+	}
+
 	layer->currentClip->transportSource.setGain(volumeFactor);
 
 	AudioSourceChannelInfo bufferToFill;

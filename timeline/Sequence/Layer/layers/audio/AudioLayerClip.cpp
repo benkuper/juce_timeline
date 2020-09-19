@@ -40,12 +40,14 @@ AudioLayerClip::AudioLayerClip(float _time) :
 	clipStartOffset = addFloatParameter("Clip Start Offset", "Offset at which the clip starts", 0, 0);
 	clipStartOffset->defaultUI = FloatParameter::TIME;
 
+	fadeIn = addFloatParameter("Fade In", "Fade time at start of the clip", 0, 0);
+	fadeIn->defaultUI = FloatParameter::TIME;
+	fadeOut = addFloatParameter("Fade Out", "Fade time at end of the clip", 0, 0);
+	fadeOut->defaultUI = FloatParameter::TIME;
 
 	resetStretch = addTrigger("Reset Stretch", "Reset the stretch factor to 1");
 
 	volume = addFloatParameter("Volume", "Volume multiplier", 1, 0);
-
-
 
 	formatManager.registerBasicFormats();
 

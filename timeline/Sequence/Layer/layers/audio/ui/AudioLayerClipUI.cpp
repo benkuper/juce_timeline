@@ -1,4 +1,3 @@
-#include "AudioLayerClipUI.h"
 /*
   ==============================================================================
 
@@ -51,6 +50,20 @@ void AudioLayerClipUI::paint(Graphics& g)
 	{
 		thumbnail.drawChannels(g, getCoreBounds(), clip->clipStartOffset->floatValue(), clip->clipStartOffset->floatValue() + clip->coreLength->floatValue() / clip->stretchFactor->floatValue(), clip->volume->floatValue());
 	}
+
+	if (clip->fadeIn->floatValue() > 0)
+	{
+		g.setColour(YELLOW_COLOR.withAlpha(.2f));
+		int fadeInWidth = clip->fadeIn->floatValue() * getCoreWidth() / clip->coreLength->floatValue(); 
+		g.fillRect(getCoreBounds().removeFromLeft(fadeInWidth));
+	}
+	
+	if (clip->fadeOut->floatValue() > 0)
+	{
+		g.setColour(YELLOW_COLOR.withAlpha(.2f));
+		int fadeOutWidth = clip->fadeOut->floatValue() * getCoreWidth() / clip->coreLength->floatValue();
+		g.fillRect(getCoreBounds().removeFromRight(fadeOutWidth));
+	}
 }
 
 void AudioLayerClipUI::resizedBlockInternal()
@@ -63,7 +76,7 @@ void AudioLayerClipUI::controllableFeedbackUpdateInternal(Controllable* c)
 {
 	LayerBlockUI::controllableFeedbackUpdateInternal(c);
 
-	if (c == item->time || c == item->coreLength || c == clip->volume)
+	if (c == item->time || c == item->coreLength || c == clip->volume || c == clip->fadeIn || c == clip->fadeOut)
 	{
 		repaint();
 	}

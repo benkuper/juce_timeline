@@ -30,6 +30,9 @@ public:
 	FloatParameter * clipLength;
 	FloatParameter* clipStartOffset;
 	
+	FloatParameter* fadeIn;
+	FloatParameter* fadeOut;
+
 	FloatParameter * stretchFactor;
 	Trigger* resetStretch;
 
