@@ -78,6 +78,37 @@ Array<TimeCue*> TimeCueManager::getCuesInTimespan(float startTime, float endTime
 
 }
 
+Array<UndoableAction*> TimeCueManager::getMoveKeysBy(float start, float offset)
+{
+	Array<UndoableAction*> actions;
+
+	if (items.size() == 0) return actions;
+
+	for (const auto& c : items)
+	{
+		if (c->time->floatValue() >= start) 
+			actions.add(c->time->setUndoableValue(c->time->floatValue(), c->time->floatValue() + offset, true));
+	}
+
+	return actions;
+}
+
+Array<UndoableAction*> TimeCueManager::getInsertTimespan(float start, float length)
+{
+	return getMoveKeysBy(start, length);
+}
+
+Array<UndoableAction*> TimeCueManager::getRemoveTimespan(float start, float end)
+{
+	Array<UndoableAction*> actions;
+
+	Array<TimeCue*> cues = getCuesInTimespan(start, end, true);
+	actions.addArray(getRemoveItemsUndoableAction(cues));
+	actions.addArray(getMoveKeysBy(end, start - end));
+
+	return actions;
+}
+
 float TimeCueManager::getNextCueForTime(float time, bool includeDisabled)
 {
 	int numItems = items.size();

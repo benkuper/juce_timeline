@@ -30,7 +30,8 @@ SequenceLayer::SequenceLayer(Sequence * _sequence, const String &name) :
 
 SequenceLayer::~SequenceLayer()
 {
-	sequence->removeSequenceListener(this);
+	if (!sequence->isClearing)
+		sequence->removeSequenceListener(this);
 }
 
 Array<Inspectable*> SequenceLayer::selectAllItemsBetween(float start, float end)
