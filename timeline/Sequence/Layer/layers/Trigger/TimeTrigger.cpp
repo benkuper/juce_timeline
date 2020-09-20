@@ -15,7 +15,7 @@ TimeTrigger::TimeTrigger(StringRef name) :
 
 	showWarningInUI = true;
 
-	time = addFloatParameter("Time", "Time at which the action is triggered", 0, 0, 3600);
+	time = addFloatParameter("Time", "Time at which the action is triggered", 0, 0);
 	
 	time->defaultUI = FloatParameter::TIME;
 	flagY = addFloatParameter("Flag Y", "Position of the trigger's flag", 0,0,1);

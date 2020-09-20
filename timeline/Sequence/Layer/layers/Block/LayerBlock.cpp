@@ -13,13 +13,13 @@ LayerBlock::LayerBlock(StringRef name, float _time) :
 {
 	editorIsCollapsed = true;
 
-	time = addFloatParameter("Start Time", "Time of the start of the clip", 0, 0, 3600);
+	time = addFloatParameter("Start Time", "Time of the start of the clip", 0, 0);
 	time->setValue(_time);
 	time->defaultUI = FloatParameter::TIME;
 
-	coreLength = addFloatParameter("Length", "Length of the clip's core, without looping (in seconds)", 10, .1f, 3600);
+	coreLength = addFloatParameter("Length", "Length of the clip's core, without looping (in seconds)", 10, .1f);
 	coreLength->defaultUI = FloatParameter::TIME;
-	loopLength = addFloatParameter("Loop Length", "Length of the clip's oop, after the core", 0, 0, 3600);
+	loopLength = addFloatParameter("Loop Length", "Length of the clip's oop, after the core", 0, 0);
 	loopLength->defaultUI = FloatParameter::TIME;
 
 	isActive = addBoolParameter("Is Active", "This is a feedback to know if block is currently active in the timeline", false);

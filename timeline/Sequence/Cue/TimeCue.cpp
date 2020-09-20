@@ -14,7 +14,7 @@ TimeCue::TimeCue(const float & _time) :
 	//nameParam->hideInEditor = false;
 	helpID = "TimeCue";
 
-	time = addFloatParameter("Time", "Cue Time", 0, 0, 3600);
+	time = addFloatParameter("Time", "Cue Time", 0, 0);
 	time->setValue(_time, true, true);
 	time->defaultUI = FloatParameter::TIME;
 
