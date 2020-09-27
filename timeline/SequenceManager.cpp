@@ -1,3 +1,4 @@
+#include "SequenceManager.h"
 /*
   ==============================================================================
 
@@ -132,4 +133,35 @@ TimeCue * SequenceManager::getCueForItemID(int itemID)
 	int moduleIndex = (int)floor((itemID - 1) / 1000);
 	int valueIndex = (itemID - 1) % 1000;
 	return items[moduleIndex]->cueManager->items[valueIndex];
+}
+
+AudioLayer * SequenceManager::showMenuAndGetAudioLayer()
+{
+	PopupMenu menu;
+	for (int i = 0; i < items.size(); ++i)
+	{
+		PopupMenu sMenu;
+		int numValues = items[i]->layerManager->items.size();
+		for (int j = 0; j < numValues; j++)
+		{
+			if (AudioLayer* al = dynamic_cast<AudioLayer*>(items[i]->layerManager->items[j]))
+			{
+				sMenu.addItem(i * 1000 + j + 1, al->niceName);
+
+			}
+		}
+		menu.addSubMenu(items[i]->niceName, sMenu);
+	}
+
+	int result = menu.show();
+	if (result == 0) return nullptr;
+	return getAudioLayerForItemID(result);
+}
+
+AudioLayer* SequenceManager::getAudioLayerForItemID(int itemID)
+{
+	if (itemID <= 0) return nullptr;
+	int sequenceIndex = (int)floor((itemID - 1) / 1000);
+	int layerIndex = (itemID - 1) % 1000;
+	return (AudioLayer *)items[sequenceIndex]->layerManager->items[layerIndex];
 }
