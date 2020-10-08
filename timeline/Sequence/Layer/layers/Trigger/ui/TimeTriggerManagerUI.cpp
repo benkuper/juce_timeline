@@ -1,3 +1,4 @@
+#include "TimeTriggerManagerUI.h"
 /*
   ==============================================================================
 
@@ -92,8 +93,11 @@ void TimeTriggerManagerUI::mouseDown(const MouseEvent & e)
 		{
 			if (e.mods.isAltDown())
 			{
-				float time = timeline->getTimeForX(getMouseXYRelative().x);
-				manager->addTriggerAt(time, getMouseXYRelative().y*1.f / getHeight());
+				if (manager->managerFactory == nullptr || manager->managerFactory->defs.size() == 1)
+				{
+					float time = timeline->getTimeForX(getMouseXYRelative().x);
+					manager->addTriggerAt(time, getMouseXYRelative().y * 1.f / getHeight());
+				}
 			} else
 			{
 				Array<Component *> selectables;
@@ -118,6 +122,7 @@ void TimeTriggerManagerUI::mouseDown(const MouseEvent & e)
 void TimeTriggerManagerUI::mouseDoubleClick(const MouseEvent & e)
 {
 	if (miniMode) return;
+	if (manager->managerFactory != nullptr && manager->managerFactory->defs.size() > 1) return;
 
 	float time = timeline->getTimeForX(getMouseXYRelative().x);
 	manager->addTriggerAt(time, getMouseXYRelative().y*1.f / getHeight());
@@ -130,6 +135,15 @@ void TimeTriggerManagerUI::addItemFromMenu(bool isFromAddButton, Point<int> mous
 	float time = timeline->getTimeForX(mouseDownPos.x);
 	manager->addTriggerAt(time, mouseDownPos.y*1.f / getHeight());
 }
+
+void TimeTriggerManagerUI::addItemFromMenu(TimeTrigger* t, bool, Point<int> mouseDownPos)
+{
+	float time = timeline->getTimeForX(mouseDownPos.x);
+	t->time->setValue(time);
+	t->flagY->setValue(mouseDownPos.y * 1.f / getHeight());
+	manager->addItem(t);
+}
+
 void TimeTriggerManagerUI::addItemUIInternal(TimeTriggerUI * ttui)
 {
 	ttui->addTriggerUIListener(this);
