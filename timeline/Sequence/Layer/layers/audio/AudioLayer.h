@@ -15,7 +15,9 @@ class AudioLayerProcessor;
 class AudioLayer :
 	public SequenceLayer,
 	public AudioLayerClip::ClipListener,
-	public AudioLayerClipManager::ManagerListener
+	public AudioLayerClipManager::ManagerListener,
+	public Thread,
+	public Inspectable::InspectableListener
 {
 public:
 	AudioLayer(Sequence * sequence, var params);
@@ -42,6 +44,13 @@ public:
 	static int graphIDIncrement;
 	int audioOutputGraphID;
 
+	//Volume animation
+	float targetVolume;
+	Automation* volumeInterpolationAutomation;
+	WeakReference<Inspectable> volumeAutomationRef;
+	float volumeInterpolationTime;
+	bool stopAtVolumeInterpolationFinish;
+
 	virtual void clearItem() override;
 
 	void setAudioProcessorGraph(AudioProcessorGraph * graph, int audioOutputGraphID = 2);
@@ -58,6 +67,7 @@ public:
 	void updateClipConfig(AudioLayerClip* clip, bool updateOutputChannelRemapping = true);
 
 	virtual float getVolumeFactor();
+	virtual void setVolume(float value, float time = 0, Automation * automation = nullptr, bool stopSequenceAtFinish = false);
 
 	void onControllableFeedbackUpdateInternal(ControllableContainer *cc, Controllable * c) override;
 
@@ -76,7 +86,11 @@ public:
 	static AudioLayer * create(Sequence * sequence, var params) { return new AudioLayer(sequence, params); }
 	virtual String getTypeString() const override { return "Audio"; }
 
-	
+
+	//For volume interpolation
+	void run();
+
+	void inspectableDestroyed(Inspectable* i) override;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioLayer)
 	

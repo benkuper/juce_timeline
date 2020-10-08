@@ -1,3 +1,4 @@
+#include "AudioLayer.h"
 /*
   ==============================================================================
 
@@ -12,6 +13,7 @@ int AudioLayer::graphIDIncrement = 10;
 
 AudioLayer::AudioLayer(Sequence* _sequence, var params) :
 	SequenceLayer(_sequence, "Audio"),
+	Thread("Volume interpolation"),
 	clipManager(this),
 	currentGraph(nullptr),
 	currentProcessor(nullptr),
@@ -19,7 +21,10 @@ AudioLayer::AudioLayer(Sequence* _sequence, var params) :
 	enveloppe(nullptr),
 	numActiveOutputs(0),
     graphID(0), //was -1 but since 5.2.1, generated warning. Should do otherwise ?
-	audioOutputGraphID(2)
+	audioOutputGraphID(2),
+	targetVolume(1),
+	volumeInterpolationAutomation(nullptr),
+	stopAtVolumeInterpolationFinish(false)
 {
 
 	helpID = "AudioLayer";
@@ -45,6 +50,9 @@ AudioLayer::~AudioLayer()
 
 void AudioLayer::clearItem()
 {
+	signalThreadShouldExit();
+	waitForThreadToExit(100);
+
 	BaseItem::clearItem();
 	setAudioProcessorGraph(nullptr);
 	clipManager.clear();
@@ -234,6 +242,31 @@ float AudioLayer::getVolumeFactor()
 	return volume->floatValue();// * layer->audioModule->outVolume->floatValue()
 }
 
+void AudioLayer::setVolume(float value, float time, Automation* automation, bool stopSequenceAtFinish)
+{
+	if (time == 0)
+	{
+		volume->setValue(value);
+		if (stopSequenceAtFinish) sequence->stopTrigger->trigger();
+		return;
+	}
+
+	signalThreadShouldExit();
+	waitForThreadToExit(100);
+
+
+	targetVolume = value;
+	if (volumeInterpolationAutomation != nullptr) volumeInterpolationAutomation->removeInspectableListener(this);
+	volumeInterpolationAutomation = automation;
+	volumeAutomationRef = volume;
+	if (volumeInterpolationAutomation != nullptr) volumeInterpolationAutomation->addInspectableListener(this);
+
+	volumeInterpolationTime = time;
+	stopAtVolumeInterpolationFinish = stopSequenceAtFinish;
+
+	startThread();
+}
+
 void AudioLayer::onControllableFeedbackUpdateInternal(ControllableContainer* cc, Controllable* c)
 {
 	SequenceLayer::onControllableFeedbackUpdateInternal(cc, c);
@@ -340,6 +373,51 @@ void AudioLayer::sequencePlaySpeedChanged(Sequence*)
 	}
 }
 
+void AudioLayer::run()
+{
+	if (volumeInterpolationAutomation == nullptr || volumeInterpolationTime <= 0) return;
+
+	Automation a;
+	a.isSelectable = false;
+	a.hideInEditor = true;
+	a.loadJSONData(volumeInterpolationAutomation->getJSONData());
+
+	float volumeAtStart = volume->floatValue();
+	float timeAtStart = Time::getMillisecondCounter() / 1000.0f;
+
+	while (!threadShouldExit() && !volumeAutomationRef.wasObjectDeleted())
+	{
+		float curTime = Time::getMillisecondCounter() / 1000.0f;
+		float rel = jlimit(0.f, 1.f, (curTime - timeAtStart) / volumeInterpolationTime);
+
+		float weight = volumeInterpolationAutomation->getValueAtPosition(rel);
+		volume->setValue(jmap(weight, volumeAtStart, targetVolume));
+
+		if (rel == 1) break;
+
+		sleep(20); //50fps
+	}
+
+	if (volumeInterpolationAutomation != nullptr)
+	{
+		volumeInterpolationAutomation->removeInspectableListener(this);
+		volumeInterpolationAutomation = nullptr;
+		volumeAutomationRef = nullptr;
+	}
+
+	if (stopAtVolumeInterpolationFinish) sequence->stopTrigger->trigger();
+
+}
+
+void AudioLayer::inspectableDestroyed(Inspectable* i)
+{
+	if (i == volumeInterpolationAutomation)
+	{
+		signalThreadShouldExit();
+		waitForThreadToExit(1000);
+	}
+}
+
 
 //Audio Processor
 
@@ -417,14 +495,12 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 	{
 		float fadeIn = relClipStart / currentClip->fadeIn->floatValue();
 		volumeFactor *= fadeIn * fadeIn; //square to have an ease InOut
-		DBG("Fade in : " << fadeIn << " > " << volumeFactor);
 	}
 
 	if (relClipEnd < currentClip->fadeOut->floatValue())
 	{
 		float fadeOut = relClipEnd / currentClip->fadeOut->floatValue();
 		volumeFactor *= fadeOut * fadeOut;
-		DBG("Fade out : " << fadeOut << " > " << volumeFactor);
 	}
 
 	layer->currentClip->transportSource.setGain(volumeFactor);
