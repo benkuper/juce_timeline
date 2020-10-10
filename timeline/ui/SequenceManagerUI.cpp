@@ -19,6 +19,7 @@ SequenceManagerUI::SequenceManagerUI(const String &contentName, SequenceManager 
 	addAndMakeVisible(playAllUI.get());
 	addAndMakeVisible(stopAllUI.get());
 
+	setShowSearchBar(true);
 	addExistingItems();
 }
 
