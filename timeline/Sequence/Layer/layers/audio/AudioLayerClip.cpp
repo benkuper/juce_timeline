@@ -9,7 +9,7 @@
   ==============================================================================
 */
 
-AudioLayerClip::AudioLayerClip(float _time) :
+AudioLayerClip::AudioLayerClip() :
 	LayerBlock("AudioClip"),
 	Thread("AudioClipReader"),
 	resamplingAudioSource(&channelRemapAudioSource, false),

@@ -1,9 +1,9 @@
 /*
   ==============================================================================
 
-    LayerBlockManager.h
-    Created: 14 Feb 2019 11:14:28am
-    Author:  bkupe
+	LayerBlockManager.h
+	Created: 14 Feb 2019 11:14:28am
+	Author:  bkupe
 
   ==============================================================================
 */
@@ -23,22 +23,23 @@ public:
 	SequenceLayer* layer;
 
 	bool blocksCanOverlap;
-	 Array<Point<float>> computeEmptySpaces(LayerBlock * exludeBlock);
+	Array<Point<float>> computeEmptySpaces(LayerBlock* exludeBlock);
 
-	LayerBlock * addBlockAt(float time);
-	LayerBlock * getBlockAtTime(float time, bool returnClosestPreviousIfNotFound = false, bool includeDisabled = true);
-	LayerBlock * getNextBlockAtTime(float time, bool includeDisabled = true);
-	Array<LayerBlock *> getBlocksAtTime(float time, bool includeDisabled = true);
-	Array<LayerBlock *> getBlocksInRange(float start, float end, bool includeDisabled = true);
+	LayerBlock* addBlockAt(float time);
+	void addBlockAt(LayerBlock * b, float time);
+	LayerBlock* getBlockAtTime(float time, bool returnClosestPreviousIfNotFound = false, bool includeDisabled = true);
+	LayerBlock* getNextBlockAtTime(float time, bool includeDisabled = true);
+	Array<LayerBlock*> getBlocksAtTime(float time, bool includeDisabled = true);
+	Array<LayerBlock*> getBlocksInRange(float start, float end, bool includeDisabled = true);
 
-	Array<LayerBlock *> addItemsFromClipboard(bool showWarning = true) override;
+	Array<LayerBlock*> addItemsFromClipboard(bool showWarning = true) override;
 
 	void addItemInternal(LayerBlock* item, var) override;
 	void removeItemInternal(LayerBlock* item) override;
 
-    void askForPlaceBlockTime(LayerBlock* block, float desiredTime) override;
-	void placeBlockAt(LayerBlock * block, float desiredTime);
+	void askForPlaceBlockTime(LayerBlock* block, float desiredTime) override;
+	void placeBlockAt(LayerBlock* block, float desiredTime);
 
-	static int compareTime(LayerBlock * t1, LayerBlock * t2);
+	static int compareTime(LayerBlock* t1, LayerBlock* t2);
 };
- 
+

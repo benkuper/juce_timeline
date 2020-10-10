@@ -8,13 +8,12 @@
   ==============================================================================
 */
 
-LayerBlock::LayerBlock(StringRef name, float _time) :
+LayerBlock::LayerBlock(StringRef name) :
 	BaseItem(name, true, false)
 {
 	editorIsCollapsed = true;
 
 	time = addFloatParameter("Start Time", "Time of the start of the clip", 0, 0);
-	time->setValue(_time);
 	time->defaultUI = FloatParameter::TIME;
 
 	coreLength = addFloatParameter("Length", "Length of the clip's core, without looping (in seconds)", 10, .1f);

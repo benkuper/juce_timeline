@@ -15,7 +15,7 @@ class LayerBlock :
 	public BaseItem
 {
 public:
-	LayerBlock(StringRef name = "Block", float time = 0);
+	LayerBlock(StringRef name = "Block");
 	~LayerBlock();
 
 	FloatParameter * time;

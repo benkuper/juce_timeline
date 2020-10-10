@@ -46,22 +46,25 @@ Array<Point<float>> LayerBlockManager::computeEmptySpaces(LayerBlock * excludeBl
 
 LayerBlock * LayerBlockManager::addBlockAt(float time)
 {
-	LayerBlock * t = createItem();
-	t->time->setValue(time);
-	
-	BaseManager::addItem(t);
+	LayerBlock * b = createItem();
+	addBlockAt(b, time);
+	return b;
+}
 
-	placeBlockAt(t, time);
+void LayerBlockManager::addBlockAt(LayerBlock* b, float time)
+{
+	b->time->setValue(time);
 
-	int nextIndex = items.indexOf(t) + 1;
+	BaseManager::addItem(b);
+
+	placeBlockAt(b, time);
+
+	int nextIndex = items.indexOf(b) + 1;
 	if (nextIndex < items.size())
 	{
 
-		if (t->getEndTime() > items[nextIndex]->time->floatValue()) t->setCoreLength(items[nextIndex]->time->floatValue() - t->time->floatValue(), false);
+		if (b->getEndTime() > items[nextIndex]->time->floatValue()) b->setCoreLength(items[nextIndex]->time->floatValue() - b->time->floatValue(), false);
 	}
-	
-
-	return t;
 }
 
 LayerBlock * LayerBlockManager::getBlockAtTime(float time, bool returnClosestPreviousIfNotFound, bool includeDisabled)

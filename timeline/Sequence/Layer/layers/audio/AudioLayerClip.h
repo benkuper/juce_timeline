@@ -15,7 +15,7 @@ class AudioLayerClip :
 	public Thread //async loading
 {
 public:
-	AudioLayerClip(float time = 0);
+	AudioLayerClip();
 	virtual ~AudioLayerClip();
 
 	AudioFormatManager formatManager;
