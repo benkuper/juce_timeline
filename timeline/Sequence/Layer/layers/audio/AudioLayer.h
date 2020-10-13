@@ -88,7 +88,7 @@ public:
 
 
 	//For volume interpolation
-	void run();
+    void run() override;
 
 	void inspectableDestroyed(Inspectable* i) override;
 
