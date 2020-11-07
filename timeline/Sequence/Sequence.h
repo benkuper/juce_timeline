@@ -29,6 +29,7 @@ public:
 	BoolParameter * startAtLoad;
 	FloatParameter * totalTime;
 	FloatParameter * currentTime;
+	BoolParameter* includeCurrentTimeInSave;
 	FloatParameter * playSpeed;
 	BoolParameter * loopParam;
 	IntParameter * fps;
@@ -90,6 +91,7 @@ public:
 	
 	virtual void onContainerParameterChangedInternal(Parameter*) override;
 	virtual void onContainerTriggerTriggered(Trigger*) override;
+	virtual void parameterControlModeChanged(Parameter* p) override;
 	
 	virtual void run() override;
 
@@ -120,7 +122,7 @@ public:
 
 	class SequenceEvent {
 	public:
-		enum Type { EDITING_STATE_CHANGED };
+		enum Type { EDITING_STATE_CHANGED, PLAY_STATE_CHANGED };
 		SequenceEvent(Type type, Sequence * s) : type(type), sequence(s) {}
 		Type type;
 		Sequence * sequence;
