@@ -1,3 +1,4 @@
+#include "Sequence.h"
 /*
   ==============================================================================
 
@@ -24,8 +25,8 @@ Sequence::Sequence() :
 	helpID = "Sequence";
 
 	isPlaying = addBoolParameter("Is Playing", "Is the sequence playing ?", false);
-	//isPlaying->setControllableFeedbackOnly(true);
-	isPlaying->isSavable = false;
+	isPlaying->setControllableFeedbackOnly(true);
+	//isPlaying->isSavable = false;
 	//isPlaying->hideInEditor = true;
 
 	playTrigger = addTrigger("Play", "Play the sequence");
@@ -39,9 +40,12 @@ Sequence::Sequence() :
 
 	startAtLoad = addBoolParameter("Play at Load", "If selected, the sequence will start playing just after loading the file", false);
 
+	includeCurrentTimeInSave = addBoolParameter("Save Current Time", "If checked, this will save and load the current time in the file. Otherwise the current time will be reset to 0 on file load.", false); 
+	
 	currentTime = addFloatParameter("Current Time", "Current position in time of this sequence", 0, 0, initTotalTime);
 	currentTime->defaultUI = FloatParameter::TIME;
 	currentTime->isSavable = false;
+	
 
 	totalTime = addFloatParameter("Total Time", "Total time of this sequence, in seconds", initTotalTime, minSequenceTime);
 	totalTime->defaultUI = FloatParameter::TIME;
@@ -283,8 +287,7 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 		}
 
 		sequenceListeners.call(&SequenceListener::sequencePlayStateChanged, this);
-
-
+		sequenceNotifier.addMessage(new SequenceEvent(SequenceEvent::PLAY_STATE_CHANGED, this));
 	} 
 	else if (p == playSpeed)
 	{
@@ -301,6 +304,10 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 		totalTime->unitSteps = fps->intValue();
 		totalTime->setValue(totalTime->floatValue()); //force update
 		currentTime->setValue(currentTime->floatValue()); //force update
+	}
+	else if (p == includeCurrentTimeInSave)
+	{
+		currentTime->isSavable = includeCurrentTimeInSave->boolValue();
 	}
 }
 
@@ -330,6 +337,16 @@ void Sequence::onContainerTriggerTriggered(Trigger * t)
 	} else if (t == nextCue)
 	{
 		setCurrentTime(cueManager->getNextCueForTime(currentTime->floatValue()));
+	}
+}
+
+void Sequence::parameterControlModeChanged(Parameter* p)
+{
+	BaseItem::parameterControlModeChanged(p);
+	if (p == currentTime)
+	{
+		includeCurrentTimeInSave->setValue(currentTime->controlMode != Parameter::MANUAL);
+		includeCurrentTimeInSave->setEnabled(currentTime->controlMode == Parameter::MANUAL);
 	}
 }
 

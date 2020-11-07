@@ -11,6 +11,7 @@
 
 SequenceTransportUI::SequenceTransportUI(Sequence* _sequence) :
 	sequence(_sequence),
+	sequenceRef(_sequence),
 	timeLabel(_sequence->currentTime),
 	timeStepLabel(_sequence->currentTime),
     totalTimeLabel(_sequence->totalTime)
@@ -31,8 +32,7 @@ SequenceTransportUI::SequenceTransportUI(Sequence* _sequence) :
 	addAndMakeVisible(&totalTimeLabel);
 	addAndMakeVisible(&timeStepLabel);
 	 
-	
-	togglePlayUI.reset(sequence->isPlaying->createImageToggle(AssetManager::getInstance()->getToggleBTImage(ImageCache::getFromMemory(TimelineBinaryData::play_png, TimelineBinaryData::play_pngSize))));
+	togglePlayUI.reset(sequence->togglePlayTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::play_png, TimelineBinaryData::play_pngSize)));
 	stopUI.reset(sequence->stopTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::stop_png, TimelineBinaryData::stop_pngSize)));
 	nextCueUI.reset(sequence->nextCue->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::nextcue_png, TimelineBinaryData::nextcue_pngSize)));
 	prevCueUI.reset(sequence->prevCue->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::prevcue_png, TimelineBinaryData::prevcue_pngSize)));
@@ -43,10 +43,14 @@ SequenceTransportUI::SequenceTransportUI(Sequence* _sequence) :
 	addAndMakeVisible(nextCueUI.get());
 	addAndMakeVisible(prevCueUI.get());
 	addAndMakeVisible(loopUI.get());
+
+	sequence->addAsyncCoalescedSequenceListener(this);
 }
 
 SequenceTransportUI::~SequenceTransportUI()
 {
+	if (!sequenceRef.wasObjectDeleted()) sequence->removeAsyncSequenceListener(this);
+
 	togglePlayUI = nullptr;
 	stopUI = nullptr;
 	nextCueUI = nullptr;
@@ -70,6 +74,17 @@ void SequenceTransportUI::resized()
 	nextCueUI->setBounds(pr.removeFromLeft(pr.getHeight()).reduced(2));
 	loopUI->setBounds(pr.removeFromLeft(30).reduced(4));
 	totalTimeLabel.setBounds(pr.removeFromRight(100));
+}
 
+void SequenceTransportUI::newMessage(const Sequence::SequenceEvent& e)
+{
+	if (e.type == e.PLAY_STATE_CHANGED)
+	{
+		if (!sequenceRef.wasObjectDeleted())
+		{
+			togglePlayUI->forceDrawTriggering = sequence->isPlaying->boolValue();
+			togglePlayUI->repaint();
+		}
+	}
 }
 
