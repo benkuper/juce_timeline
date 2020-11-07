@@ -1,4 +1,3 @@
-#include "TimeTriggerManagerUI.h"
 /*
   ==============================================================================
 
@@ -98,8 +97,9 @@ void TimeTriggerManagerUI::mouseDown(const MouseEvent & e)
 					float time = timeline->getTimeForX(getMouseXYRelative().x);
 					manager->addTriggerAt(time, getMouseXYRelative().y * 1.f / getHeight());
 				}
-			} else
+			}/* else
 			{
+
 				Array<Component *> selectables;
 				Array<Inspectable *> inspectables;
 				for (auto& i : itemsUI) if (i->isVisible())
@@ -115,6 +115,7 @@ void TimeTriggerManagerUI::mouseDown(const MouseEvent & e)
 				}
 				
 			}
+			*/
 		}
 	}
 }
