@@ -26,8 +26,8 @@ Sequence::Sequence() :
 
 	isPlaying = addBoolParameter("Is Playing", "Is the sequence playing ?", false);
 	isPlaying->setControllableFeedbackOnly(true);
-	//isPlaying->isSavable = false;
-	//isPlaying->hideInEditor = true;
+	isPlaying->isSavable = false;
+	isPlaying->hideInEditor = true;
 
 	playTrigger = addTrigger("Play", "Play the sequence");
 	stopTrigger = addTrigger("Stop", "Stops the sequence and set the current time at 0.");

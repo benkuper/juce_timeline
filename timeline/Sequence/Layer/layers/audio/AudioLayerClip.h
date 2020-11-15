@@ -38,9 +38,6 @@ public:
 
 	FloatParameter * volume;
 
-
-
-
 	double clipDuration;
 	double sampleRate;
 	int clipSamplePos;

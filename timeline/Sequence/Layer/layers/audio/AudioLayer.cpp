@@ -1,4 +1,3 @@
-#include "AudioLayer.h"
 /*
   ==============================================================================
 
@@ -66,12 +65,8 @@ void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph * graph, int outputG
 		currentGraph->removeNode(graphID);
 		currentProcessor->clear();
 		currentProcessor = nullptr;
+		channelsData = channelsCC.getJSONData();
 
-		if (!isCurrentlyLoadingData)
-		{
-			channelsData = channelsCC.getJSONData();
-		}
-		
 		channelsCC.clear();
 	}
 
@@ -95,6 +90,8 @@ void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph * graph, int outputG
 			b->setValue(i < 2, false);
 		}
 	}
+
+	channelsCC.loadJSONData(channelsData);
 
 	audioOutputGraphID = outputGraphID;
 
@@ -210,7 +207,9 @@ void AudioLayer::updateSelectedOutChannels()
 		}
 	}
 
+
 	numActiveOutputs = selectedOutChannels.size();
+	for (auto& c : clipManager.items) ((AudioLayerClip*)c)->channelRemapAudioSource.setNumberOfChannelsToProduce(numActiveOutputs);
 
 }
 
@@ -234,7 +233,10 @@ void AudioLayer::updateClipConfig(AudioLayerClip* clip, bool updateOutputChannel
 			}
 			index++;
 		}
+
+		clip->channelRemapAudioSource.setNumberOfChannelsToProduce(numActiveOutputs);
 	}
+
 }
 
 float AudioLayer::getVolumeFactor()
@@ -312,8 +314,7 @@ var AudioLayer::getJSONData()
 
 void AudioLayer::loadJSONDataInternal(var data)
 {
-	channelsData = data.getProperty("channels", var());
-
+	channelsCC.loadJSONData(data.getProperty("channels", var()));
 	SequenceLayer::loadJSONDataInternal(data);
 	clipManager.loadJSONData(data.getProperty(clipManager.shortName, var()));
 	updateSelectedOutChannels();
@@ -461,7 +462,7 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 
 	if (layer != nullptr)
 	{
-		if (!layer->enabled->boolValue() || !layer->sequence->enabled->boolValue()) noProcess = true;
+		if (!layer->enabled->boolValue() || !layer->sequence->enabled->boolValue() || !layer->sequence->isPlaying->boolValue()) noProcess = true;
 		currentClip = layer->currentClip;
 		if (currentClip.wasObjectDeleted() || currentClip.get() == nullptr) noProcess = true;
 		else if (currentClip->filePath->stringValue().isEmpty()) noProcess = true;
@@ -471,10 +472,7 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 		noProcess = true;
 	}
 
-	if (buffer.getNumChannels() == 0)
-	{
-		noProcess = true;
-	}
+	if (buffer.getNumChannels() == 0) noProcess = true;
 
 	if (noProcess)
 	{
@@ -522,10 +520,15 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 
 
 	float rms = 0;
+	String rs = "RMS";
 	for (int i = 0; i < buffer.getNumChannels(); ++i)
 	{
-		rms = jmax(rms, buffer.getRMSLevel(i, bufferToFill.startSample, bufferToFill.numSamples));
+		float rmsLevel = buffer.getRMSLevel(i, bufferToFill.startSample, bufferToFill.numSamples);
+		rs += String(i) + " : "+String(rmsLevel)+" / ";
+		rms = jmax(rms, rmsLevel);
 	}
+
+	LOG(rs);
 
 	tempRMS += rms;
 	rmsCount++;
