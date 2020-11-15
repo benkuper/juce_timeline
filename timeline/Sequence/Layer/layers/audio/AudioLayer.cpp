@@ -520,15 +520,11 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 
 
 	float rms = 0;
-	String rs = "RMS";
 	for (int i = 0; i < buffer.getNumChannels(); ++i)
 	{
 		float rmsLevel = buffer.getRMSLevel(i, bufferToFill.startSample, bufferToFill.numSamples);
-		rs += String(i) + " : "+String(rmsLevel)+" / ";
 		rms = jmax(rms, rmsLevel);
 	}
-
-	LOG(rs);
 
 	tempRMS += rms;
 	rmsCount++;
