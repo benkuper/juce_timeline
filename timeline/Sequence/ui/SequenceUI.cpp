@@ -58,8 +58,8 @@ void SequenceUI::resizedInternalHeader(Rectangle<int>& r)
 
 void SequenceUI::resizedInternalContent(Rectangle<int>& r)
 {
-	r.setHeight(8);
-	timeUI->setBounds(r);
+	//r.setHeight(8);
+	timeUI->setBounds(r.removeFromBottom(8));
 }
 
 void SequenceUI::controllableFeedbackUpdateInternal(Controllable * c)

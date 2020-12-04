@@ -1,4 +1,3 @@
-#include "Sequence.h"
 /*
   ==============================================================================
 
@@ -76,7 +75,7 @@ Sequence::Sequence() :
 	addChildControllableContainer(cueManager.get());
 	cueManager->hideInEditor = true;
 
-	listUISize->setValue(5);
+	listUISize->setValue(30);
 
 }
 
