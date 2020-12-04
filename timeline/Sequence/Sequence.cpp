@@ -76,7 +76,7 @@ Sequence::Sequence() :
 	cueManager->hideInEditor = true;
 
 	listUISize->setValue(30);
-
+	listUISize->isSavable = false;
 }
 
 Sequence::~Sequence()
