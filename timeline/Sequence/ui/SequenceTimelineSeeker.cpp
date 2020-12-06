@@ -170,6 +170,7 @@ void SequenceTimelineSeeker::newMessage(const ContainerAsyncEvent & e)
 	{
 	case ContainerAsyncEvent::ControllableFeedbackUpdate:
 
+		if (e.targetControllable.wasObjectDeleted()) return;
 		if (e.targetControllable == sequence->viewStartTime || e.targetControllable == sequence->viewEndTime)
 		{
 			resized();
