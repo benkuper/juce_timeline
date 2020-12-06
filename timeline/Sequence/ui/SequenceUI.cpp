@@ -86,5 +86,8 @@ void SequenceUI::newMessage(const Sequence::SequenceEvent & e)
 		repaint();
 	}
 	break;
+        default:
+            break;
+            
 	}
 }
