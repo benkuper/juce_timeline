@@ -17,9 +17,9 @@ SequenceLayerPanel::SequenceLayerPanel(SequenceLayer * layer) :
 
 	bgColor = item->color->getColor(); 
 	colorUI.reset(item->color->createColorParamUI());
-	miniModeUI.reset(item->miniMode->createImageToggle(AssetManager::getInstance()->getToggleBTImage(AssetManager::getInstance()->getMinusImage())));
+	miniModeUI.reset(item->miniMode->createToggle(AssetManager::getInstance()->getMinusImage()));
 
-	lockUI.reset(item->isUILocked->createImageToggle(AssetManager::getInstance()->getToggleBTImage(ImageCache::getFromMemory(OrganicUIBinaryData::padlock_png, OrganicUIBinaryData::padlock_pngSize))));
+	lockUI.reset(item->isUILocked->createToggle(ImageCache::getFromMemory(OrganicUIBinaryData::padlock_png, OrganicUIBinaryData::padlock_pngSize)));
 	addAndMakeVisible(lockUI.get());
 
 	addAndMakeVisible(colorUI.get());

@@ -13,7 +13,7 @@ SequenceUI::SequenceUI(Sequence * sequence) :
 {
 	minContentHeight = 20; //To fix : need to pass in constructor of BaseItemUI
 
-	togglePlayUI.reset(item->isPlaying->createImageToggle(AssetManager::getInstance()->getToggleBTImage(ImageCache::getFromMemory(TimelineBinaryData::play_png, TimelineBinaryData::play_pngSize))));
+	togglePlayUI.reset(item->isPlaying->createToggle(ImageCache::getFromMemory(TimelineBinaryData::play_png, TimelineBinaryData::play_pngSize)));
 	stopUI.reset(item->stopTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::stop_png, TimelineBinaryData::stop_pngSize)));
 	colorUI.reset(item->color->createColorParamUI());
 	addAndMakeVisible(togglePlayUI.get());

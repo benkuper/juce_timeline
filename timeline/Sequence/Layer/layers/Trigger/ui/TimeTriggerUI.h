@@ -21,7 +21,7 @@ public:
 	Rectangle<int> flagRect;
 	Rectangle<int> lineRect;
 
-	std::unique_ptr<BoolImageToggleUI> lockUI;
+	std::unique_ptr<BoolToggleUI> lockUI;
 
 	//interaction
 	float timeAtMouseDown;

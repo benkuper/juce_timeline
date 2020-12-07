@@ -17,8 +17,8 @@ public:
 	SequenceLayerPanel(SequenceLayer *);
 	virtual ~SequenceLayerPanel();
 
-	std::unique_ptr<BoolImageToggleUI> lockUI;
-	std::unique_ptr<BoolImageToggleUI> miniModeUI;
+	std::unique_ptr<BoolToggleUI> lockUI;
+	std::unique_ptr<BoolToggleUI> miniModeUI;
 
 	std::unique_ptr<ColorParameterUI> colorUI;
 	void paintOverChildren(Graphics &g) override;
