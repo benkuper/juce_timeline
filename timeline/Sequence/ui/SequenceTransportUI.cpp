@@ -36,7 +36,7 @@ SequenceTransportUI::SequenceTransportUI(Sequence* _sequence) :
 	stopUI.reset(sequence->stopTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::stop_png, TimelineBinaryData::stop_pngSize)));
 	nextCueUI.reset(sequence->nextCue->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::nextcue_png, TimelineBinaryData::nextcue_pngSize)));
 	prevCueUI.reset(sequence->prevCue->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::prevcue_png, TimelineBinaryData::prevcue_pngSize)));
-	loopUI.reset(sequence->loopParam->createImageToggle(AssetManager::getInstance()->getToggleBTImage(ImageCache::getFromMemory(TimelineBinaryData::loop_png, TimelineBinaryData::loop_pngSize))));
+	loopUI.reset(sequence->loopParam->createToggle(ImageCache::getFromMemory(TimelineBinaryData::loop_png, TimelineBinaryData::loop_pngSize)));
 
 	addAndMakeVisible(togglePlayUI.get());
 	addAndMakeVisible(stopUI.get());

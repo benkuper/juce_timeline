@@ -29,7 +29,7 @@ public:
 	std::unique_ptr<TriggerImageUI> stopUI;
 	std::unique_ptr<TriggerImageUI> prevCueUI;
 	std::unique_ptr<TriggerImageUI> nextCueUI;
-	std::unique_ptr<BoolImageToggleUI> loopUI;
+	std::unique_ptr<BoolToggleUI> loopUI;
 	
 	void resized() override;
 
