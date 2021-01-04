@@ -32,14 +32,6 @@ TimeTrigger::~TimeTrigger()
 
 }
 
-void TimeTrigger::onContainerParameterChangedInternal(Parameter * p)
-{
-	if (p == isUILocked)
-	{
-		time->setControllableFeedbackOnly(isUILocked->boolValue());
-		//flagY->setControllableFeedbackOnly(isLocked->boolValue());
-	}
-}
 
 void TimeTrigger::setMovePositionReferenceInternal()
 {

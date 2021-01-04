@@ -24,8 +24,6 @@ public:
 	//ui
 	FloatParameter * flagY;
 
-	virtual void onContainerParameterChangedInternal(Parameter * p) override;
-
 	void setMovePositionReferenceInternal() override;
 	void setPosition(Point<float> targetTime) override;
 	Point<float> getPosition() override;

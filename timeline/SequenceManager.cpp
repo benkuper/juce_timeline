@@ -1,4 +1,3 @@
-#include "SequenceManager.h"
 /*
   ==============================================================================
 
@@ -164,4 +163,35 @@ AudioLayer* SequenceManager::getAudioLayerForItemID(int itemID)
 	int sequenceIndex = (int)floor((itemID - 1) / 1000);
 	int layerIndex = (itemID - 1) % 1000;
 	return (AudioLayer *)items[sequenceIndex]->layerManager->items[layerIndex];
+}
+
+TimeTrigger* SequenceManager::showMenuAndGetTrigger()
+{
+	Array<TimeTrigger*> ttItems;
+
+	PopupMenu menu;
+	for (int i = 0; i < items.size(); ++i)
+	{
+		PopupMenu sMenu;
+		int numValues = items[i]->layerManager->items.size();
+		for (int j = 0; j < numValues; j++)
+		{
+			if (TriggerLayer * tl = dynamic_cast<TriggerLayer*>(items[i]->layerManager->items[j]))
+			{
+				PopupMenu tm;
+				for (auto& tt : tl->ttm->items)
+				{
+					ttItems.add(tt);
+					tm.addItem(ttItems.size(), tt->niceName);
+				}
+
+				sMenu.addSubMenu(tl->niceName, tm);
+			}
+		}
+		menu.addSubMenu(items[i]->niceName, sMenu);
+	}
+
+	int result = menu.show();
+	if (result == 0) return nullptr;
+	return ttItems[result - 1];
 }

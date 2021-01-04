@@ -13,6 +13,7 @@
 class SequenceLayer;
 class TimeCue;
 class AudioLayer;
+class TimeTrigger;
 
 class SequenceManager :
 	public BaseManager<Sequence>,
@@ -51,6 +52,8 @@ public:
 
 	AudioLayer * showMenuAndGetAudioLayer();
 	AudioLayer* getAudioLayerForItemID(int itemID);
+
+	TimeTrigger* showMenuAndGetTrigger();
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceManager)
 };
