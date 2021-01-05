@@ -45,7 +45,7 @@ public:
 	bool isCurrent;
 	bool isLoading;
 
-	void setIsCurrent(bool value);
+	virtual void setIsCurrent(bool value);
 	
 	bool isInRange(float time);
 
@@ -58,7 +58,11 @@ public:
 	
 	void setPlaySpeed(float value);
 
+	virtual void prepareToPlay(int blockSize, int sampleRate);
+
 	void run() override;
+
+	virtual void setupFromSource();
 
 	String getTypeString() const override { return "AudioClip"; }
 

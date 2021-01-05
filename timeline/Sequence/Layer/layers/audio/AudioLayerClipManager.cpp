@@ -10,7 +10,8 @@
 
 
 AudioLayerClipManager::AudioLayerClipManager(AudioLayer * layer) :
-	LayerBlockManager(layer, "Clips")
+	LayerBlockManager(layer, "Clips"),
+	audioLayer(layer)
 {
 	itemDataType = "AudioClip";
 	blocksCanOverlap = false;
@@ -24,5 +25,5 @@ AudioLayerClipManager::~AudioLayerClipManager()
 
 LayerBlock* AudioLayerClipManager::createItem()
 {
-	return new AudioLayerClip();
+	return audioLayer->createAudioClip();
 }

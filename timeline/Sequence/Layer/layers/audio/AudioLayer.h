@@ -56,7 +56,9 @@ public:
 	void setAudioProcessorGraph(AudioProcessorGraph * graph, int audioOutputGraphID = 2);
 	virtual AudioLayerProcessor* createAudioLayerProcessor();
 
-	void updateCurrentClip();
+	virtual AudioLayerClip* createAudioClip();
+
+	virtual void updateCurrentClip();
 
 	void itemAdded(LayerBlock*) override;
 	void itemRemoved(LayerBlock* clip) override;

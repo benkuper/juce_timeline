@@ -103,6 +103,11 @@ AudioLayerProcessor* AudioLayer::createAudioLayerProcessor()
 	return new AudioLayerProcessor(this);
 }
 
+AudioLayerClip* AudioLayer::createAudioClip()
+{
+	return new AudioLayerClip();
+}
+
 
 void AudioLayer::updateCurrentClip()
 {
@@ -126,14 +131,9 @@ void AudioLayer::updateCurrentClip()
 	if (currentClip != nullptr)
 	{
 		currentClip->setIsCurrent(true);
-		if (sequence->currentManager != nullptr)
-		{
-		}
 		float pos = currentClip->clipStartOffset->floatValue() + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue();
 		currentClip->transportSource.setPosition(pos);
-
 		if (sequence->isPlaying->boolValue()) currentClip->transportSource.start();
-
 		updateSelectedOutChannels();
 	}
 
@@ -220,7 +220,7 @@ void AudioLayer::updateClipConfig(AudioLayerClip* clip, bool updateOutputChannel
 	clip->channelRemapAudioSource.clearAllMappings();
 	//clip->channelRemapAudioSource.prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
 	clip->setPlaySpeed(sequence->playSpeed->floatValue());
-	if (currentGraph != nullptr)	clip->resamplingAudioSource.prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
+	if (currentGraph != nullptr)	clip->prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
 
 	if (updateOutputChannelRemapping)
 	{
@@ -288,7 +288,7 @@ void AudioLayer::onControllableFeedbackUpdateInternal(ControllableContainer* cc,
 			if (c == currentClip->stretchFactor)
 			{
 				currentClip->setPlaySpeed(sequence->playSpeed->floatValue());
-				currentClip->resamplingAudioSource.prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
+				currentClip->prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
 			}
 		}
 	}
@@ -370,7 +370,7 @@ void AudioLayer::sequencePlaySpeedChanged(Sequence*)
 	if (currentClip != nullptr)
 	{
 		currentClip->setPlaySpeed(sequence->playSpeed->floatValue());
-		currentClip->resamplingAudioSource.prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
+		currentClip->prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
 	}
 }
 

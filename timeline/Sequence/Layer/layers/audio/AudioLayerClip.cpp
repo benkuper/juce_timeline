@@ -1,4 +1,3 @@
-#include "AudioLayerClip.h"
 /*
   ==============================================================================
 
@@ -149,6 +148,11 @@ void AudioLayerClip::setPlaySpeed(float value)
 	resamplingAudioSource.setResamplingRatio(stretchFactor->floatValue() / value);
 }
 
+void AudioLayerClip::prepareToPlay(int blockSize, int _sampleRate)
+{
+	resamplingAudioSource.prepareToPlay(blockSize, _sampleRate);
+}
+
 void AudioLayerClip::run()
 {
 	if (filePath == nullptr) return;
@@ -159,6 +163,15 @@ void AudioLayerClip::run()
 	transportSource.setSource(nullptr);
 	readerSource.reset(nullptr);
 
+	setupFromSource();
+
+	isLoading = false;
+	audioClipAsyncNotifier.addMessage(new ClipEvent(ClipEvent::SOURCE_LOAD_END, this));
+	clipListeners.call(&ClipListener::clipSourceLoaded, this);
+}
+
+void AudioLayerClip::setupFromSource()
+{
 	AudioFormatReader* reader = formatManager.createReaderFor(filePath->getAbsolutePath());
 
 	if (reader != nullptr)
@@ -179,8 +192,4 @@ void AudioLayerClip::run()
 		//buffer.setSize((int)reader->numChannels, (int)reader->lengthInSamples);
 		//reader->read(&buffer, 0, (int)reader->lengthInSamples, 0, true, true);
 	}
-
-	isLoading = false;
-	audioClipAsyncNotifier.addMessage(new ClipEvent(ClipEvent::SOURCE_LOAD_END, this));
-	clipListeners.call(&ClipListener::clipSourceLoaded, this);
 }
