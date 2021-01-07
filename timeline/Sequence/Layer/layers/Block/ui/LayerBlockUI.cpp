@@ -52,7 +52,7 @@ void LayerBlockUI::paintOverChildren(Graphics& g)
 
 	if (item->isUILocked->boolValue())
 	{
-		g.setTiledImageFill(ImageCache::getFromMemory(TimelineBinaryData::stripe_png, TimelineBinaryData::stripe_pngSize),0,0,.1f);
+		g.setTiledImageFill(ImageCache::getFromMemory(TimelineBinaryData::stripe_png, TimelineBinaryData::stripe_pngSize), 0, 0, .1f);
 		g.fillAll();
 	}
 }

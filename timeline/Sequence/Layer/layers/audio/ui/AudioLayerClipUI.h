@@ -29,10 +29,10 @@ public:
 	void paint(Graphics &g) override;
 	void resizedBlockInternal() override;
 
+	virtual void setupThumbnail();
 
+	virtual void controllableFeedbackUpdateInternal(Controllable *) override;
 
-	void controllableFeedbackUpdateInternal(Controllable *) override;
-
-	void newMessage(const AudioLayerClip::ClipEvent &e) override;
+	virtual void newMessage(const AudioLayerClip::ClipEvent &e) override;
 
 };

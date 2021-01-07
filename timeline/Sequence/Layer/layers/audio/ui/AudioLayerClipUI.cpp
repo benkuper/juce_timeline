@@ -24,9 +24,6 @@ AudioLayerClipUI::AudioLayerClipUI(AudioLayerClip* _clip) :
 	if (clip->filePath->stringValue().startsWithChar('/')) return;
 #endif
 
-	thumbnail.setSource(new FileInputSource(clip->filePath->getFile()));
-
-	repaint();
 }
 
 AudioLayerClipUI::~AudioLayerClipUI()
@@ -71,6 +68,12 @@ void AudioLayerClipUI::resizedBlockInternal()
 	LayerBlockUI::resizedBlockInternal();
 }
 
+void AudioLayerClipUI::setupThumbnail()
+{
+	thumbnail.setSource(new FileInputSource(clip->filePath->getFile()));
+	repaint();
+}
+
 
 void AudioLayerClipUI::controllableFeedbackUpdateInternal(Controllable* c)
 {
@@ -97,8 +100,7 @@ void AudioLayerClipUI::newMessage(const AudioLayerClip::ClipEvent& e)
 		break;
 
 	case AudioLayerClip::ClipEvent::SOURCE_LOAD_END:
-		thumbnail.setSource(new FileInputSource(clip->filePath->getFile()));
-		repaint();
+		setupThumbnail();
 		break;
 
 	}

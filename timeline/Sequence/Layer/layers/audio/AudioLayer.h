@@ -51,6 +51,9 @@ public:
 	float volumeInterpolationTime;
 	bool stopAtVolumeInterpolationFinish;
 
+	//thread transportSource stop flag
+	bool clipIsStopping;
+
 	virtual void clearItem() override;
 
 	void setAudioProcessorGraph(AudioProcessorGraph * graph, int audioOutputGraphID = 2);

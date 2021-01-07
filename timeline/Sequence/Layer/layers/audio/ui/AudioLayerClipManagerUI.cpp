@@ -23,7 +23,9 @@ AudioLayerClipManagerUI::~AudioLayerClipManagerUI()
 
 LayerBlockUI* AudioLayerClipManagerUI::createUIForItem(LayerBlock* item)
 {
-	return new AudioLayerClipUI(dynamic_cast<AudioLayerClip *>(item));
+	AudioLayerClipUI * ui =  new AudioLayerClipUI(dynamic_cast<AudioLayerClip *>(item));
+	ui->setupThumbnail(); //do it from here to allow child override
+	return ui;
 }
 
 void AudioLayerClipManagerUI::mouseDoubleClick(const MouseEvent & e)

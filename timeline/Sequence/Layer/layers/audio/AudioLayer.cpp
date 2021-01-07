@@ -23,7 +23,8 @@ AudioLayer::AudioLayer(Sequence* _sequence, var params) :
 	audioOutputGraphID(2),
 	targetVolume(1),
 	volumeInterpolationAutomation(nullptr),
-	stopAtVolumeInterpolationFinish(false)
+	stopAtVolumeInterpolationFinish(false),
+	clipIsStopping(false)
 {
 
 	helpID = "AudioLayer";
@@ -351,12 +352,17 @@ void AudioLayer::sequencePlayStateChanged(Sequence*)
 	if (!sequence->isPlaying->boolValue())
 	{
 		enveloppe->setValue(0);
-		if (currentClip != nullptr) currentClip->transportSource.stop();
+		if (currentClip != nullptr)
+		{
+			clipIsStopping = true;
+			currentClip->transportSource.stop();
+			clipIsStopping = false;
+		}
 	}
 	else
 	{
 
-		if (currentClip != nullptr)
+		if (currentClip != nullptr && enabled->boolValue())
 		{
 			float pos = currentClip->clipStartOffset->floatValue() + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue();
 			currentClip->transportSource.setPosition(pos);
@@ -466,6 +472,7 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 		currentClip = layer->currentClip;
 		if (currentClip.wasObjectDeleted() || currentClip.get() == nullptr) noProcess = true;
 		else if (currentClip->filePath->stringValue().isEmpty()) noProcess = true;
+		
 	}
 	else
 	{
@@ -473,6 +480,14 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 	}
 
 	if (buffer.getNumChannels() == 0) noProcess = true;
+
+	//Do this before noProcess to avoid freeze of transportSource when stopping
+	AudioSourceChannelInfo bufferToFill;
+	bufferToFill.buffer = &buffer;
+	bufferToFill.startSample = 0;
+	bufferToFill.numSamples = buffer.getNumSamples();
+
+	if(currentClip != nullptr && (!noProcess || currentClip->transportSource.isPlaying() || layer->clipIsStopping)) currentClip->channelRemapAudioSource.getNextAudioBlock(bufferToFill);
 
 	if (noProcess)
 	{
@@ -503,12 +518,7 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 
 	layer->currentClip->transportSource.setGain(volumeFactor);
 
-	AudioSourceChannelInfo bufferToFill;
-	bufferToFill.buffer = &buffer;
-	bufferToFill.startSample = 0;
-	bufferToFill.numSamples = buffer.getNumSamples();
-
-	layer->currentClip->channelRemapAudioSource.getNextAudioBlock(bufferToFill);
+	
 
 
 	if (buffer.getNumChannels() >= 2)
