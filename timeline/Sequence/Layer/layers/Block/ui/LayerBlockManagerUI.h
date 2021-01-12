@@ -45,5 +45,7 @@ public:
 	virtual void blockUILoopDragged(LayerBlockUI * cui, const MouseEvent &) override;
 	virtual void blockUINeedsReorder() override;
 
+	virtual void updateItemVisibility(LayerBlockUI* cui);
+
 };
 

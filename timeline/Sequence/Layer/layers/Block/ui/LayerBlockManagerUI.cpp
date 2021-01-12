@@ -60,6 +60,8 @@ void LayerBlockManagerUI::placeBlockUI(LayerBlockUI * cui)
 
 	cui->setViewRange(timeline->item->sequence->viewStartTime->floatValue() - cui->item->time->floatValue(), timeline->item->sequence->viewEndTime->floatValue() - cui->item->time->floatValue());
 	cui->setBounds(tx, 0, tx2 - tx, getHeight());
+
+	updateItemVisibility(cui);
 }
 
 void LayerBlockManagerUI::mouseDoubleClick(const MouseEvent & e)
@@ -170,4 +172,12 @@ void LayerBlockManagerUI::blockUILoopDragged(LayerBlockUI * cui, const MouseEven
 void LayerBlockManagerUI::blockUINeedsReorder()
 {
 	manager->reorderItems();
+}
+
+void LayerBlockManagerUI::updateItemVisibility(LayerBlockUI* cui)
+{
+	float start = cui->item->time->floatValue();
+	float end = cui->item->getEndTime();
+	bool isOutside = end < timeline->item->sequence->viewStartTime->floatValue() || start > timeline->item->sequence->viewEndTime->floatValue();
+	cui->setVisible(!isOutside);
 }
