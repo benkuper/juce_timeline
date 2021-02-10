@@ -51,7 +51,15 @@ TimeCueUI::~TimeCueUI()
 void TimeCueUI::paint(Graphics & g)
 {
 	
-	Colour c = item->isSelected ? HIGHLIGHT_COLOR : item->pauseOnCue->boolValue()?YELLOW_COLOR:bgColor;
+	Colour c = bgColor;
+	if (item->isSelected) c = HIGHLIGHT_COLOR;
+	else
+	{
+		TimeCue::CueAction a = item->cueAction->getValueDataAsEnum<TimeCue::CueAction>();
+		if (a == TimeCue::PAUSE) c = BLUE_COLOR;
+		else if (a == TimeCue::LOOP_JUMP) c = YELLOW_COLOR;
+	}
+
 	if (isMouseOver()) c = c.brighter();
 
 	if (item->isUILocked->boolValue()) c = c.interpolatedWith(RED_COLOR, .5f);
@@ -124,9 +132,13 @@ void TimeCueUI::controllableFeedbackUpdateInternal(Controllable * c)
 	{
 		cueUIListeners.call(&TimeCueUIListener::cueTimeChanged, this);
 	}
-	else if (c == item->isUILocked || c == item->pauseOnCue)
+	else if (c == item->isUILocked || c == item->cueAction)
 	{
 		repaint();
+	}
+	else if (c == item->loopCue)
+	{
+		if (getParentComponent() != nullptr) getParentComponent()->repaint(); //force repaint manager
 	}
 }
 

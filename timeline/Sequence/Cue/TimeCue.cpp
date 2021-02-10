@@ -18,25 +18,49 @@ TimeCue::TimeCue(const float & _time) :
 	time->setValue(_time, true, true);
 	time->defaultUI = FloatParameter::TIME;
 
+	cueAction = addEnumParameter("Action on Cue", "This can be used to add an extra action when the timeline hits the cue. Pause will pause at the cue, Loop Jump will jump to another cue, allowing for easy loop in-out behaviour.");
+	cueAction->addOption("Nothing", NOTHING)->addOption("Pause", PAUSE)->addOption("Loop Jump", LOOP_JUMP);
+
+	loopCue = addTargetParameter("Loop Jump Cue", "If Cue Action is set to Loop Jump, this will decide which Cue to jump to", nullptr, false);
+	loopCue->targetType = TargetParameter::CONTAINER;
+	loopCue->maxDefaultSearchLevel = 0;
+	loopCue->showParentNameInEditor = false;
+
 	isUILocked->hideInEditor = false;
 
-	pauseOnCue = addBoolParameter("Pause On Cue", "If checked, the sequence will pause when the time is on this cue", false);
 }
 
 TimeCue::~TimeCue()
 {
 }
 
+void TimeCue::setParentContainer(ControllableContainer* container)
+{
+	BaseItem::setParentContainer(container);
+
+	if (parentContainer != nullptr)
+	{
+		loopCue->setRootContainer(parentContainer);
+	}
+}
+
+void TimeCue::onContainerParameterChangedInternal(Parameter* p)
+{
+	if (p == cueAction)
+	{
+		loopCue->setEnabled(cueAction->getValueDataAsEnum<CueAction>() == LOOP_JUMP);
+	}
+	else if (p == loopCue)
+	{
+		if (loopCue->targetContainer == this)
+		{
+			NLOGWARNING(niceName, "Auto referencing this cue for Loop Jump, are you looking to create a spacetime breach ??");
+		}
+	}
+}
+
 Sequence * TimeCue::getSequence()
 {
-	ControllableContainer * cc = parentContainer;
-
-	while (cc != nullptr)
-	{
-		Sequence * s = dynamic_cast<Sequence *>(cc);
-		if (s != nullptr) return s;
-		cc = cc->parentContainer;
-	}
-
-	return nullptr;
+	if (parentContainer == nullptr) return nullptr;
+	return dynamic_cast<Sequence*>(parentContainer->parentContainer.get());
 }
