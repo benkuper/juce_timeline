@@ -238,14 +238,25 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 		if (isPlaying->boolValue() && !isSeeking)
 		{
 			Array<TimeCue*> cues = cueManager->getCuesInTimespan(prevTime, currentTime->floatValue());
-			for (auto& c : cues)
+			for(auto & cue : cues)
 			{
-				if (c->pauseOnCue->boolValue())
+				if (!cue->enabled->boolValue()) continue;
+
+				TimeCue::CueAction a = cue->cueAction->getValueDataAsEnum<TimeCue::CueAction>();
+				if (a == TimeCue::NOTHING) continue;
+				else if(a == TimeCue::PAUSE)
 				{
 					pauseTrigger->trigger();
 					prevTime = currentTime->floatValue();
-					currentTime->setValue(c->time->floatValue());
+					currentTime->setValue(cue->time->floatValue());
 					return;
+				}
+				else if (a == TimeCue::LOOP_JUMP)
+				{
+					if (TimeCue* tc = dynamic_cast<TimeCue*>(cue->loopCue->targetContainer.get()))
+					{
+						if(tc != cue) setCurrentTime(tc->time->floatValue(), true, true);
+					}
 				}
 			}
 		}

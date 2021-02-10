@@ -18,7 +18,14 @@ public:
 	~TimeCue();
 
 	FloatParameter * time;
-	BoolParameter * pauseOnCue;
+
+	enum CueAction { NOTHING, PAUSE, LOOP_JUMP };
+	EnumParameter * cueAction;
+	TargetParameter* loopCue;
+
+	void setParentContainer(ControllableContainer* container) override;
+
+	void onContainerParameterChangedInternal(Parameter* p) override;
 
 	Sequence * getSequence();
 };

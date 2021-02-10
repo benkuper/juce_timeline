@@ -21,6 +21,7 @@ public:
 
 	SequenceTimelineHeader * header;
 
+	void paint(Graphics& g) override;
 	void resized() override;
 	void updateContent();
 

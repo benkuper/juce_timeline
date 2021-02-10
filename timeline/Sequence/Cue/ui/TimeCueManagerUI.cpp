@@ -24,6 +24,26 @@ TimeCueManagerUI::~TimeCueManagerUI()
 {
 }
 
+void TimeCueManagerUI::paint(Graphics& g)
+{
+	for (auto& cui : itemsUI)
+	{
+		if (cui->item->cueAction->getValueDataAsEnum<TimeCue::CueAction>() == TimeCue::LOOP_JUMP)
+		{
+			if (TimeCue* tc = dynamic_cast<TimeCue*>(cui->item->loopCue->targetContainer.get()))
+			{
+				int x1 = header->getXForTime(tc->time->floatValue());
+				int x2 = header->getXForTime(cui->item->time->floatValue());
+				int minX = jmax(jmin(x1, x2), 0);
+				int maxX = jmin(jmax(x1, x2), getWidth());
+
+				g.setColour((x1 > x2 ? YELLOW_COLOR : RED_COLOR).withAlpha(.4f));
+				g.fillRect(Rectangle<int>(minX, 2, maxX-minX, getHeight() - 2));
+		}
+		}
+	}
+}
+
 void TimeCueManagerUI::resized()
 {
 	updateContent();
