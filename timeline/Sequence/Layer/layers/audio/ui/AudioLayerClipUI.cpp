@@ -18,7 +18,7 @@ AudioLayerClipUI::AudioLayerClipUI(AudioLayerClip* _clip) :
 
 	clip->addAsyncClipListener(this);
 
-	bgColor = clip->isCurrent ? AUDIO_COLOR.brighter() : BG_COLOR.brighter(.1f);
+	bgColor = clip->isActive->boolValue() ? AUDIO_COLOR.brighter() : BG_COLOR.brighter(.1f);
 
 #if JUCE_WINDOWS
 	if (clip->filePath->stringValue().startsWithChar('/')) return;
@@ -63,11 +63,6 @@ void AudioLayerClipUI::paint(Graphics& g)
 	}
 }
 
-void AudioLayerClipUI::resizedBlockInternal()
-{
-	LayerBlockUI::resizedBlockInternal();
-}
-
 void AudioLayerClipUI::setupThumbnail()
 {
 	thumbnail.setSource(new FileInputSource(clip->filePath->getFile()));
@@ -83,17 +78,18 @@ void AudioLayerClipUI::controllableFeedbackUpdateInternal(Controllable* c)
 	{
 		repaint();
 	}
+
+	if (c == clip->isActive)
+	{
+		bgColor = clip->isActive->boolValue() ? AUDIO_COLOR.brighter() : BG_COLOR.brighter(.1f);
+		repaint();
+	}
 }
 
 void AudioLayerClipUI::newMessage(const AudioLayerClip::ClipEvent& e)
 {
 	switch (e.type)
 	{
-	case AudioLayerClip::ClipEvent::CLIP_IS_CURRENT_CHANGED:
-		bgColor = clip->isCurrent ? AUDIO_COLOR.brighter() : BG_COLOR.brighter(.1f);
-		repaint();
-		break;
-
 	case AudioLayerClip::ClipEvent::SOURCE_LOAD_START:
 		thumbnail.setSource(nullptr);
 		repaint();

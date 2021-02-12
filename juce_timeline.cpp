@@ -35,6 +35,11 @@
 #include "timeline/Sequence/Layer/layers/Trigger/TimeTriggerManager.cpp"
 #include "timeline/Sequence/Layer/layers/Trigger/TriggerLayer.cpp"
 
+
+#include "timeline/Sequence/Layer/layers/SequenceBlock/SequenceBlock.cpp"
+#include "timeline/Sequence/Layer/layers/SequenceBlock/SequenceBlockManager.cpp"
+#include "timeline/Sequence/Layer/layers/SequenceBlock/SequenceBlockLayer.cpp"
+
 #include "timeline/Sequence/Layer/SequenceLayer.cpp"
 #include "timeline/Sequence/Layer/SequenceLayerManager.cpp"
 
@@ -62,6 +67,11 @@
 #include "timeline/Sequence/Layer/layers/Trigger/ui/TriggerLayerPanel.cpp"
 #include "timeline/Sequence/Layer/layers/Trigger/ui/TriggerLayerTimeline.cpp"
 #include "timeline/Sequence/Layer/layers/Trigger/ui/TimeTriggerManagerUI.cpp"
+
+#include "timeline/Sequence/Layer/layers/SequenceBlock/ui/SequenceBlockUI.cpp"
+#include "timeline/Sequence/Layer/layers/SequenceBlock/ui/SequenceBlockManagerUI.cpp"
+#include "timeline/Sequence/Layer/layers/SequenceBlock/ui/SequenceBlockLayerPanel.cpp"
+#include "timeline/Sequence/Layer/layers/SequenceBlock/ui/SequenceBlockLayerTimeline.cpp"
 
 #include "timeline/Sequence/ui/SequenceUI.cpp"
 #include "timeline/Sequence/ui/SequenceTransportUI.cpp"

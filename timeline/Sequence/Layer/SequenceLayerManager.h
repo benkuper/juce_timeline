@@ -41,7 +41,18 @@ public:
 
 		Sequence* sequence;
 		bool isAudio;
+
 		SequenceLayer* create() override { return createFunc(sequence, params); }
+
+		template<class S>
+		static LayerDefinition* createDef(StringRef menu, StringRef type, Sequence* s, var params = new DynamicObject())
+		{
+			return createDef(menu, type, &LayerDefinition<T>::createTemplated<S>, params);
+		}
+
+		template<class S>
+		static SequenceLayer * createTemplated(var params = new DynamicObject()) { return new S(sequence, params); }
+
 	};
 
 

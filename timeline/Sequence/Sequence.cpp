@@ -90,8 +90,7 @@ void Sequence::clearItem()
 
 	setAudioDeviceManager(nullptr);
 
-	signalThreadShouldExit();
-	waitForThreadToExit(500);
+	stopThread(500);
 	
 	//if(!Engine::mainEngine->isClearing) stopTrigger->trigger();
 	if (Engine::mainEngine != nullptr) Engine::mainEngine->removeEngineListener(this);
@@ -283,6 +282,7 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 	else if (p == isPlaying)
 	{
 		signalThreadShouldExit();
+		notify();
 		if (getCurrentThreadId() != getThreadId())
 		{
 			waitForThreadToExit(300);
@@ -401,7 +401,7 @@ void Sequence::run()
 		double relAbsMillis = millisAfterProcess - millisAtSetTime;
 		double millisToWait = ceil(millisPerCycle - fmod(relAbsMillis, millisPerCycle));
 
-		if(millisToWait >= 0) sleep(millisToWait);
+		if(millisToWait >= 0) wait(millisToWait);
 	}
 }
 

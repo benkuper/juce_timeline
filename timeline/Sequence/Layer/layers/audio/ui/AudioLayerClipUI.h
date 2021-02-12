@@ -18,16 +18,11 @@ public:
 	AudioLayerClipUI(AudioLayerClip * clip);
 	~AudioLayerClipUI();
 
-	//interaction
-	float timeAtMouseDown;
-	int posAtMouseDown;
-
 	AudioThumbnailCache thumbnailCache;
 	AudioThumbnail thumbnail;
 	AudioLayerClip * clip;
 
 	void paint(Graphics &g) override;
-	void resizedBlockInternal() override;
 
 	virtual void setupThumbnail();
 

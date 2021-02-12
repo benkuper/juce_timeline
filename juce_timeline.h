@@ -95,6 +95,9 @@ using namespace juce;
 #include "timeline/Sequence/Layer/layers/Trigger/TimeTriggerManager.h"
 #include "timeline/Sequence/Layer/layers/Trigger/TriggerLayer.h"
 
+#include "timeline/Sequence/Layer/layers/SequenceBlock/SequenceBlock.h"
+#include "timeline/Sequence/Layer/layers/SequenceBlock/SequenceBlockManager.h"
+#include "timeline/Sequence/Layer/layers/SequenceBlock/SequenceBlockLayer.h"
 
 #include "timeline/Sequence/Layer/SequenceLayerManager.h"
 
@@ -121,6 +124,11 @@ using namespace juce;
 #include "timeline/Sequence/Layer/layers/Trigger/ui/TriggerLayerPanel.h"
 #include "timeline/Sequence/Layer/layers/Trigger/ui/TriggerLayerTimeline.h"
 #include "timeline/Sequence/Layer/layers/Trigger/ui/TimeTriggerManagerUI.h"
+
+#include "timeline/Sequence/Layer/layers/SequenceBlock/ui/SequenceBlockUI.h"
+#include "timeline/Sequence/Layer/layers/SequenceBlock/ui/SequenceBlockManagerUI.h"
+#include "timeline/Sequence/Layer/layers/SequenceBlock/ui/SequenceBlockLayerPanel.h"
+#include "timeline/Sequence/Layer/layers/SequenceBlock/ui/SequenceBlockLayerTimeline.h"
 
 #include "timeline/Sequence/Cue/ui/TimeCueUI.h"
 #include "timeline/Sequence/Cue/ui/TimeCueManagerUI.h"

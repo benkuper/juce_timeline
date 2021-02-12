@@ -50,8 +50,7 @@ AudioLayer::~AudioLayer()
 
 void AudioLayer::clearItem()
 {
-	signalThreadShouldExit();
-	waitForThreadToExit(100);
+	stopThread(1000);
 
 	BaseItem::clearItem();
 	setAudioProcessorGraph(nullptr);
@@ -124,14 +123,14 @@ void AudioLayer::updateCurrentClip()
 
 	if (currentClip != nullptr)
 	{
-		currentClip->setIsCurrent(false);
+		currentClip->isActive->setValue(false);
 	}
 
 	currentClip = target;
 
 	if (currentClip != nullptr)
 	{
-		currentClip->setIsCurrent(true);
+		currentClip->isActive->setValue(true);
 		float pos = currentClip->clipStartOffset->floatValue() + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue();
 		currentClip->transportSource.setPosition(pos);
 		if (sequence->isPlaying->boolValue()) currentClip->transportSource.start();
@@ -254,8 +253,7 @@ void AudioLayer::setVolume(float value, float time, Automation* automation, bool
 		return;
 	}
 
-	signalThreadShouldExit();
-	waitForThreadToExit(100);
+	stopThread(1000);
 
 
 	targetVolume = value;
@@ -402,7 +400,7 @@ void AudioLayer::run()
 
 		if (rel == 1) break;
 
-		sleep(20); //50fps
+		wait(20); //50fps
 	}
 
 	if (volumeInterpolationAutomation != nullptr)
@@ -420,8 +418,7 @@ void AudioLayer::inspectableDestroyed(Inspectable* i)
 {
 	if (i == volumeInterpolationAutomation)
 	{
-		signalThreadShouldExit();
-		waitForThreadToExit(1000);
+		stopThread(1000);
 	}
 }
 

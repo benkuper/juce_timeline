@@ -9,14 +9,13 @@
 */
 
 AudioLayerClip::AudioLayerClip() :
-	LayerBlock("AudioClip"),
+	LayerBlock(getTypeString()),
 	Thread("AudioClipReader"),
 	resamplingAudioSource(&channelRemapAudioSource, false),
     channelRemapAudioSource(&transportSource, false),
     clipDuration(0),
 	sampleRate(0),
 	clipSamplePos(0),
-	isCurrent(false),
 	isLoading(false),
 
 	audioClipAsyncNotifier(10)
@@ -54,34 +53,9 @@ AudioLayerClip::AudioLayerClip() :
 
 AudioLayerClip::~AudioLayerClip()
 {
-	signalThreadShouldExit();
-	waitForThreadToExit(3000);
+	stopThread(3000);
 	masterReference.clear();
 	transportSource.releaseResources();
-}
-
-void AudioLayerClip::setIsCurrent(bool value)
-{
-	if (isCurrent == value) return;
-	isCurrent = value;
-
-	if (isCurrent)
-	{
-		clipSamplePos = 0;
-	}
-	else
-	{
-		transportSource.stop();
-		clipSamplePos = -1;
-	}
-
-	clipListeners.call(&ClipListener::clipIsCurrentChanged, this);
-	audioClipAsyncNotifier.addMessage(new ClipEvent(ClipEvent::CLIP_IS_CURRENT_CHANGED, this));
-}
-
-bool AudioLayerClip::isInRange(float _time)
-{
-	return (_time >= time->floatValue() && _time <= getEndTime());
 }
 
 void AudioLayerClip::updateAudioSourceFile()
@@ -111,6 +85,18 @@ void AudioLayerClip::onContainerParameterChangedInternal(Parameter* p)
 	if (p == filePath)
 	{
 		updateAudioSourceFile();
+	}
+	else if (p == isActive)
+	{
+		if (isActive->boolValue())
+		{
+			clipSamplePos = 0;
+		}
+		else
+		{
+			transportSource.stop();
+			clipSamplePos = -1;
+		}
 	}
 
 }

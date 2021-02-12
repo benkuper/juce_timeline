@@ -42,12 +42,7 @@ public:
 	double sampleRate;
 	int clipSamplePos;
 
-	bool isCurrent;
 	bool isLoading;
-
-	virtual void setIsCurrent(bool value);
-	
-	bool isInRange(float time);
 
 	void updateAudioSourceFile();
 	void onContainerTriggerTriggered(Trigger* t) override;
@@ -71,7 +66,6 @@ public:
 	public:
 		virtual ~ClipListener() {}
 		virtual void clipSourceLoaded(AudioLayerClip*) {}
-		virtual void clipIsCurrentChanged(AudioLayerClip *) {}
 	};
 
 	ListenerList<ClipListener> clipListeners;
@@ -80,7 +74,7 @@ public:
 
 	class ClipEvent {
 	public:
-		enum Type { CLIP_IS_CURRENT_CHANGED, SOURCE_LOAD_START, SOURCE_LOAD_END };
+		enum Type { SOURCE_LOAD_START, SOURCE_LOAD_END };
 		ClipEvent(Type type, AudioLayerClip * i) : type(type), clip(i) {}
 		Type type;
 		AudioLayerClip *clip;
