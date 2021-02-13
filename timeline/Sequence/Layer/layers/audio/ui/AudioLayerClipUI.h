@@ -22,12 +22,20 @@ public:
 	AudioThumbnail thumbnail;
 	AudioLayerClip * clip;
 
+	std::unique_ptr<AutomationUI> automationUI;
+
 	void paint(Graphics &g) override;
+
+	void resizedBlockInternal() override;
+
+	void mouseDown(const MouseEvent &e) override;
+
 
 	virtual void setupThumbnail();
 
-	virtual void controllableFeedbackUpdateInternal(Controllable *) override;
+	void setTargetAutomation(ParameterAutomation* a);
 
+	virtual void controllableFeedbackUpdateInternal(Controllable *) override;
 	virtual void newMessage(const AudioLayerClip::ClipEvent &e) override;
 
 };

@@ -496,10 +496,12 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 	}
 
 	float currentTime = layer->sequence->currentTime->floatValue();
-	float volumeFactor = currentClip->volume->floatValue() * layer->getVolumeFactor();
-	
-	float relClipStart =  currentTime - currentClip->time->floatValue();
+	float relClipStart = currentTime - currentClip->time->floatValue();
 	float relClipEnd = currentClip->getEndTime() - currentTime;
+
+	float clipVolume = currentClip->volume->controlMode == Parameter::ControlMode::AUTOMATION ? ((Automation *)currentClip->volume->automation->automationContainer)->getValueAtPosition(relClipStart) : currentClip->volume->floatValue();
+	float volumeFactor = clipVolume * layer->getVolumeFactor();
+	
 
 	if (relClipStart < currentClip->fadeIn->floatValue())
 	{
