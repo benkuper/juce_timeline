@@ -54,6 +54,10 @@ Sequence::Sequence() :
 									This setting also sets how many messages per seconds are sent from layer with automations.", 50, 1,500);
 	loopParam = addBoolParameter("Loop", "Whether the sequence plays again from the start when reached the end while playing", false);
 
+	bpmPreview = addFloatParameter("BPM Preview", "BPM for previewing in the timeline.", 120, 1, 999, false);
+	bpmPreview->canBeDisabledByUser = true;
+	beatsPerBar = addIntParameter("Beats Per Bar", "Number of beats in a bar. Only for preview in UI", 4, 1, 32, false);
+
 	currentTime->unitSteps = fps->intValue();
 	totalTime->unitSteps = fps->intValue();
 
@@ -318,6 +322,10 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 	else if (p == includeCurrentTimeInSave)
 	{
 		currentTime->isSavable = includeCurrentTimeInSave->boolValue();
+	}
+	else if (p == bpmPreview)
+	{
+		beatsPerBar->setEnabled(bpmPreview->enabled);
 	}
 }
 

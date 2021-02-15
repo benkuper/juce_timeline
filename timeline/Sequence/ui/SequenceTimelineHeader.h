@@ -42,6 +42,10 @@ public:
 	//Interaction
 
 	void paint(Graphics &g) override;
+
+	void paintTime(Graphics &g, Rectangle<int> r);
+	void paintBPM(Graphics &g, Rectangle<int> r);
+
 	void resized() override;
 
 	void updateNeedlePosition();
@@ -51,7 +55,7 @@ public:
 	void mouseDoubleClick(const MouseEvent &e) override;
 	void mouseUp(const MouseEvent& e) override;
 
-	int getXForTime(float time);
+	int getXForTime(float time, bool relative = false);
 	float getTimeForX(int tx);
 
 	void newMessage(const ContainerAsyncEvent &e) override;

@@ -1,3 +1,4 @@
+#include "SequenceTimelineHeader.h"
 /*
   ==============================================================================
 
@@ -37,12 +38,23 @@ SequenceTimelineHeader::~SequenceTimelineHeader()
 #pragma warning(disable:4244)
 void SequenceTimelineHeader::paint(Graphics & g)
 {
-	g.setColour(BG_COLOR.darker(.1f));
-	g.fillRoundedRectangle(getLocalBounds().toFloat(), 2);
+	
+	
+	Rectangle<int> r = getLocalBounds();
+	paintTime(g, r.removeFromTop(35));
 
+	if (sequence->bpmPreview->enabled) paintBPM(g, r);
+}
+
+void SequenceTimelineHeader::paintTime(Graphics &g, Rectangle<int> r)
+{
+	Rectangle<int> tr = r.removeFromTop(r.getHeight() / 2);
 	g.setColour(BG_COLOR.brighter(.1f));
-	g.fillRoundedRectangle(getLocalBounds().removeFromTop(getHeight()/2).toFloat(), 2);
+	g.fillRoundedRectangle(tr.toFloat(), 2);
 
+	g.setColour(BG_COLOR.darker(.1f));
+	g.fillRect(r);
+	
 	//Draw ticks
 	float start = floorf(sequence->viewStartTime->floatValue());
 	float end = floorf(sequence->viewEndTime->floatValue());
@@ -62,7 +74,7 @@ void SequenceTimelineHeader::paint(Graphics & g)
 
 	bool showSeconds = minuteGap > minGap;
 	bool showFrames = frameGap > minFrameGap;
-	
+
 	int secondSteps = 1;
 	int minuteSteps = 1;
 
@@ -71,7 +83,7 @@ void SequenceTimelineHeader::paint(Graphics & g)
 		while (secondGap < minGap)
 		{
 			secondSteps *= 2;
-			secondGap = (getWidth() / (end - start))*secondSteps;
+			secondGap = (getWidth() / (end - start)) * secondSteps;
 		}
 	}
 	else
@@ -79,12 +91,12 @@ void SequenceTimelineHeader::paint(Graphics & g)
 		while (minuteGap < minGap)
 		{
 			minuteSteps *= 2;
-			minuteGap = ((getWidth() / (end - start)) * 60)*minuteSteps;
+			minuteGap = ((getWidth() / (end - start)) * 60) * minuteSteps;
 		}
 	}
-	
-	int minuteStartTime = floor((start / minuteSteps) / 60)*minuteSteps;
-	int minuteEndTime = ceil((end / minuteSteps) / 60)*minuteSteps;
+
+	int minuteStartTime = floor((start / minuteSteps) / 60) * minuteSteps;
+	int minuteEndTime = ceil((end / minuteSteps) / 60) * minuteSteps;
 
 	g.setFont(12);
 	float fadeAlpha = jlimit<float>(0, 1, jmap<float>(secondGap, minGap, fadeGap, 0, 1));
@@ -92,16 +104,17 @@ void SequenceTimelineHeader::paint(Graphics & g)
 
 	for (float i = minuteStartTime; i <= minuteEndTime; i += minuteSteps)
 	{
-		int mtx = getXForTime(i*60);
+		int mtx = getXForTime(i * 60);
 
 		if (mtx >= 0 && mtx < getWidth())
 		{
 			//Draw minute
 			g.setColour(BG_COLOR.brighter(.6f));
 			//g.drawLine(tx, 0, tx, getHeight(), 1);
-			g.drawVerticalLine(mtx, 0, (float)getHeight());
-			g.setColour(BG_COLOR.darker(.6f));
-			g.drawRoundedRectangle(getLocalBounds().toFloat(), 2, 2);
+			g.drawVerticalLine(mtx, r.getY(), (float)r.getBottom());
+			
+			//g.setColour(BG_COLOR.darker(.6f));
+			//g.drawRoundedRectangle(r.toFloat(), 2, 2);
 
 			g.setColour(BG_COLOR.brighter(.7f));
 			g.fillRoundedRectangle(mtx - 10, 0, 20, 14, 2);
@@ -109,11 +122,11 @@ void SequenceTimelineHeader::paint(Graphics & g)
 			g.drawText(String(i) + "'", mtx - 10, 2, 20, 14, Justification::centred);
 
 		}
-		
+
 		if (showSeconds)
 		{
 			int sIndex = 0;
-			for (int s = 0; s < 60 && i*60+s <= end; s += secondSteps)
+			for (int s = 0; s < 60 && i * 60 + s <= end; s += secondSteps)
 			{
 				int stx = getXForTime(i * 60 + s);
 
@@ -143,7 +156,7 @@ void SequenceTimelineHeader::paint(Graphics & g)
 						if (sIndex % 2 == 0) alpha = fadeAlpha;
 						g.setColour(BG_COLOR.brighter(.1f).withAlpha(alpha));
 						//g.drawLine(tx, 0, tx, getHeight(), 1);
-						g.drawVerticalLine(stx, 0, (float)getHeight());
+						g.drawVerticalLine(stx, r.getY(), (float)r.getBottom());
 						g.setColour(BG_COLOR.brighter(.5f).withAlpha(alpha));
 						g.drawText(String(s), stx - 10, 2, 20, 14, Justification::centred);
 					}
@@ -164,7 +177,7 @@ void SequenceTimelineHeader::paint(Graphics & g)
 		Colour c = (selectionZoomMode ? BLUE_COLOR : GREEN_COLOR);
 		float minPos = jmin(getXForTime(selectionSpan.x), getXForTime(selectionSpan.y));
 		float maxPos = jmax(getXForTime(selectionSpan.x), getXForTime(selectionSpan.y));
-		Rectangle<int> sr = Rectangle<int>(minPos,0, maxPos-minPos,getHeight()).reduced(1);
+		Rectangle<int> sr = Rectangle<int>(minPos, 0, maxPos - minPos, getHeight()).reduced(1);
 		g.setColour(c.withAlpha(.3f));
 		g.fillRect(sr);
 		g.setColour(c.withAlpha(.7f));
@@ -173,7 +186,72 @@ void SequenceTimelineHeader::paint(Graphics & g)
 
 	g.setColour(BG_COLOR.darker(.6f));
 	g.drawRoundedRectangle(getLocalBounds().toFloat(), 2, 2);
+}
 
+void SequenceTimelineHeader::paintBPM(Graphics &g, Rectangle<int> r)
+{
+	float start = floorf(sequence->viewStartTime->floatValue());
+	float end = floorf(sequence->viewEndTime->floatValue());
+
+	float beatTime = 60 / sequence->bpmPreview->floatValue();
+	int beatsPerBar = sequence->beatsPerBar->intValue();
+
+	int startBeat = floorf(start / beatTime);
+	int endBeat = ceilf(end / beatTime) + 1;
+
+	Colour startColor = BLUE_COLOR.withSaturation(.4f).darker(.8f);
+	Colour endColor = startColor.darker(.6f);
+
+	int showBarStep = 1;
+	int showBarWidth = getXForTime(beatTime * showBarStep * beatsPerBar, true);
+
+	int minShowBarWidth = 30;
+
+	while (showBarWidth < minShowBarWidth)
+	{
+		showBarStep *= 2;
+		showBarWidth = getXForTime(beatTime * showBarStep * beatsPerBar, true);
+	}
+
+	int showBarNextStep = showBarStep * 2;
+
+	DBG("Show bar step " << showBarStep);
+	g.setFont(10);
+
+	for (int i = endBeat; i >= startBeat; i--) //reverse to show labels
+	{
+		float timeAtBeat = i * beatTime;
+		float timeAtNextBeat = (i+1) * beatTime;
+
+		int tx = getXForTime(timeAtBeat);
+		int tx2 = getXForTime(timeAtNextBeat);
+
+		int beatInBar = i % beatsPerBar;
+		float relBeat =  beatInBar* 1.0f / beatsPerBar;
+
+		Rectangle<int> br = r.withX(tx).withRight(tx2);
+
+		Colour c = startColor.interpolatedWith(endColor, relBeat);
+			
+		g.setColour(c);
+		g.fillRect(br);
+
+
+		bool isBar = i % beatsPerBar == 0;
+		if (isBar)
+		{
+			int curBar = (int)(floorf(i / beatsPerBar)) + 1;
+			bool isShowBar = curBar % showBarStep == 0;
+			bool isShowBarNextStep = curBar % showBarNextStep == 0;
+
+			if (isShowBar)
+			{
+				Colour tc = TEXT_COLOR.withAlpha(isShowBarNextStep ? 1.0f : jmin((showBarWidth - minShowBarWidth) * 1.0f / 20, 1.0f));
+				g.setColour(tc);
+				g.drawText(String(curBar), r.withX(tx + 3).withWidth(showBarWidth), Justification::centredLeft);
+			}
+		}
+	}
 }
 
 void SequenceTimelineHeader::resized()
@@ -280,13 +358,16 @@ void SequenceTimelineHeader::mouseUp(const MouseEvent& e)
 	repaint();
 }
 
-int SequenceTimelineHeader::getXForTime(float time)
+int SequenceTimelineHeader::getXForTime(float time, bool relative)
 {
 	float viewStart = sequence->viewStartTime->floatValue();
 	float viewEnd = sequence->viewEndTime->floatValue();
 	if (viewStart == viewEnd) return 0;
-	return (int)jmap<float>(time, viewStart, viewEnd, 0, (float)getWidth());
+
+	float  t = time + (relative ? viewStart : 0);
+	return (int)jmap<float>(t, viewStart, viewEnd, 0, (float)getWidth());
 }
+
 
 float SequenceTimelineHeader::getTimeForX(int tx)
 {
@@ -313,6 +394,10 @@ void SequenceTimelineHeader::newMessage(const ContainerAsyncEvent & e)
 		} else if (e.targetControllable == sequence->totalTime)
 		{
 			resized();
+		}
+		else if (e.targetControllable == sequence->bpmPreview || e.targetControllable == sequence->beatsPerBar)
+		{
+			repaint();
 		}
 		break;
 		

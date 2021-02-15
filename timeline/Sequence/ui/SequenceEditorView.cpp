@@ -38,6 +38,7 @@ SequenceEditorView::SequenceEditorView(Sequence * _sequence, SequenceTimelineNav
 	addMouseListener(this, true);
 
 	sequence->setBeingEdited(true);
+	sequence->addAsyncContainerListener(this);
 
 	addAndMakeVisible(&grabber);
 	grabber.addGrabberListener(this);
@@ -50,6 +51,7 @@ SequenceEditorView::~SequenceEditorView()
 	//it's still showing "isClearing" as 1 so we can use that but's it's not proper
 	if (!sequenceRef.wasObjectDeleted() && !sequence->isClearing) 
 	{
+		sequence->removeAsyncContainerListener(this);
 		sequence->setBeingEdited(false); 
 	}
 }
@@ -64,6 +66,10 @@ void SequenceEditorView::paint(Graphics &)
 void SequenceEditorView::resized()
 {
 	Rectangle<int> r = getLocalBounds();
+
+	if (sequenceRef.wasObjectDeleted() || sequence == nullptr) return;
+
+	headerHeight = sequence->bpmPreview->enabled ? 70 : 60;
 
 	panelContainer.setBounds(r.removeFromLeft(panelWidth));
 	grabber.setBounds(r.removeFromLeft(6));
@@ -159,6 +165,17 @@ void SequenceEditorView::seekerManipulationChanged(bool isManipulating)
 	for (auto& layerUI : timelineManagerUI.itemsUI)
 	{
 		layerUI->setSeekManipulationMode(isManipulating);
+	}
+}
+
+void SequenceEditorView::newMessage(const ContainerAsyncEvent& e)
+{
+	if (e.type == e.ControllableStateUpdate)
+	{
+		if (e.targetControllable == sequence->bpmPreview)
+		{
+			resized();
+		}
 	}
 }
 

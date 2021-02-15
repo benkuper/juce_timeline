@@ -34,6 +34,9 @@ public:
 	BoolParameter * loopParam;
 	IntParameter * fps;
 
+	FloatParameter* bpmPreview;
+	IntParameter * beatsPerBar;
+
 	Trigger * playTrigger;
 	Trigger * pauseTrigger;
 	Trigger * stopTrigger;

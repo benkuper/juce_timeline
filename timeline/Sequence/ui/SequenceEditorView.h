@@ -13,6 +13,7 @@
 class SequenceEditorView :
 	public Component,
 	public Sequence::SequenceListener,
+	public ContainerAsyncListener,
 	public ScrollBar::Listener,
 	public GapGrabber::Listener,
 	public SequenceTimelineSeeker::SeekerListener
@@ -36,7 +37,7 @@ public:
 	GapGrabber grabber;
 
 	//layout
-	const float headerHeight = 60;
+	float headerHeight = 60;
 	float panelWidth;
 
 	void paint(Graphics &g) override;
@@ -50,6 +51,8 @@ public:
 	bool keyPressed(const KeyPress &key) override;
 
 	void seekerManipulationChanged(bool isManipulating) override;
+
+	void newMessage(const ContainerAsyncEvent& e) override;
 
 	// Inherited via Listener
 	virtual void grabberGrabUpdate(GapGrabber *, int relativeDist) override;
