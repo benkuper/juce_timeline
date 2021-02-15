@@ -51,7 +51,7 @@ public:
 		}
 
 		template<class S>
-		static SequenceLayer * createTemplated(var params = new DynamicObject()) { return new S(sequence, params); }
+		static SequenceLayer * createTemplated(Sequence * s, var params = new DynamicObject()) { return new S(s, params); }
 
 	};
 
