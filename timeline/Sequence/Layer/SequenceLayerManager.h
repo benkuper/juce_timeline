@@ -47,7 +47,7 @@ public:
 		template<class S>
 		static LayerDefinition* createDef(StringRef menu, StringRef type, Sequence* s, var params = new DynamicObject())
 		{
-			return createDef(menu, type, &LayerDefinition<T>::createTemplated<S>, params);
+			return createDef(menu, type, &LayerDefinition::createTemplated<S>, params);
 		}
 
 		template<class S>
