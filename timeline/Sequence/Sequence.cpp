@@ -1,3 +1,4 @@
+#include "Sequence.h"
 /*
   ==============================================================================
 
@@ -323,10 +324,6 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 	{
 		currentTime->isSavable = includeCurrentTimeInSave->boolValue();
 	}
-	else if (p == bpmPreview)
-	{
-		beatsPerBar->setEnabled(bpmPreview->enabled);
-	}
 }
 
 void Sequence::onContainerTriggerTriggered(Trigger * t)
@@ -355,6 +352,15 @@ void Sequence::onContainerTriggerTriggered(Trigger * t)
 	} else if (t == nextCue)
 	{
 		setCurrentTime(cueManager->getNextCueForTime(currentTime->floatValue()));
+	}
+}
+
+void Sequence::onControllableStateChanged(Controllable* c)
+{
+	BaseItem::onControllableStateChanged(c);
+	if (c == bpmPreview)
+	{
+		beatsPerBar->setEnabled(bpmPreview->enabled);
 	}
 }
 

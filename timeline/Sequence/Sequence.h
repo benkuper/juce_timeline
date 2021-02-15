@@ -94,6 +94,8 @@ public:
 	
 	virtual void onContainerParameterChangedInternal(Parameter*) override;
 	virtual void onContainerTriggerTriggered(Trigger*) override;
+	virtual void onControllableStateChanged(Controllable* c) override;
+
 	virtual void parameterControlModeChanged(Parameter* p) override;
 	
 	virtual void run() override;
