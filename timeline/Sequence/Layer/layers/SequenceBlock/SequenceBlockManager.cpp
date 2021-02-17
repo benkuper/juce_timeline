@@ -11,8 +11,8 @@
 
 SequenceBlockManager::SequenceBlockManager(SequenceBlockLayer * layer, SequenceManager * refManager) :
 	LayerBlockManager(layer, "Blocks"),
-	sequenceBlockLayer(layer),
-	refManager(refManager)
+	refManager(refManager),
+	sequenceBlockLayer(layer)
 {
 	jassert(refManager != nullptr);
 
