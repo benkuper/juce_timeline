@@ -45,7 +45,7 @@ void SequenceBlockLayer::updateCurrentBlock()
 {
 	SequenceBlock* b = (SequenceBlock *)blockManager.getBlockAtTime(sequence->currentTime->floatValue(), false, false);
 
-	GenericScopedLock lock(blockLock);
+	ScopedLock lock(blockLock);
 
 	if (b == currentBlock) return;
 
@@ -85,7 +85,7 @@ void SequenceBlockLayer::updateCurrentBlock()
 }
 void SequenceBlockLayer::updateCurrentSequenceTime()
 {
-	GenericScopedLock lock(blockLock);
+	ScopedLock lock(blockLock);
 
 	if (currentBlock == nullptr) return;
 	
@@ -158,7 +158,7 @@ void SequenceBlockLayer::sequencePlayStateChanged(Sequence*)
 {
 	if (!sequence->isPlaying->boolValue())
 	{
-		GenericScopedLock lock(blockLock);
+		ScopedLock lock(blockLock);
 
 		if (currentBlock != nullptr) 
 		{
@@ -167,7 +167,7 @@ void SequenceBlockLayer::sequencePlayStateChanged(Sequence*)
 	}
 	else
 	{
-		GenericScopedLock lock(blockLock);
+		ScopedLock lock(blockLock);
 		
 		if (currentBlock != nullptr && enabled->boolValue())
 		{
