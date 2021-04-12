@@ -36,7 +36,7 @@ void SequenceBlock::setTargetSequence(Sequence* sequence)
 
 	if (targetSequence != nullptr)
 	{
-		if (!isCurrentlyLoadingData) setCoreLength(targetSequence->totalTime->floatValue(), false);
+		if (!isCurrentlyLoadingData && !coreLength->isOverriden) setCoreLength(targetSequence->totalTime->floatValue(), false);
 	}
 }
 
