@@ -17,6 +17,7 @@ public:
 	TimeCueManager();
 	~TimeCueManager();
 
+	TimeCue* createItem() override;
 	void addCueAt(float time);
 	void reorderItems() override;
 

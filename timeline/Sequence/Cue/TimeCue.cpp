@@ -8,7 +8,7 @@
   ==============================================================================
 */
 
-TimeCue::TimeCue(const float & _time) :
+TimeCue::TimeCue(const float & _time, TimeCueManager * manager) :
 	BaseItem("Cue")
 {
 	//nameParam->hideInEditor = false;
@@ -21,7 +21,7 @@ TimeCue::TimeCue(const float & _time) :
 	cueAction = addEnumParameter("Action on Cue", "This can be used to add an extra action when the timeline hits the cue. Pause will pause at the cue, Loop Jump will jump to another cue, allowing for easy loop in-out behaviour.");
 	cueAction->addOption("Nothing", NOTHING)->addOption("Pause", PAUSE)->addOption("Loop Jump", LOOP_JUMP);
 
-	loopCue = addTargetParameter("Loop Jump Cue", "If Cue Action is set to Loop Jump, this will decide which Cue to jump to", nullptr, false);
+	loopCue = addTargetParameter("Loop Jump Cue", "If Cue Action is set to Loop Jump, this will decide which Cue to jump to", manager, false);
 	loopCue->targetType = TargetParameter::CONTAINER;
 	loopCue->maxDefaultSearchLevel = 0;
 	loopCue->showParentNameInEditor = false;
@@ -32,16 +32,6 @@ TimeCue::TimeCue(const float & _time) :
 
 TimeCue::~TimeCue()
 {
-}
-
-void TimeCue::setParentContainer(ControllableContainer* container)
-{
-	BaseItem::setParentContainer(container);
-
-	if (parentContainer != nullptr)
-	{
-		loopCue->setRootContainer(parentContainer);
-	}
 }
 
 void TimeCue::onContainerParameterChangedInternal(Parameter* p)

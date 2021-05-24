@@ -9,12 +9,13 @@
 */
 
 class Sequence;
+class TimeCueManager;
 
 class TimeCue :
 	public BaseItem
 {
 public:
-	TimeCue(const float &_time = 0);
+	TimeCue(const float &_time = 0, TimeCueManager * manager = nullptr);
 	~TimeCue();
 
 	FloatParameter * time;
@@ -22,8 +23,6 @@ public:
 	enum CueAction { NOTHING, PAUSE, LOOP_JUMP };
 	EnumParameter * cueAction;
 	TargetParameter* loopCue;
-
-	void setParentContainer(ControllableContainer* container) override;
 
 	void onContainerParameterChangedInternal(Parameter* p) override;
 
