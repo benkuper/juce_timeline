@@ -1,3 +1,4 @@
+#include "TimeCueManager.h"
 /*
   ==============================================================================
 
@@ -19,9 +20,14 @@ TimeCueManager::~TimeCueManager()
 
 }
 
+TimeCue* TimeCueManager::createItem()
+{
+	return new TimeCue(0, this);
+}
+
 void TimeCueManager::addCueAt(float time)
 {
-	TimeCue * t = new TimeCue(time);
+	TimeCue * t = new TimeCue(time, this);
 	BaseManager::addItem(t);
 }
 
