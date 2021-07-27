@@ -12,6 +12,10 @@ AudioLayerPanel::AudioLayerPanel(AudioLayer * layer) :
 	SequenceLayerPanel(layer),
 	audioLayer(layer)
 {
+	volumeUI.reset(audioLayer->volume->createSlider());
+	addAndMakeVisible(volumeUI.get());
+	contentComponents.add(volumeUI.get());
+
 	enveloppeUI.reset(audioLayer->enveloppe->createSlider());
 	addAndMakeVisible(enveloppeUI.get());
 }
@@ -32,7 +36,7 @@ void AudioLayerPanel::resizedInternalContent(Rectangle<int>& r)
 	SequenceLayerPanel::resizedInternalContent(r);  
 	if (!item->miniMode->boolValue())
 	{
-		Rectangle<int> gr = r.removeFromTop(16).reduced(2);
-		enveloppeUI->setBounds(gr);
+		volumeUI->setBounds(r.removeFromTop(16).reduced(2));
+		enveloppeUI->setBounds(r.removeFromTop(16).reduced(2));
 	}
 }

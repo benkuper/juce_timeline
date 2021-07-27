@@ -19,6 +19,7 @@ public:
 
 	AudioLayer * audioLayer;
 
+	std::unique_ptr<FloatSliderUI> volumeUI;
 	std::unique_ptr<FloatSliderUI> enveloppeUI;
 
 	void resizedInternalHeader(Rectangle<int>& r) override;
