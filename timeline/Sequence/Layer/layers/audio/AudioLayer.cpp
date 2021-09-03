@@ -389,12 +389,12 @@ void AudioLayer::run()
 	a.loadJSONData(volumeInterpolationAutomation->getJSONData());
 
 	float volumeAtStart = volume->floatValue();
-	float timeAtStart = Time::getMillisecondCounter() / 1000.0f;
+	double timeAtStart = Time::getMillisecondCounter() / 1000.0;
 
 	while (!threadShouldExit() && !volumeAutomationRef.wasObjectDeleted())
 	{
-		float curTime = Time::getMillisecondCounter() / 1000.0f;
-		float rel = jlimit(0.f, 1.f, (curTime - timeAtStart) / volumeInterpolationTime);
+		double curTime = Time::getMillisecondCounter() / 1000.0;
+		double rel = jlimit<double>(0., 1., (curTime - timeAtStart) / volumeInterpolationTime);
 
 		float weight = volumeInterpolationAutomation->getValueAtPosition(rel);
 		volume->setValue(jmap(weight, volumeAtStart, targetVolume));
