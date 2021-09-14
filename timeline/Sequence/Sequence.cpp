@@ -348,10 +348,10 @@ void Sequence::onContainerTriggerTriggered(Trigger * t)
 
 	} else if (t == prevCue)
 	{
-		setCurrentTime(cueManager->getPrevCueForTime(currentTime->floatValue(), 1));
+		setCurrentTime(cueManager->getPrevCueForTime(currentTime->floatValue(), 1), true, true);
 	} else if (t == nextCue)
 	{
-		setCurrentTime(cueManager->getNextCueForTime(currentTime->floatValue()));
+		setCurrentTime(cueManager->getNextCueForTime(currentTime->floatValue()), true, true);
 	}
 }
 
