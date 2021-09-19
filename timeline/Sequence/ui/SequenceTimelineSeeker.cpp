@@ -87,6 +87,8 @@ void SequenceTimelineSeeker::mouseDrag(const MouseEvent & e)
 	}
 	else if (e.mods.isLeftButtonDown())
 	{
+		bool followPlayingMode = sequence->isPlaying->boolValue() && sequence->viewFollowTime->boolValue();
+
 		if (e.originalComponent == &handle)
 		{
 
@@ -114,14 +116,22 @@ void SequenceTimelineSeeker::mouseDrag(const MouseEvent & e)
 
 			//newViewEnd = jmax<float>(newViewEnd, newViewStart + 1);
 
-			sequence->viewStartTime->setValue(newViewStart);
-			sequence->viewEndTime->setValue(newViewEnd);
+			if (followPlayingMode) sequence->followViewRange = newViewEnd - newViewStart;
+			else
+			{
+				sequence->viewStartTime->setValue(newViewStart);
+				sequence->viewEndTime->setValue(newViewEnd);
+			}
 		}
 		else
 		{
-			float destTime = getTimeForX(e.getPosition().x);
-			sequence->viewStartTime->setValue(destTime - viewTimeAtMouseDown / 2);
-			sequence->viewEndTime->setValue(destTime + viewTimeAtMouseDown / 2);
+			if (!followPlayingMode)
+			{
+				float destTime = getTimeForX(e.getPosition().x);
+				sequence->viewStartTime->setValue(destTime - viewTimeAtMouseDown / 2);
+				sequence->viewEndTime->setValue(destTime + viewTimeAtMouseDown / 2);
+			}
+			
 		}
 	}
 }
@@ -141,8 +151,13 @@ void SequenceTimelineSeeker::mouseUp(const MouseEvent & e)
 
 		selectionSpan.setXY(0, 0);
 
-		sequence->viewStartTime->setValue(start);
-		sequence->viewEndTime->setValue(end);
+		bool followPlayingMode = sequence->isPlaying->boolValue() && sequence->viewFollowTime->boolValue();
+		if (followPlayingMode) sequence->followViewRange = end - start;
+		else
+		{
+			sequence->viewStartTime->setValue(start);
+			sequence->viewEndTime->setValue(end);
+		}
 
 	}
 	

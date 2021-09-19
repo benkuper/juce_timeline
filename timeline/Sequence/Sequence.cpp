@@ -1,4 +1,3 @@
-#include "Sequence.h"
 /*
   ==============================================================================
 
@@ -66,10 +65,8 @@ Sequence::Sequence() :
 	nextCue = addTrigger("Next Cue", "Jump to the next cue");
 
 	viewStartTime = addFloatParameter("View start time", "Start time of the view", 0, 0, initTotalTime - minSequenceTime);
-	viewStartTime->hideInEditor = true;
-
 	viewEndTime = addFloatParameter("View end time", "End time of the view", initTotalTime, minSequenceTime, initTotalTime);
-	viewEndTime->hideInEditor = true;
+	viewFollowTime = addBoolParameter("View follow time", "If checked, this will automatically follow the current time so the cursor is at the center of the timeline.", false);
 
 	color = addColorParameter("Color", "The color of the sequence in the UI", BG_COLOR.brighter(.1f));
 
@@ -379,6 +376,8 @@ void Sequence::run()
 	millisAtSetTime = Time::getMillisecondCounterHiRes();
 	timeAtSetTime = timeIsDrivenByAudio()? hiResAudioTime : currentTime->floatValue();
 
+	followViewRange = viewEndTime->floatValue() - viewStartTime->floatValue();
+
 	while (!threadShouldExit())
 	{
 		double targetTime = 0;
@@ -396,6 +395,20 @@ void Sequence::run()
 		//DBG(deltaMillis << " : " << (targetTime - currentTime->floatValue()));
 
 		currentTime->setValue(targetTime);
+
+		if (viewFollowTime->boolValue())
+		{
+			float targetStart = jmax(currentTime->floatValue() - followViewRange / 2, 0.f);
+			float targetEnd = targetStart + followViewRange;
+			if (targetEnd > totalTime->floatValue())
+			{
+				targetEnd = totalTime->floatValue();
+				targetStart = targetEnd - followViewRange;
+			}
+			
+			viewStartTime->setValue(viewStartTime->getLerpValueTo(targetStart, .3f));
+			viewEndTime->setValue(viewEndTime->getLerpValueTo(targetEnd, .3f));
+		}
 
 		if (targetTime >= totalTime->floatValue())
 		{
