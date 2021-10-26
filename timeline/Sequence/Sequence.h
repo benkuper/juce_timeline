@@ -73,7 +73,10 @@ public:
 
 	void setCurrentTime(float time, bool forceOverPlaying = true, bool seekMode = false);
 
-	int getFrameForTime(float time);
+	int getFrameForTime(float time, bool forceDirection = false, bool forcePrev = true);
+	double getTimeForFrame(float fame);
+	double getNextFrameTimeForTime(float time);
+	double getPrevFrameTimeForTime(float time);
 
 	void setBeingEdited(bool value);
 

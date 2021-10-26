@@ -122,9 +122,25 @@ void Sequence::setCurrentTime(float time, bool forceOverPlaying, bool seekMode)
 	isSeeking = false;
 }
 
-int Sequence::getFrameForTime(float time)
+int Sequence::getFrameForTime(float time, bool forceDirection, bool forcePrev)
 {
-	return round(time * fps->floatValue());
+	float f = time * fps->floatValue();
+	return forceDirection ? (forcePrev ? floorf(f) : ceilf(f)) : round(f);
+}
+
+double Sequence::getTimeForFrame(float frame)
+{
+	return frame * 1.0 / fps->floatValue();
+}
+
+double Sequence::getNextFrameTimeForTime(float time)
+{
+	return getTimeForFrame(getFrameForTime(time, true, false));
+}
+
+double Sequence::getPrevFrameTimeForTime(float time)
+{
+	return getTimeForFrame(getFrameForTime(time, true, true));
 }
 
 void Sequence::setBeingEdited(bool value)
