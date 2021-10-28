@@ -283,6 +283,7 @@ void SequenceTimelineHeader::mouseDown(const MouseEvent & e)
 		sequence->setCurrentTime(getTimeForX(e.getPosition().x), true, true);	
 		snapTimes.clear();
 		sequence->getSnapTimes(&snapTimes);
+		snapTimes.removeAllInstancesOf(sequence->currentTime->floatValue());
 	}
 }
 
@@ -302,7 +303,6 @@ void SequenceTimelineHeader::mouseDrag(const MouseEvent & e)
 		if (e.mods.isShiftDown())
 		{
 			float diff = INT32_MAX;
-			float snapTime = 0;
 			float tTime = targetTime;
 			for (auto& t : snapTimes)
 			{

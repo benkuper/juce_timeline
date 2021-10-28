@@ -50,6 +50,7 @@ public:
 	public:
 		virtual ~TimeTriggerUIListener() {}
 		virtual void timeTriggerTimeChanged(TimeTriggerUI *) {}
+		virtual void timeTriggerMouseDown(TimeTriggerUI*, const MouseEvent&) {}
 		virtual void timeTriggerDragged(TimeTriggerUI *, const MouseEvent &) {}
 	};
 

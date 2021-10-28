@@ -96,17 +96,19 @@ void TimeTriggerUI::updateSizeFromName()
 	setSize(newWidth, getHeight());
 }
 
-void TimeTriggerUI::mouseDown(const MouseEvent & e)
+void TimeTriggerUI::mouseDown(const MouseEvent& e)
 {
 	BaseItemUI::mouseDown(e);
-	
+
 	flagYAtMouseDown = item->flagY->floatValue();
-	
+
 	if (item->isUILocked->boolValue()) return;
 
 	item->setMovePositionReference(true);
 	timeAtMouseDown = item->time->floatValue();
 	posAtMouseDown = getX();
+
+	triggerUIListeners.call(&TimeTriggerUIListener::timeTriggerMouseDown, this, e);
 }
 
 void TimeTriggerUI::mouseDrag(const MouseEvent & e)

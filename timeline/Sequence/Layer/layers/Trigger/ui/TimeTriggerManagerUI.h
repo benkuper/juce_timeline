@@ -25,6 +25,10 @@ public:
 
 	bool miniMode;
 
+	Array<float> snapTimes;
+	std::function<void(Array<float>*)> getSnapTimesFunc;
+
+
 	void setMiniMode(bool value);
 
 	void resized() override;
@@ -39,7 +43,8 @@ public:
 	void addItemFromMenu(TimeTrigger* t, bool, Point<int> mouseDownPos) override;
 	void addItemUIInternal(TimeTriggerUI * ttui) override;
 	void removeItemUIInternal(TimeTriggerUI * ttui) override;
-
+	
+	void timeTriggerMouseDown(TimeTriggerUI* ttui, const MouseEvent& e) override;
 	void timeTriggerDragged(TimeTriggerUI * ttui, const MouseEvent &e) override;
 	void timeTriggerTimeChanged(TimeTriggerUI * ttui) override;
 

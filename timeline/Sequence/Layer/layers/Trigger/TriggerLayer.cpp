@@ -70,6 +70,20 @@ void TriggerLayer::onContainerTriggerTriggered(Trigger * t)
 	else if (t == unlockAll) for (auto &i : ttm->items) i->isUILocked->setValue(false);
 }
 
+void TriggerLayer::getSnapTimes(Array<float>* arrayToFill)
+{
+	if (ttm == nullptr) return;
+	for (auto& i : ttm->items)
+	{
+		arrayToFill->addIfNotAlreadyThere(i->time->floatValue());
+	}
+}
+
+void TriggerLayer::getSequenceSnapTimesForManager(Array<float>* arrayToFill)
+{
+	sequence->getSnapTimes(arrayToFill);
+}
+
 var TriggerLayer::getJSONData()
 {
 	var data = SequenceLayer::getJSONData();

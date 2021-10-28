@@ -14,6 +14,8 @@ TriggerLayerTimeline::TriggerLayerTimeline(TriggerLayer * layer) :
 	if (layer->ttm != nullptr)
 	{
 		ttmui.reset(new TimeTriggerManagerUI(this, layer->ttm.get()));
+		ttmui->getSnapTimesFunc = std::bind(&TriggerLayer::getSequenceSnapTimesForManager, layer, std::placeholders::_1);
+
 		addAndMakeVisible(ttmui.get());
 	}
 

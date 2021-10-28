@@ -113,7 +113,6 @@ void LayerBlockManagerUI::blockUIDragged(LayerBlockUI * cui, const MouseEvent & 
 		float clipLength = cui->item->getTotalLength();
 		float tEndTime = tTime + clipLength;
 		float diff = INT32_MAX;
-		float snapTime = 0;
 		float targetTime = tTime;
 		for (auto& t : snapTimes)
 		{

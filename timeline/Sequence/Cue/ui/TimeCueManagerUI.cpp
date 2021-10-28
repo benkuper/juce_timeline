@@ -122,7 +122,6 @@ void TimeCueManagerUI::cueDragged(TimeCueUI* ttui, const MouseEvent& e)
 	if (e.mods.isShiftDown())
 	{
 		float diff = INT32_MAX;
-		float snapTime = 0;
 		float tTime = targetTime;
 		for (auto& t : snapTimes)
 		{

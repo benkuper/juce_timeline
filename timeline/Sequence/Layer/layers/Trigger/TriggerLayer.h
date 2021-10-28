@@ -34,6 +34,9 @@ public :
 
 	virtual void onContainerTriggerTriggered(Trigger *) override;
 
+	virtual void getSnapTimes(Array<float>* arrayToFill) override;
+	virtual void getSequenceSnapTimesForManager(Array<float>* arrayToFill);
+
 	var getJSONData() override;
 	void loadJSONDataInternal(var data) override;
 

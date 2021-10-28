@@ -1,3 +1,4 @@
+#include "TimeTriggerManagerUI.h"
 /*
   ==============================================================================
 
@@ -97,25 +98,7 @@ void TimeTriggerManagerUI::mouseDown(const MouseEvent & e)
 					float time = timeline->getTimeForX(getMouseXYRelative().x);
 					manager->addTriggerAt(time, getMouseXYRelative().y * 1.f / getHeight());
 				}
-			}/* else
-			{
-
-				Array<Component *> selectables;
-				Array<Inspectable *> inspectables;
-				for (auto& i : itemsUI) if (i->isVisible())
-				{
-					selectables.add(i);
-					inspectables.add(i->inspectable);
-				}
-
-				if (InspectableSelector::getInstance())
-				{
-					InspectableSelector::getInstance()->startSelection(this, selectables, inspectables, manager->selectionManager, !e.mods.isCommandDown());
-					InspectableSelector::getInstance()->addSelectorListener(this);
-				}
-				
 			}
-			*/
 		}
 	}
 }
@@ -155,6 +138,12 @@ void TimeTriggerManagerUI::removeItemUIInternal(TimeTriggerUI * ttui)
 	ttui->removeTriggerUIListener(this);
 }
 
+void TimeTriggerManagerUI::timeTriggerMouseDown(TimeTriggerUI* ttui, const MouseEvent& e)
+{
+	snapTimes.clear();
+	if (getSnapTimesFunc != nullptr) getSnapTimesFunc(&snapTimes);
+}
+
 void TimeTriggerManagerUI::timeTriggerDragged(TimeTriggerUI * ttui, const MouseEvent & e)
 {
 	if (miniMode) return;
@@ -169,6 +158,25 @@ void TimeTriggerManagerUI::timeTriggerDragged(TimeTriggerUI * ttui, const MouseE
 	else
 	{
 		Point<float> offset(diffTime, e.mods.isShiftDown()?0:e.getDistanceFromDragStartY()*1.0f / (getHeight() -20)); //-20 is for subtracting flag height
+
+		if (e.mods.isShiftDown())
+		{
+			float targetTime = ttui->item->movePositionReference.x + offset.x;
+			float diff = INT32_MAX;
+			float tTime = targetTime;
+			for (auto& t : snapTimes)
+			{
+				float d = fabsf(tTime - t);
+				if (d < diff)
+				{
+					diff = d;
+					targetTime = t;
+				}
+			}
+
+			offset.x = targetTime - ttui->item->movePositionReference.x;
+		}
+
 		ttui->item->movePosition(offset, true);
 	}
 }
