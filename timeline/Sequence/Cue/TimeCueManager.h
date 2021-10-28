@@ -35,4 +35,5 @@ public:
 
 	static int compareTime(TimeCue * t1, TimeCue * t2);
 
+	virtual void getSnapTimes(Array<float> * arrayToFill);
 };

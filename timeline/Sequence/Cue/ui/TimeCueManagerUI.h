@@ -21,6 +21,8 @@ public:
 
 	SequenceTimelineHeader * header;
 
+	Array<float> snapTimes;
+
 	void paint(Graphics& g) override;
 	void resized() override;
 	void updateContent();
@@ -35,6 +37,7 @@ public:
 	void addItemUIInternal(TimeCueUI * ttui) override;
 	void removeItemUIInternal(TimeCueUI * ttui) override;
 
+	void cueMouseDown(TimeCueUI* ttui, const MouseEvent& e) override;
 	void cueDragged(TimeCueUI * ttui, const MouseEvent &e) override;
 	void cueTimeChanged(TimeCueUI * ttui) override;
 };

@@ -26,6 +26,7 @@ public:
 	float getTotalLength();
 	float getCoreEndTime();
 	float getEndTime();
+
 	bool isInRange(float time);
 
 	void setMovePositionReferenceInternal() override;

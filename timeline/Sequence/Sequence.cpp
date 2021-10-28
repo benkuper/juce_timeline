@@ -1,3 +1,4 @@
+#include "Sequence.h"
 /*
   ==============================================================================
 
@@ -181,6 +182,13 @@ void Sequence::insertTimespan(float start, float length)
 	for (auto& l : layerManager->items)  actions.addArray(l->getInsertTimespan(start, length));
 	actions.addArray(cueManager->getInsertTimespan(start, length));
 	UndoMaster::getInstance()->performActions("Insert timespan", actions);
+}
+
+void Sequence::getSnapTimes(Array<float>* arrayToFill)
+{
+	for (auto& i : layerManager->items) i->getSnapTimes(arrayToFill);
+	cueManager->getSnapTimes(arrayToFill);
+	arrayToFill->addIfNotAlreadyThere(currentTime->floatValue());
 }
 
 bool Sequence::paste()

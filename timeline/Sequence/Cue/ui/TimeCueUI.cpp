@@ -101,6 +101,7 @@ void TimeCueUI::mouseDown(const MouseEvent & e)
 {
 	BaseItemMinimalUI::mouseDown(e);
 	timeAtMouseDown = item->time->floatValue();
+	if (!item->isUILocked->boolValue() && e.eventComponent != &itemLabel) cueUIListeners.call(&TimeCueUIListener::cueMouseDown, this, e);
 }
 
 void TimeCueUI::mouseDrag(const MouseEvent & e)

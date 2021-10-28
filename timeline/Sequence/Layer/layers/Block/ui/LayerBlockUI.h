@@ -69,6 +69,7 @@ public:
 		virtual void blockUITimeChanged(LayerBlockUI *) {}
 		virtual void blockUINeedsReorder() {}
 		
+		virtual void blockUIMouseDown(LayerBlockUI*, const MouseEvent&) {}
 		virtual void blockUIDragged(LayerBlockUI *, const MouseEvent &) {}
 		virtual void blockUIStartDragged(LayerBlockUI *, const MouseEvent &) {}
 		virtual void blockUICoreDragged(LayerBlockUI *, const MouseEvent &) {}

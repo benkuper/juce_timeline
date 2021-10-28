@@ -38,6 +38,8 @@ public:
 
 	bool selectionZoomMode;
 	Point<float> selectionSpan;
+
+	Array<float> snapTimes;
     
 	//Interaction
 

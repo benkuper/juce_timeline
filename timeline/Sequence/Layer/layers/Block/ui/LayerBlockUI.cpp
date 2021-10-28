@@ -124,6 +124,8 @@ void LayerBlockUI::mouseDown(const MouseEvent & e)
 
 		isDragging = e.eventComponent == this && getDragBounds().contains(e.getPosition()) && !e.mods.isCommandDown() && !e.mods.isShiftDown();
 		posAtMouseDown = getX();
+
+		blockUIListeners.call(&BlockUIListener::blockUIMouseDown, this, e);
 	}
 }
 

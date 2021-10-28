@@ -9,7 +9,7 @@
   ==============================================================================
 */
 
-LayerBlockManager::LayerBlockManager(SequenceLayer * layer, StringRef name) :
+LayerBlockManager::LayerBlockManager(SequenceLayer* layer, StringRef name) :
 	BaseManager(name),
 	layer(layer),
 	blocksCanOverlap(true)
@@ -24,14 +24,14 @@ LayerBlockManager::~LayerBlockManager()
 }
 
 
-Array<Point<float>> LayerBlockManager::computeEmptySpaces(LayerBlock * excludeBlock)
+Array<Point<float>> LayerBlockManager::computeEmptySpaces(LayerBlock* excludeBlock)
 {
 	Array<Point<float>> result;
 
 	if (items.size() == 0) return result;
 
 	float lastEndTime = 0;
-	for (auto &i : items)
+	for (auto& i : items)
 	{
 		if (i == excludeBlock) continue;
 
@@ -44,9 +44,9 @@ Array<Point<float>> LayerBlockManager::computeEmptySpaces(LayerBlock * excludeBl
 	return result;
 }
 
-LayerBlock * LayerBlockManager::addBlockAt(float time)
+LayerBlock* LayerBlockManager::addBlockAt(float time)
 {
-	LayerBlock * b = createItem();
+	LayerBlock* b = createItem();
 	addBlockAt(b, time);
 	return b;
 }
@@ -67,10 +67,10 @@ void LayerBlockManager::addBlockAt(LayerBlock* b, float time)
 	}
 }
 
-LayerBlock * LayerBlockManager::getBlockAtTime(float time, bool returnClosestPreviousIfNotFound, bool includeDisabled)
+LayerBlock* LayerBlockManager::getBlockAtTime(float time, bool returnClosestPreviousIfNotFound, bool includeDisabled)
 {
-	LayerBlock * closestPrevious = nullptr;
-	for (auto &c : items)
+	LayerBlock* closestPrevious = nullptr;
+	for (auto& c : items)
 	{
 		if (!includeDisabled && !c->enabled->boolValue()) continue;
 
@@ -81,10 +81,10 @@ LayerBlock * LayerBlockManager::getBlockAtTime(float time, bool returnClosestPre
 	return returnClosestPreviousIfNotFound ? closestPrevious : nullptr;
 }
 
-LayerBlock * LayerBlockManager::getNextBlockAtTime(float time, bool includeDisabled)
+LayerBlock* LayerBlockManager::getNextBlockAtTime(float time, bool includeDisabled)
 {
-	LayerBlock * closestNext = nullptr;
-	for (int i=items.size()-1;i>=0;i--)
+	LayerBlock* closestNext = nullptr;
+	for (int i = items.size() - 1; i >= 0; i--)
 	{
 		if (!includeDisabled && !items[i]->enabled->boolValue()) continue;
 
@@ -99,7 +99,7 @@ LayerBlock * LayerBlockManager::getNextBlockAtTime(float time, bool includeDisab
 Array<LayerBlock*> LayerBlockManager::getBlocksAtTime(float time, bool includeDisabled)
 {
 	Array<LayerBlock*> result;
-	for (auto &c : items)
+	for (auto& c : items)
 	{
 		if (!includeDisabled && !c->enabled->boolValue()) continue;
 		if (c->isInRange(time)) result.add(c);
@@ -111,7 +111,7 @@ Array<LayerBlock*> LayerBlockManager::getBlocksAtTime(float time, bool includeDi
 Array<LayerBlock*> LayerBlockManager::getBlocksInRange(float start, float end, bool includeDisabled)
 {
 	Array<LayerBlock*> result;
-	for (auto &c : items)
+	for (auto& c : items)
 	{
 		if (!includeDisabled && !c->enabled->boolValue()) continue;
 		if (c->getEndTime() >= start || c->time->floatValue() <= end) result.add(c);
@@ -123,7 +123,7 @@ Array<LayerBlock*> LayerBlockManager::addItemsFromClipboard(bool showWarning)
 {
 	Array<LayerBlock*> blocks = BaseManager::addItemsFromClipboard(showWarning);
 	if (blocks.isEmpty()) return blocks;
-	if (blocks[0] == nullptr) return Array<LayerBlock *>();
+	if (blocks[0] == nullptr) return Array<LayerBlock*>();
 
 	float minTime = blocks[0]->time->floatValue();
 	for (auto& b : blocks)
@@ -142,6 +142,16 @@ Array<LayerBlock*> LayerBlockManager::addItemsFromClipboard(bool showWarning)
 	return blocks;
 }
 
+void LayerBlockManager::getSnapTimes(Array<float>* arrayToFill, bool includeStart, bool includeEnd, bool includeCoreEnd)
+{
+	for (auto& i : items)
+	{
+		if (includeStart) arrayToFill->addIfNotAlreadyThere(i->time->floatValue());
+		if (includeEnd) arrayToFill->addIfNotAlreadyThere(i->getEndTime());
+		if (includeCoreEnd) arrayToFill->addIfNotAlreadyThere(i->getCoreEndTime());
+	}
+}
+
 void LayerBlockManager::addItemInternal(LayerBlock* item, var)
 {
 	item->addBlockListener(this);
@@ -157,7 +167,7 @@ void LayerBlockManager::askForPlaceBlockTime(LayerBlock* block, float desiredTim
 	placeBlockAt(block, desiredTime);
 }
 
-void LayerBlockManager::placeBlockAt(LayerBlock * block, float desiredTime)
+void LayerBlockManager::placeBlockAt(LayerBlock* block, float desiredTime)
 {
 	if (blocksCanOverlap)
 	{
@@ -172,7 +182,7 @@ void LayerBlockManager::placeBlockAt(LayerBlock * block, float desiredTime)
 	//Get closest empty space
 	float minDist = INT32_MAX;
 	Point<float> space;
-	for (auto &p : emptySpaces)
+	for (auto& p : emptySpaces)
 	{
 		if (desiredTime >= p.x && desiredTime <= p.y)
 		{
@@ -188,19 +198,19 @@ void LayerBlockManager::placeBlockAt(LayerBlock * block, float desiredTime)
 		}
 	}
 
-	
+
 	bool isEnoughSpace = space.y - space.x >= block->getTotalLength();
 	if (isEnoughSpace)
 	{
 		if (desiredTime <= space.x) targetTime = space.x;
-		else if (desiredTime + block->getTotalLength() >= space.y) targetTime = space.y-block->getTotalLength();
+		else if (desiredTime + block->getTotalLength() >= space.y) targetTime = space.y - block->getTotalLength();
 		else targetTime = desiredTime;
 
 		block->time->setValue(targetTime);
 	}
 }
 
-int LayerBlockManager::compareTime(LayerBlock * t1, LayerBlock * t2)
+int LayerBlockManager::compareTime(LayerBlock* t1, LayerBlock* t2)
 {
 	if (t1->time->floatValue() < t2->time->floatValue()) return -1;
 	else if (t1->time->floatValue() > t2->time->floatValue()) return 1;

@@ -34,6 +34,8 @@ public:
 
 	Array<LayerBlock*> addItemsFromClipboard(bool showWarning = true) override;
 
+	virtual void getSnapTimes(Array<float>* arrayToFill, bool includeStart = true, bool includeEnd = true, bool includeCoreEnd = false);
+
 	void addItemInternal(LayerBlock* item, var) override;
 	void removeItemInternal(LayerBlock* item) override;
 

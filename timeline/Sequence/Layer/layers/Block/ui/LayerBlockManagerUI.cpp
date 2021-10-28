@@ -92,13 +92,51 @@ void LayerBlockManagerUI::blockUITimeChanged(LayerBlockUI * cui)
 	placeBlockUI(cui);
 }
 
+void LayerBlockManagerUI::blockUIMouseDown(LayerBlockUI* cui, const MouseEvent&)
+{
+	snapTimes.clear();
+	timeline->item->sequence->getSnapTimes(&snapTimes);
+	snapTimes.removeAllInstancesOf(cui->item->getEndTime());
+}
+
 void LayerBlockManagerUI::blockUIDragged(LayerBlockUI * cui, const MouseEvent & e)
 {
 	if (miniMode) return;
 
 	float targetOffsetTime = timeline->getTimeForX(e.getOffsetFromDragStart().x, false);
 	//float targetTime = cui->timeAtMouseDown + targetOffsetTime;
+
+
+	if (e.mods.isShiftDown())
+	{
+		float tTime = cui->item->movePositionReference.x + targetOffsetTime;
+		float clipLength = cui->item->getTotalLength();
+		float tEndTime = tTime + clipLength;
+		float diff = INT32_MAX;
+		float snapTime = 0;
+		float targetTime = tTime;
+		for (auto& t : snapTimes)
+		{
+			float d = fabsf(tTime - t);
+			if (d < diff)
+			{
+				diff = d;
+				targetTime = t;
+			}
+
+			float de = fabsf(tEndTime - t);
+			if (de < diff)
+			{
+				diff = de;
+				targetTime = t - clipLength;
+			}
+		}
+
+		targetOffsetTime = targetTime - cui->item->movePositionReference.x;
+	}
+
 	cui->item->movePosition(Point<float>(targetOffsetTime, 0), true);
+
 	
 	cui->setViewRange(timeline->item->sequence->viewStartTime->floatValue() - cui->item->time->floatValue(), timeline->item->sequence->viewEndTime->floatValue() - cui->item->time->floatValue());
 	cui->resized(); //force resize because changing time will not resize it, just move it

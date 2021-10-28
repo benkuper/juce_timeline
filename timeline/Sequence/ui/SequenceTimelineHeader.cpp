@@ -281,6 +281,8 @@ void SequenceTimelineHeader::mouseDown(const MouseEvent & e)
 	}else if (e.mods.isLeftButtonDown())
 	{
 		sequence->setCurrentTime(getTimeForX(e.getPosition().x), true, true);	
+		snapTimes.clear();
+		sequence->getSnapTimes(&snapTimes);
 	}
 }
 
@@ -296,7 +298,24 @@ void SequenceTimelineHeader::mouseDrag(const MouseEvent & e)
 	}
 	else if(e.mods.isLeftButtonDown())
 	{
-		sequence->setCurrentTime(getTimeForX(e.getPosition().x), true, true);
+		float targetTime = getTimeForX(e.getPosition().x);
+		if (e.mods.isShiftDown())
+		{
+			float diff = INT32_MAX;
+			float snapTime = 0;
+			float tTime = targetTime;
+			for (auto& t : snapTimes)
+			{
+				float d = fabsf(tTime - t);
+				if (d < diff)
+				{
+					diff = d;
+					targetTime = t;
+				}
+			}
+		}
+
+		sequence->setCurrentTime(targetTime, true, true);
 	}
 }
 

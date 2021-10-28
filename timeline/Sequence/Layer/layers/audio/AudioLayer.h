@@ -91,7 +91,8 @@ public:
 	static AudioLayer * create(Sequence * sequence, var params) { return new AudioLayer(sequence, params); }
 	virtual String getTypeString() const override { return "Audio"; }
 
-
+	virtual void getSnapTimes(Array<float>* arrayToFill) override;
+	
 	//For volume interpolation
     void run() override;
 

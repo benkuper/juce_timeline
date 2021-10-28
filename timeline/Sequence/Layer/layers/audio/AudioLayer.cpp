@@ -1,3 +1,4 @@
+#include "AudioLayer.h"
 /*
   ==============================================================================
 
@@ -377,6 +378,11 @@ void AudioLayer::sequencePlaySpeedChanged(Sequence*)
 		currentClip->setPlaySpeed(sequence->playSpeed->floatValue());
 		currentClip->prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
 	}
+}
+
+void AudioLayer::getSnapTimes(Array<float>* arrayToFill)
+{
+	return clipManager.getSnapTimes(arrayToFill);
 }
 
 void AudioLayer::run()

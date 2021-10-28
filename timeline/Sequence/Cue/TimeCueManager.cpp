@@ -27,7 +27,7 @@ TimeCue* TimeCueManager::createItem()
 
 void TimeCueManager::addCueAt(float time)
 {
-	TimeCue * t = new TimeCue(time, this);
+	TimeCue* t = new TimeCue(time, this);
 	BaseManager::addItem(t);
 }
 
@@ -40,10 +40,10 @@ void TimeCueManager::reorderItems()
 Array<float> TimeCueManager::getAllCueTimes(float minTime, float maxTime, bool includeDisabled)
 {
 	Array<float> result;
-	for (auto &tt : items)
+	for (auto& tt : items)
 	{
 		if (!tt->enabled->boolValue() && !includeDisabled) continue;
-		
+
 		float t = tt->time->floatValue();
 		if (maxTime > 0 && (t < minTime || t > maxTime)) continue;
 		result.add(t);
@@ -55,7 +55,7 @@ float TimeCueManager::getNearestCueForTime(float time, bool includeDisabled)
 {
 	float result = time;
 	if (items.size() == 0) return result;
-    float diffTime = std::abs(time - items[0]->time->floatValue());
+	float diffTime = std::abs(time - items[0]->time->floatValue());
 	result = items[0]->time->floatValue();
 	int numItems = items.size();
 
@@ -92,7 +92,7 @@ Array<UndoableAction*> TimeCueManager::getMoveKeysBy(float start, float offset)
 
 	for (const auto& c : items)
 	{
-		if (c->time->floatValue() >= start) 
+		if (c->time->floatValue() >= start)
 			actions.add(c->time->setUndoableValue(c->time->floatValue(), c->time->floatValue() + offset, true));
 	}
 
@@ -138,16 +138,21 @@ float TimeCueManager::getPrevCueForTime(float time, float goToPreviousThreshold,
 	{
 		if (!items[i]->enabled->boolValue() && !includeDisabled) continue;
 		float t = items[i]->time->floatValue();
-		if (t > time-goToPreviousThreshold) break;
+		if (t > time - goToPreviousThreshold) break;
 		result = t;
 	}
 
 	return result;
 }
 
-int TimeCueManager::compareTime(TimeCue * t1, TimeCue * t2)
+int TimeCueManager::compareTime(TimeCue* t1, TimeCue* t2)
 {
 	if (t1->time->floatValue() < t2->time->floatValue()) return -1;
 	else if (t1->time->floatValue() > t2->time->floatValue()) return 1;
 	return 0;
+}
+
+void TimeCueManager::getSnapTimes(Array<float>* arrayToFill)
+{
+	for (auto& i : items) arrayToFill->addIfNotAlreadyThere(i->time->floatValue());
 }

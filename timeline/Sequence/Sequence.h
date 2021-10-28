@@ -85,6 +85,8 @@ public:
 	void removeTimespan(float start, float end);
 	void insertTimespan(float start, float length);
 
+	virtual void getSnapTimes(Array<float>* arrayToFill);
+
 	virtual bool paste() override;
 
 	void setAudioDeviceManager(AudioDeviceManager * am);

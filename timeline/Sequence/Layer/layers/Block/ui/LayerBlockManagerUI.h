@@ -23,6 +23,7 @@ public:
 	SequenceLayerTimeline * timeline;
 
 	bool miniMode;
+	Array<float> snapTimes;
 
 	virtual void resized() override;
 	virtual void updateContent();
@@ -39,6 +40,7 @@ public:
 	virtual void removeItemUIInternal(LayerBlockUI * cui) override;
 
 	virtual void blockUITimeChanged(LayerBlockUI * cui) override;
+	virtual void blockUIMouseDown(LayerBlockUI* cui, const MouseEvent&) override;
 	virtual void blockUIDragged(LayerBlockUI * cui, const MouseEvent &) override;
 	virtual void blockUIStartDragged(LayerBlockUI * cui, const MouseEvent &) override;
 	virtual void blockUICoreDragged(LayerBlockUI * cui, const MouseEvent &) override;

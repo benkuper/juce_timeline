@@ -40,6 +40,7 @@ public:
 	public:
 		virtual ~TimeCueUIListener() {}
 		virtual void cueTimeChanged(TimeCueUI *) {}
+		virtual void cueMouseDown(TimeCueUI*, const MouseEvent&) {}
 		virtual void cueDragged(TimeCueUI *, const MouseEvent &) {}
 	};
 

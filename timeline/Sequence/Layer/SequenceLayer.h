@@ -38,6 +38,8 @@ public:
 	Array<UndoableAction*> getRemoveTimespan(float start, float end);
 	virtual Array<UndoableAction*> getRemoveTimespanInternal(float start, float end);
 
+	virtual void getSnapTimes(Array<float> * arrayToFill) {}
+
 	//Factory
 	virtual String getTypeString() const override { jassert(false); return ""; } //should be overriden
 
@@ -45,7 +47,7 @@ public:
 	virtual SequenceLayerPanel * getPanel();
 	virtual SequenceLayerTimeline * getTimelineUI();
 
-	//InspectableEditor * getEditor(bool isRoot) override;
+	//InspectableEditor * getEditorInternal(bool isRoot) override;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceLayer)
 };

@@ -1,14 +1,14 @@
 /*
   ==============================================================================
 
-    TimeCueManagerUI.cpp
-    Created: 6 Apr 2017 11:35:25am
-    Author:  Ben
+	TimeCueManagerUI.cpp
+	Created: 6 Apr 2017 11:35:25am
+	Author:  Ben
 
   ==============================================================================
 */
 
-TimeCueManagerUI::TimeCueManagerUI(SequenceTimelineHeader * _header, TimeCueManager * manager) :
+TimeCueManagerUI::TimeCueManagerUI(SequenceTimelineHeader* _header, TimeCueManager* manager) :
 	BaseManagerUI("Cues", manager, false),
 	header(_header)
 {
@@ -38,8 +38,8 @@ void TimeCueManagerUI::paint(Graphics& g)
 				int maxX = jmin(jmax(x1, x2), getWidth());
 
 				g.setColour((x1 > x2 ? YELLOW_COLOR : RED_COLOR).withAlpha(.4f));
-				g.fillRect(Rectangle<int>(minX, 2, maxX-minX, getHeight() - 2));
-		}
+				g.fillRect(Rectangle<int>(minX, 2, maxX - minX, getHeight() - 2));
+			}
 		}
 	}
 }
@@ -52,7 +52,7 @@ void TimeCueManagerUI::resized()
 void TimeCueManagerUI::updateContent()
 {
 	//DBG("***");
-	for (auto &tui : itemsUI)
+	for (auto& tui : itemsUI)
 	{
 		//DBG("place " << tui->item->time->floatValue());
 		placeTimeCueUI(tui);
@@ -64,9 +64,9 @@ void TimeCueManagerUI::updateContent()
 bool TimeCueManagerUI::hitTest(int x, int y)
 {
 
-	for (auto &i : itemsUI)
+	for (auto& i : itemsUI)
 	{
-		if (i->getBounds().contains(Point<int>(x,y)))
+		if (i->getBounds().contains(Point<int>(x, y)))
 		{
 			return true;
 		}
@@ -75,7 +75,7 @@ bool TimeCueManagerUI::hitTest(int x, int y)
 	return false;
 }
 
-void TimeCueManagerUI::placeTimeCueUI(TimeCueUI * ttui)
+void TimeCueManagerUI::placeTimeCueUI(TimeCueUI* ttui)
 {
 	int tx = header->getXForTime(ttui->item->time->floatValue());
 	ttui->setBounds(tx - ttui->arrowSize / 2, 0, ttui->getWidth(), getHeight());
@@ -97,30 +97,51 @@ void TimeCueManagerUI::addItemFromMenu(bool isFromAddButton, Point<int> mouseDow
 	manager->addCueAt(time);
 }
 
-void TimeCueManagerUI::addItemUIInternal(TimeCueUI * ttui)
+void TimeCueManagerUI::addItemUIInternal(TimeCueUI* ttui)
 {
 	ttui->addCueUIListener(this);
 	placeTimeCueUI(ttui);
 }
 
-void TimeCueManagerUI::removeItemUIInternal(TimeCueUI * ttui)
+void TimeCueManagerUI::removeItemUIInternal(TimeCueUI* ttui)
 {
 	ttui->removeCueUIListener(this);
 }
 
 
-void TimeCueManagerUI::cueDragged(TimeCueUI * ttui, const MouseEvent & e)
+void TimeCueManagerUI::cueMouseDown(TimeCueUI* ttui, const MouseEvent& e)
 {
-	if (!e.mods.isShiftDown())
-	{
-		float targetTime = header->getTimeForX(getMouseXYRelative().x);
-		ttui->item->time->setValue(targetTime);
-	}
-	repaint();
-	
+	snapTimes.clear();
+	header->sequence->getSnapTimes(&snapTimes);
 }
 
-void TimeCueManagerUI::cueTimeChanged(TimeCueUI * ttui)
+void TimeCueManagerUI::cueDragged(TimeCueUI* ttui, const MouseEvent& e)
+{
+	float targetTime = header->getTimeForX(getMouseXYRelative().x);
+
+	if (e.mods.isShiftDown())
+	{
+		float diff = INT32_MAX;
+		float snapTime = 0;
+		float tTime = targetTime;
+		for (auto& t : snapTimes)
+		{
+			float d = fabsf(tTime - t);
+			if (d < diff)
+			{
+				diff = d;
+				targetTime = t;
+			}
+		}
+	}
+
+	ttui->item->time->setValue(targetTime);
+
+	repaint();
+
+}
+
+void TimeCueManagerUI::cueTimeChanged(TimeCueUI* ttui)
 {
 	placeTimeCueUI(ttui);
 }

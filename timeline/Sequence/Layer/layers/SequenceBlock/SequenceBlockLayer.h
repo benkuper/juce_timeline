@@ -25,6 +25,8 @@ public:
 
 	WeakReference<Inspectable> currentBlockRef;
 	
+	virtual void getSnapTimes(Array<float>* arrayToFill) override;
+
 	virtual void clearItem() override;
 
 

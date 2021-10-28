@@ -24,6 +24,11 @@ SequenceBlockLayer::~SequenceBlockLayer()
 	clearItem();
 }
 
+void SequenceBlockLayer::getSnapTimes(Array<float> * arrayToFill)
+{
+	blockManager.getSnapTimes(arrayToFill);
+}
+
 void SequenceBlockLayer::clearItem()
 {
 	blockManager.clear();
