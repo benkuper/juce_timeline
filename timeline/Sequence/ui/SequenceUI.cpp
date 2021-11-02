@@ -1,19 +1,19 @@
 /*
   ==============================================================================
 
-    SequenceUI.cpp
-    Created: 28 Oct 2016 8:13:34pm
-    Author:  bkupe
+	SequenceUI.cpp
+	Created: 28 Oct 2016 8:13:34pm
+	Author:  bkupe
 
   ==============================================================================
 */
 
-SequenceUI::SequenceUI(Sequence * sequence) :
+SequenceUI::SequenceUI(Sequence* sequence) :
 	BaseItemUI<Sequence>(sequence)
 {
 	minContentHeight = 20; //To fix : need to pass in constructor of BaseItemUI
 
-	togglePlayUI.reset(item->isPlaying->createToggle(ImageCache::getFromMemory(TimelineBinaryData::play_png, TimelineBinaryData::play_pngSize)));
+	togglePlayUI.reset(item->togglePlayTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::play_png, TimelineBinaryData::play_pngSize)));
 	stopUI.reset(item->stopTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::stop_png, TimelineBinaryData::stop_pngSize)));
 	colorUI.reset(item->color->createColorParamUI());
 	addAndMakeVisible(togglePlayUI.get());
@@ -31,7 +31,7 @@ SequenceUI::SequenceUI(Sequence * sequence) :
 	addAndMakeVisible(timeUI.get());
 
 	bgColor = item->isBeingEdited ? HIGHLIGHT_COLOR.darker(.2f) : item->color->getColor();
-	
+
 	item->addAsyncContainerListener(this);
 	item->addAsyncSequenceListener(this);
 }
@@ -62,11 +62,11 @@ void SequenceUI::resizedInternalContent(Rectangle<int>& r)
 	timeUI->setBounds(r.removeFromBottom(8));
 }
 
-void SequenceUI::controllableFeedbackUpdateInternal(Controllable * c)
+void SequenceUI::controllableFeedbackUpdateInternal(Controllable* c)
 {
 	if (c == item->isPlaying)
 	{
-		timeUI->customFGColor = item->isPlaying->boolValue() ? Colour(252,212,98) : FEEDBACK_COLOR.withSaturation(.3f);
+		timeUI->customFGColor = item->isPlaying->boolValue() ? Colour(252, 212, 98) : FEEDBACK_COLOR.withSaturation(.3f);
 		timeUI->repaint();
 	}
 	else if (c == item->color)
@@ -76,7 +76,7 @@ void SequenceUI::controllableFeedbackUpdateInternal(Controllable * c)
 	}
 }
 
-void SequenceUI::newMessage(const Sequence::SequenceEvent & e)
+void SequenceUI::newMessage(const Sequence::SequenceEvent& e)
 {
 	switch (e.type)
 	{
@@ -86,8 +86,15 @@ void SequenceUI::newMessage(const Sequence::SequenceEvent & e)
 		repaint();
 	}
 	break;
-        default:
-            break;
-            
+
+
+	case Sequence::SequenceEvent::PLAY_STATE_CHANGED:
+		togglePlayUI->forceDrawTriggering = item->isPlaying->boolValue();
+		togglePlayUI->repaint();
+		break;
+
+	default:
+		break;
+
 	}
 }
