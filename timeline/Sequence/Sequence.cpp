@@ -50,7 +50,7 @@ Sequence::Sequence() :
 	totalTime = addFloatParameter("Total Time", "Total time of this sequence, in seconds", initTotalTime, minSequenceTime);
 	totalTime->defaultUI = FloatParameter::TIME;
 
-	playSpeed = addFloatParameter("Play Speed", "Playing speed factor, 1 is normal speed, 2 is double speed and 0.5 is half speed",1,0.01f);
+	playSpeed = addFloatParameter("Play Speed", "Playing speed factor, 1 is normal speed, 2 is double speed and 0.5 is half speed", 1);
 	fps = addIntParameter("FPS", "Frame Per Second.\nDefines the number of times per seconds the sequence is evaluated, the higher the value is, the more previse the calculation will be.\n \
 									This setting also sets how many messages per seconds are sent from layer with automations.", 50, 1,500);
 	loopParam = addBoolParameter("Loop", "Whether the sequence plays again from the start when reached the end while playing", false);
