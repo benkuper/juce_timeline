@@ -85,7 +85,7 @@ public:
 	void removeTimespan(float start, float end);
 	void insertTimespan(float start, float length);
 
-	virtual void getSnapTimes(Array<float>* arrayToFill);
+	virtual void getSnapTimes(Array<float>* arrayToFill, float start = 0, float end = -1, const Array<float> &excludeValues = Array<float>());
 
 	virtual bool paste() override;
 

@@ -113,7 +113,6 @@ void TimeCueUI::mouseDrag(const MouseEvent & e)
 void TimeCueUI::mouseUp(const MouseEvent & e)
 {
 	BaseItemMinimalUI::mouseUp(e);
-	DBG(item->time->floatValue() << " < > " << timeAtMouseDown);
 	if(item->time->floatValue() != timeAtMouseDown) item->time->setUndoableValue(timeAtMouseDown, item->time->floatValue());
 }
 

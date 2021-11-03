@@ -1,4 +1,3 @@
-#include "SequenceTimelineHeader.h"
 /*
   ==============================================================================
 
@@ -215,7 +214,6 @@ void SequenceTimelineHeader::paintBPM(Graphics &g, Rectangle<int> r)
 
 	int showBarNextStep = showBarStep * 2;
 
-	DBG("Show bar step " << showBarStep);
 	g.setFont(10);
 
 	for (int i = endBeat; i >= startBeat; i--) //reverse to show labels
@@ -256,9 +254,9 @@ void SequenceTimelineHeader::paintBPM(Graphics &g, Rectangle<int> r)
 
 void SequenceTimelineHeader::resized()
 {
-	cueManagerUI->setBounds(getLocalBounds().removeFromBottom(getHeight()/2));
+	Rectangle<int> r = getLocalBounds().removeFromTop(35);
+	cueManagerUI->setBounds(r.removeFromBottom(r.getHeight() / 2));
 	updateNeedlePosition();
-	
 }
 
 void SequenceTimelineHeader::updateNeedlePosition()
