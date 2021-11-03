@@ -73,10 +73,7 @@ void TriggerLayer::onContainerTriggerTriggered(Trigger * t)
 void TriggerLayer::getSnapTimes(Array<float>* arrayToFill)
 {
 	if (ttm == nullptr) return;
-	for (auto& i : ttm->items)
-	{
-		arrayToFill->addIfNotAlreadyThere(i->time->floatValue());
-	}
+	for (auto& i : ttm->items) arrayToFill->addIfNotAlreadyThere(i->time->floatValue());
 }
 
 void TriggerLayer::getSequenceSnapTimesForManager(Array<float>* arrayToFill)

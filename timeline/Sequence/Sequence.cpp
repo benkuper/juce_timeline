@@ -1,24 +1,23 @@
-#include "Sequence.h"
 /*
   ==============================================================================
 
-    Sequence.cpp
-    Created: 28 Oct 2016 8:13:19pm
-    Author:  bkupe
+	Sequence.cpp
+	Created: 28 Oct 2016 8:13:19pm
+	Author:  bkupe
 
   ==============================================================================
 */
 
 Sequence::Sequence() :
-	BaseItem("Sequence",true),
+	BaseItem("Sequence", true),
 	Thread("Sequence"),
 	currentManager(nullptr),
 	hiResAudioTime(0),
 	sampleRate(44100),
-    isSeeking(false),
+	isSeeking(false),
 	timeAtSetTime(0),
-    millisAtSetTime(0),
-    isBeingEdited(false),
+	millisAtSetTime(0),
+	isBeingEdited(false),
 	sequenceNotifier(10)
 {
 	itemDataType = "Sequence";
@@ -35,24 +34,24 @@ Sequence::Sequence() :
 	finishTrigger->hideInEditor = true;
 	pauseTrigger = addTrigger("Pause", "Pause the sequence and keep the current time as is.");
 	togglePlayTrigger = addTrigger("TogglePlay", "Toggle between play/pause or play/stop depending on sequence settings");
-	
+
 	float initTotalTime = 30; //default to 30 seconds, may be in general preferences later
 
 	startAtLoad = addBoolParameter("Play at Load", "If selected, the sequence will start playing just after loading the file", false);
 
-	includeCurrentTimeInSave = addBoolParameter("Save Current Time", "If checked, this will save and load the current time in the file. Otherwise the current time will be reset to 0 on file load.", false); 
-	
+	includeCurrentTimeInSave = addBoolParameter("Save Current Time", "If checked, this will save and load the current time in the file. Otherwise the current time will be reset to 0 on file load.", false);
+
 	currentTime = addFloatParameter("Current Time", "Current position in time of this sequence", 0, 0, initTotalTime);
 	currentTime->defaultUI = FloatParameter::TIME;
 	currentTime->isSavable = false;
-	
+
 
 	totalTime = addFloatParameter("Total Time", "Total time of this sequence, in seconds", initTotalTime, minSequenceTime);
 	totalTime->defaultUI = FloatParameter::TIME;
 
 	playSpeed = addFloatParameter("Play Speed", "Playing speed factor, 1 is normal speed, 2 is double speed and 0.5 is half speed", 1);
 	fps = addIntParameter("FPS", "Frame Per Second.\nDefines the number of times per seconds the sequence is evaluated, the higher the value is, the more previse the calculation will be.\n \
-									This setting also sets how many messages per seconds are sent from layer with automations.", 50, 1,500);
+									This setting also sets how many messages per seconds are sent from layer with automations.", 50, 1, 500);
 	loopParam = addBoolParameter("Loop", "Whether the sequence plays again from the start when reached the end while playing", false);
 
 	bpmPreview = addFloatParameter("BPM Preview", "BPM for previewing in the timeline.", 120, 1, 999, false);
@@ -94,7 +93,7 @@ void Sequence::clearItem()
 	setAudioDeviceManager(nullptr);
 
 	stopThread(500);
-	
+
 	//if(!Engine::mainEngine->isClearing) stopTrigger->trigger();
 	if (Engine::mainEngine != nullptr) Engine::mainEngine->removeEngineListener(this);
 }
@@ -106,7 +105,7 @@ void Sequence::setCurrentTime(float time, bool forceOverPlaying, bool seekMode)
 	if (isPlaying->boolValue() && !forceOverPlaying) return;
 
 	isSeeking = seekMode;
-	
+
 	millisAtSetTime = Time::getMillisecondCounterHiRes();
 	timeAtSetTime = time;
 
@@ -184,21 +183,33 @@ void Sequence::insertTimespan(float start, float length)
 	UndoMaster::getInstance()->performActions("Insert timespan", actions);
 }
 
-void Sequence::getSnapTimes(Array<float>* arrayToFill)
+void Sequence::getSnapTimes(Array<float>* arrayToFill, float start, float end, const Array<float>& excludeValues)
 {
+	if (end == -1) end = totalTime->floatValue();
+	
 	for (auto& i : layerManager->items) i->getSnapTimes(arrayToFill);
+	
 	cueManager->getSnapTimes(arrayToFill);
 	arrayToFill->addIfNotAlreadyThere(currentTime->floatValue());
+
+	if (bpmPreview->enabled)
+	{
+		float step = 60.0 / bpmPreview->floatValue();
+		for (float i = start; i < end; i += step) arrayToFill->addIfNotAlreadyThere(i);
+	}
+
+	arrayToFill->removeValuesIn(excludeValues);
+	if(start > 0 || end < totalTime->floatValue()) arrayToFill->removeIf([start, end](float v) {return v >= start && v <= end; });
 }
 
 bool Sequence::paste()
 {
-	Array<SequenceLayer *> p = layerManager->addItemsFromClipboard(false);
+	Array<SequenceLayer*> p = layerManager->addItemsFromClipboard(false);
 	if (p.isEmpty()) return BaseItem::paste();
 	return true;
 }
 
-void Sequence::setAudioDeviceManager(AudioDeviceManager * manager)
+void Sequence::setAudioDeviceManager(AudioDeviceManager* manager)
 {
 	if (currentManager == manager) return;
 
@@ -211,7 +222,7 @@ void Sequence::setAudioDeviceManager(AudioDeviceManager * manager)
 
 	//resync values between audio/non-audio driving variables
 	hiResAudioTime = (double)currentTime->floatValue();
-	
+
 	sequenceListeners.call(&SequenceListener::sequenceMasterAudioModuleChanged, this);
 }
 
@@ -219,7 +230,7 @@ void Sequence::updateSampleRate()
 {
 	AudioDeviceManager::AudioDeviceSetup s;
 	if (currentManager != nullptr) currentManager->getAudioDeviceSetup(s);
-	if(s.sampleRate != 0) sampleRate = s.sampleRate;
+	if (s.sampleRate != 0) sampleRate = s.sampleRate;
 }
 
 bool Sequence::timeIsDrivenByAudio()
@@ -231,10 +242,10 @@ var Sequence::getJSONData()
 {
 	var data = BaseItem::getJSONData();
 	var layerData = layerManager->getJSONData();
-	if(!layerData.isVoid()) data.getDynamicObject()->setProperty(layerManager->shortName, layerData );
+	if (!layerData.isVoid()) data.getDynamicObject()->setProperty(layerManager->shortName, layerData);
 	var cueData = cueManager->getJSONData();
-	if(!cueData.isVoid()) data.getDynamicObject()->setProperty(cueManager->shortName, cueData);
-	if(isBeingEdited) data.getDynamicObject()->setProperty("editing", true);
+	if (!cueData.isVoid()) data.getDynamicObject()->setProperty(cueManager->shortName, cueData);
+	if (isBeingEdited) data.getDynamicObject()->setProperty("editing", true);
 	return data;
 }
 
@@ -249,10 +260,10 @@ void Sequence::loadJSONDataInternal(var data)
 	{
 		Engine::mainEngine->addEngineListener(this);
 	}
-	
+
 }
 
-void Sequence::onContainerParameterChangedInternal(Parameter * p)
+void Sequence::onContainerParameterChangedInternal(Parameter* p)
 {
 	if (p == enabled)
 	{
@@ -263,13 +274,13 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 		if (isPlaying->boolValue() && !isSeeking)
 		{
 			Array<TimeCue*> cues = cueManager->getCuesInTimespan(prevTime, currentTime->floatValue());
-			for(auto & cue : cues)
+			for (auto& cue : cues)
 			{
 				if (!cue->enabled->boolValue()) continue;
 
 				TimeCue::CueAction a = cue->cueAction->getValueDataAsEnum<TimeCue::CueAction>();
 				if (a == TimeCue::NOTHING) continue;
-				else if(a == TimeCue::PAUSE)
+				else if (a == TimeCue::PAUSE)
 				{
 					pauseTrigger->trigger();
 					prevTime = currentTime->floatValue();
@@ -280,12 +291,12 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 				{
 					if (TimeCue* tc = dynamic_cast<TimeCue*>(cue->loopCue->targetContainer.get()))
 					{
-						if(tc != cue) setCurrentTime(tc->time->floatValue(), true, true);
+						if (tc != cue) setCurrentTime(tc->time->floatValue(), true, true);
 					}
 				}
 			}
 		}
-		
+
 		if ((!isPlaying->boolValue() || isSeeking) && timeIsDrivenByAudio()) hiResAudioTime = currentTime->floatValue();
 		else if (getCurrentThreadId() != getThreadId())
 		{
@@ -313,18 +324,18 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 		{
 			waitForThreadToExit(300);
 		}
-		
+
 		if (isPlaying->boolValue())
 		{
 			if (currentTime->floatValue() >= totalTime->floatValue()) currentTime->setValue(0); //if reached the end when hit play, go to 0
 
 			prevTime = currentTime->floatValue();
-			if(!isThreadRunning()) startThread();
+			if (!isThreadRunning()) startThread();
 		}
 
 		sequenceListeners.call(&SequenceListener::sequencePlayStateChanged, this);
 		sequenceNotifier.addMessage(new SequenceEvent(SequenceEvent::PLAY_STATE_CHANGED, this));
-	} 
+	}
 	else if (p == playSpeed)
 	{
 		sequenceListeners.call(&SequenceListener::sequencePlaySpeedChanged, this);
@@ -347,30 +358,36 @@ void Sequence::onContainerParameterChangedInternal(Parameter * p)
 	}
 }
 
-void Sequence::onContainerTriggerTriggered(Trigger * t)
+void Sequence::onContainerTriggerTriggered(Trigger* t)
 {
 	if (t == playTrigger)
 	{
 		isPlaying->setValue(true);
-	} else if(t == stopTrigger)
+	}
+	else if (t == stopTrigger)
 	{
 		isPlaying->setValue(false);
 		currentTime->setValue(0);
-	} else if (t == pauseTrigger)
+	}
+	else if (t == pauseTrigger)
 	{
 		isPlaying->setValue(false);
-	} else if (t == finishTrigger)
+	}
+	else if (t == finishTrigger)
 	{
 		isPlaying->setValue(false);
-	} else if (t == togglePlayTrigger)
+	}
+	else if (t == togglePlayTrigger)
 	{
 		if (isPlaying->boolValue()) pauseTrigger->trigger();
 		else playTrigger->trigger();
 
-	} else if (t == prevCue)
+	}
+	else if (t == prevCue)
 	{
 		setCurrentTime(cueManager->getPrevCueForTime(currentTime->floatValue(), 1), true, true);
-	} else if (t == nextCue)
+	}
+	else if (t == nextCue)
 	{
 		setCurrentTime(cueManager->getNextCueForTime(currentTime->floatValue()), true, true);
 	}
@@ -398,7 +415,7 @@ void Sequence::parameterControlModeChanged(Parameter* p)
 void Sequence::run()
 {
 	millisAtSetTime = Time::getMillisecondCounterHiRes();
-	timeAtSetTime = timeIsDrivenByAudio()? hiResAudioTime : currentTime->floatValue();
+	timeAtSetTime = timeIsDrivenByAudio() ? hiResAudioTime : currentTime->floatValue();
 
 	followViewRange = viewEndTime->floatValue() - viewStartTime->floatValue();
 
@@ -429,7 +446,7 @@ void Sequence::run()
 				targetEnd = totalTime->floatValue();
 				targetStart = targetEnd - followViewRange;
 			}
-			
+
 			viewStartTime->setValue(viewStartTime->getLerpValueTo(targetStart, .3f));
 			viewEndTime->setValue(viewEndTime->getLerpValueTo(targetEnd, .3f));
 		}
@@ -452,7 +469,7 @@ void Sequence::run()
 		double relAbsMillis = millisAfterProcess - millisAtSetTime;
 		double millisToWait = ceil(millisPerCycle - fmod(relAbsMillis, millisPerCycle));
 
-		if(millisToWait >= 0) wait(millisToWait);
+		if (millisToWait >= 0) wait(millisToWait);
 	}
 }
 
@@ -468,14 +485,14 @@ void Sequence::endLoadFile()
 }
 
 
-void Sequence::audioDeviceIOCallback(const float ** , int , float ** outputChannelData, int numOutputChannels, int numSamples)
+void Sequence::audioDeviceIOCallback(const float**, int, float** outputChannelData, int numOutputChannels, int numSamples)
 {
-	for(int i=0;i<numOutputChannels; ++i) FloatVectorOperations::clear(outputChannelData[i], numSamples);
+	for (int i = 0; i < numOutputChannels; ++i) FloatVectorOperations::clear(outputChannelData[i], numSamples);
 
 	if (isPlaying->boolValue()) hiResAudioTime += (numSamples / sampleRate) * playSpeed->floatValue();
 }
 
-void Sequence::audioDeviceAboutToStart(AudioIODevice *)
+void Sequence::audioDeviceAboutToStart(AudioIODevice*)
 {
 	updateSampleRate();
 }

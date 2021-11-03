@@ -96,7 +96,6 @@ void LayerBlockManagerUI::blockUIMouseDown(LayerBlockUI* cui, const MouseEvent&)
 {
 	snapTimes.clear();
 	timeline->item->sequence->getSnapTimes(&snapTimes);
-	snapTimes.removeAllInstancesOf(cui->item->getEndTime());
 }
 
 void LayerBlockManagerUI::blockUIDragged(LayerBlockUI * cui, const MouseEvent & e)
