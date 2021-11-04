@@ -51,7 +51,6 @@ void TimeCueManagerUI::resized()
 
 void TimeCueManagerUI::updateContent()
 {
-	//DBG("***");
 	for (auto& tui : itemsUI)
 	{
 		//DBG("place " << tui->item->time->floatValue());
