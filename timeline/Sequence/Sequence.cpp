@@ -15,8 +15,10 @@ Sequence::Sequence() :
 	hiResAudioTime(0),
 	sampleRate(44100),
 	isSeeking(false),
-	timeAtSetTime(0),
+	//timeAtSetTime(0),
 	millisAtSetTime(0),
+	targetTime(0),
+	prevMillis(0),
 	isBeingEdited(false),
 	sequenceNotifier(10)
 {
@@ -107,7 +109,8 @@ void Sequence::setCurrentTime(float time, bool forceOverPlaying, bool seekMode)
 	isSeeking = seekMode;
 
 	millisAtSetTime = Time::getMillisecondCounterHiRes();
-	timeAtSetTime = time;
+	//timeAtSetTime = time;
+	if (seekMode || forceOverPlaying) targetTime = time;
 
 	if (timeIsDrivenByAudio())
 	{
@@ -301,7 +304,7 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 		else if (getCurrentThreadId() != getThreadId())
 		{
 			millisAtSetTime = Time::getMillisecondCounterHiRes();
-			timeAtSetTime = timeIsDrivenByAudio() ? hiResAudioTime : currentTime->floatValue();
+			//timeAtSetTime = timeIsDrivenByAudio() ? hiResAudioTime : currentTime->floatValue();
 		}
 
 		sequenceListeners.call(&SequenceListener::sequenceCurrentTimeChanged, this, (float)prevTime, isPlaying->boolValue() && !isSeeking);
@@ -367,7 +370,7 @@ void Sequence::onContainerTriggerTriggered(Trigger* t)
 	else if (t == stopTrigger)
 	{
 		isPlaying->setValue(false);
-		currentTime->setValue(0);
+		setCurrentTime(0, true, true);
 	}
 	else if (t == pauseTrigger)
 	{
@@ -415,18 +418,26 @@ void Sequence::parameterControlModeChanged(Parameter* p)
 void Sequence::run()
 {
 	millisAtSetTime = Time::getMillisecondCounterHiRes();
-	timeAtSetTime = timeIsDrivenByAudio() ? hiResAudioTime : currentTime->floatValue();
+	//timeAtSetTime = timeIsDrivenByAudio() ? hiResAudioTime : currentTime->floatValue();
+	prevMillis = Time::getMillisecondCounterHiRes();
 
 	followViewRange = viewEndTime->floatValue() - viewStartTime->floatValue();
 
+	targetTime = currentTime->floatValue();
+
 	while (!threadShouldExit())
 	{
-		double targetTime = 0;
 
 		double millis = Time::getMillisecondCounterHiRes();
-		double millisSinceSetTime = millis - millisAtSetTime;
-		targetTime = timeAtSetTime + (millisSinceSetTime / 1000.0) * playSpeed->floatValue();
+		//double millisSinceSetTime = millis - millisAtSetTime;
+		double delta = millis - prevMillis;
 
+		targetTime += (delta / 1000.0) * playSpeed->floatValue();
+
+		prevMillis = millis;
+
+		//double absoluteTargetTime = timeAtSetTime + (millisSinceSetTime / 1000.0) * playSpeed->floatValue();
+		
 		if (timeIsDrivenByAudio())
 		{
 			//DBG("Diff (ms): " << abs(hiResAudioTime - currentTime->floatValue()));

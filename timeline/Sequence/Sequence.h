@@ -57,8 +57,10 @@ public:
 
 	//Playback
 	double prevTime;
-	double timeAtSetTime;
+	//double timeAtSetTime;
 	double millisAtSetTime;
+	double prevMillis;
+	double targetTime;
 
 	//UI
 	const float minSequenceTime = 1; //in seconds
