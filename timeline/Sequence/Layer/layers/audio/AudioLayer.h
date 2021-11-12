@@ -87,6 +87,7 @@ public:
 	void sequenceCurrentTimeChanged(Sequence *, float prevTime, bool evaluatedSkippedData) override;
 	void sequencePlayStateChanged(Sequence *) override;
 	void sequencePlaySpeedChanged(Sequence*) override;
+	void sequencePlayDirectionChanged(Sequence*) override;
 
 	static AudioLayer * create(Sequence * sequence, var params) { return new AudioLayer(sequence, params); }
 	virtual String getTypeString() const override { return "Audio"; }

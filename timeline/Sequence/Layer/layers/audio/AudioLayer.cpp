@@ -1,4 +1,3 @@
-#include "AudioLayer.h"
 /*
   ==============================================================================
 
@@ -361,7 +360,6 @@ void AudioLayer::sequencePlayStateChanged(Sequence*)
 	}
 	else
 	{
-
 		if (currentClip != nullptr && enabled->boolValue())
 		{
 			float pos = currentClip->clipStartOffset->floatValue() + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue();
@@ -377,6 +375,15 @@ void AudioLayer::sequencePlaySpeedChanged(Sequence*)
 	{
 		currentClip->setPlaySpeed(sequence->playSpeed->floatValue());
 		currentClip->prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
+	}
+}
+
+void AudioLayer::sequencePlayDirectionChanged(Sequence*)
+{
+	if (currentClip != nullptr)
+	{
+		float pos = currentClip->clipStartOffset->floatValue() + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue();
+		currentClip->transportSource.setPosition(pos);
 	}
 }
 
@@ -472,8 +479,13 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 
 	if (layer != nullptr)
 	{
-		if (!layer->enabled->boolValue() || !layer->sequence->enabled->boolValue() || !layer->sequence->isPlaying->boolValue()) noProcess = true;
+		if (!layer->enabled->boolValue() 
+			|| !layer->sequence->enabled->boolValue() 
+			|| !layer->sequence->isPlaying->boolValue() 
+			|| layer->sequence->playSpeed->floatValue() < 0) noProcess = true;
+		
 		currentClip = layer->currentClip;
+		
 		if (currentClip.wasObjectDeleted() || currentClip.get() == nullptr) noProcess = true;
 		else if (currentClip->filePath->stringValue().isEmpty()) noProcess = true;
 		

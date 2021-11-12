@@ -131,6 +131,7 @@ void AudioLayerClip::setStartTime(float value, bool stretch, bool stickToCoreEnd
 
 void AudioLayerClip::setPlaySpeed(float value)
 {
+	if (value <= 0) return;
 	resamplingAudioSource.setResamplingRatio(stretchFactor->floatValue() / value);
 }
 
