@@ -127,13 +127,23 @@ void TimeTriggerManager::sequenceCurrentTimeChanged(Sequence * /*_sequence*/, fl
 {
 	if (!layer->enabled->boolValue() || !sequence->enabled->boolValue()) return;
 
-	if (sequence->currentTime->floatValue() >= prevTime)
+	float curTime = sequence->currentTime->floatValue();
+	if (curTime == prevTime) return;
+
+	bool playingForward = sequence->playSpeed->floatValue() >= 0;
+	bool diffIsForward = curTime >= prevTime;
+	bool normallyPlaying = playingForward == diffIsForward;
+
+	if (normallyPlaying)
 	{ 
 		if (evaluateSkippedData || ModifierKeys::getCurrentModifiers().isCtrlDown())
 		{
 			if (!sequence->isSeeking || !sequence->isPlaying->boolValue() || layer->triggerWhenSeeking->boolValue())
 			{
-				Array<TimeTrigger *> spanTriggers = getTriggersInTimespan(prevTime, sequence->currentTime->floatValue());
+				float minTime = jmin(prevTime, curTime);
+				float maxTime = jmax(prevTime, curTime);
+
+				Array<TimeTrigger *> spanTriggers = getTriggersInTimespan(minTime, maxTime);
 				for (auto &tt : spanTriggers)
 				{
 					tt->trigger();
@@ -142,19 +152,26 @@ void TimeTriggerManager::sequenceCurrentTimeChanged(Sequence * /*_sequence*/, fl
 		}
 	}else //loop or manual, untrigger
 	{
-		Array<TimeTrigger *> spanTriggers = getTriggersInTimespan(sequence->currentTime->floatValue(),sequence->totalTime->floatValue(),true);
+
+		float minTime = playingForward ? curTime : 0;
+		float maxTime = playingForward ? sequence->totalTime->floatValue() : curTime;
+
+		Array<TimeTrigger *> spanTriggers = getTriggersInTimespan(minTime, maxTime, true);
 		for (auto &tt : spanTriggers)
 		{
 			tt->isTriggered->setValue(false);
 		}
 	}
-	
-	
 }
 
 void TimeTriggerManager::sequenceTotalTimeChanged(Sequence *)
 {
 	for(auto & t : items) t->time->setRange(0, sequence->totalTime->floatValue());
+}
+
+void TimeTriggerManager::sequencePlayDirectionChanged(Sequence*)
+{
+	for (auto& i : items) i->isTriggered->setValue(false);
 }
 
 void TimeTriggerManager::sequenceLooped(Sequence *)

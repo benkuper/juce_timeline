@@ -24,7 +24,7 @@ public:
 	Array<float> getAllCueTimes(float minTime = 0, float maxTime = 0, bool includeDisabled = false);
 	float getNearestCueForTime(float time, bool includeDisabled = false);
 
-	Array<TimeCue *> getCuesInTimespan(float startTime, float endTime, bool includeDisabled = false);
+	Array<TimeCue *> getCuesInTimespan(float startTime, float endTime, bool startInclusive, bool endInclusive, bool includeDisabled = false);
 
 	Array<UndoableAction*> getMoveKeysBy(float start, float offset);
 	Array<UndoableAction*> getInsertTimespan(float start, float length);

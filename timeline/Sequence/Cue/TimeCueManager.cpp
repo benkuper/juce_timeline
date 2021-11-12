@@ -1,4 +1,3 @@
-#include "TimeCueManager.h"
 /*
   ==============================================================================
 
@@ -72,16 +71,18 @@ float TimeCueManager::getNearestCueForTime(float time, bool includeDisabled)
 	return result;
 }
 
-Array<TimeCue*> TimeCueManager::getCuesInTimespan(float startTime, float endTime, bool includeDisabled)
+Array<TimeCue*> TimeCueManager::getCuesInTimespan(float startTime, float endTime, bool startInclusive, bool endInclusive, bool includeDisabled)
 {
 	Array<TimeCue*> result;
 	for (auto& tt : items)
 	{
 		if (!tt->enabled->boolValue() && !includeDisabled) continue;
-		if (tt->time->floatValue() > startTime && tt->time->floatValue() <= endTime) result.add(tt);
+
+		bool startCheck = startInclusive ? tt->time->floatValue() >= startTime : tt->time->floatValue() > startTime;
+		bool endCheck = endInclusive ? tt->time->floatValue() <= endTime : tt->time->floatValue() < endTime;
+		if (startCheck && endCheck) result.add(tt);
 	}
 	return result;
-
 }
 
 Array<UndoableAction*> TimeCueManager::getMoveKeysBy(float start, float offset)
@@ -108,7 +109,7 @@ Array<UndoableAction*> TimeCueManager::getRemoveTimespan(float start, float end)
 {
 	Array<UndoableAction*> actions;
 
-	Array<TimeCue*> cues = getCuesInTimespan(start, end, true);
+	Array<TimeCue*> cues = getCuesInTimespan(start, end, true, true, true);
 	actions.addArray(getRemoveItemsUndoableAction(cues));
 	actions.addArray(getMoveKeysBy(end, start - end));
 

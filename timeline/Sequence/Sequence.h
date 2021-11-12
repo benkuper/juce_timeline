@@ -61,6 +61,7 @@ public:
 	double millisAtSetTime;
 	double prevMillis;
 	double targetTime;
+	float prevSpeed;
 
 	//UI
 	const float minSequenceTime = 1; //in seconds
@@ -124,6 +125,7 @@ public:
 		virtual void sequenceCurrentTimeChanged(Sequence *, float /*prevTime*/, bool /*evaluateSkippedData*/) {}
 		virtual void sequenceLooped(Sequence *) {}
 		virtual void sequencePlaySpeedChanged(Sequence*) {}
+		virtual void sequencePlayDirectionChanged(Sequence*) {}
 		virtual void sequenceTotalTimeChanged(Sequence *) {}
 		virtual void sequenceMasterAudioModuleChanged(Sequence *) {}
 		virtual void sequenceEditingStateChanged(Sequence *) {}

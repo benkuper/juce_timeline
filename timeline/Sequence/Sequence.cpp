@@ -52,6 +52,8 @@ Sequence::Sequence() :
 	totalTime->defaultUI = FloatParameter::TIME;
 
 	playSpeed = addFloatParameter("Play Speed", "Playing speed factor, 1 is normal speed, 2 is double speed and 0.5 is half speed", 1);
+	prevSpeed = playSpeed->floatValue();
+
 	fps = addIntParameter("FPS", "Frame Per Second.\nDefines the number of times per seconds the sequence is evaluated, the higher the value is, the more previse the calculation will be.\n \
 									This setting also sets how many messages per seconds are sent from layer with automations.", 50, 1, 500);
 	loopParam = addBoolParameter("Loop", "Whether the sequence plays again from the start when reached the end while playing", false);
@@ -276,7 +278,10 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 	{
 		if (isPlaying->boolValue() && !isSeeking)
 		{
-			Array<TimeCue*> cues = cueManager->getCuesInTimespan(prevTime, currentTime->floatValue());
+			float minTime = jmin<float>(prevTime, currentTime->floatValue());
+			float maxTime = jmax<float>(prevTime, currentTime->floatValue());
+			bool playingForward = playSpeed->floatValue() > 0;
+			Array<TimeCue*> cues = cueManager->getCuesInTimespan(minTime, maxTime, !playingForward, playingForward);
 			for (auto& cue : cues)
 			{
 				if (!cue->enabled->boolValue()) continue;
@@ -341,6 +346,12 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 	}
 	else if (p == playSpeed)
 	{
+		if (prevSpeed < 0 && playSpeed->floatValue() > 0 || prevSpeed > 0 && playSpeed->floatValue() < 0)
+		{
+			sequenceListeners.call(&SequenceListener::sequencePlayDirectionChanged, this);
+		}
+
+		prevSpeed = playSpeed->floatValue();
 		sequenceListeners.call(&SequenceListener::sequencePlaySpeedChanged, this);
 	}
 	else if (p == viewStartTime)

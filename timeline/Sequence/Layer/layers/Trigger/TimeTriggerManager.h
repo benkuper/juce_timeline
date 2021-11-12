@@ -39,7 +39,8 @@ public:
 	void onControllableFeedbackUpdate(ControllableContainer * cc, Controllable * c) override;
 
 	void sequenceCurrentTimeChanged(Sequence * _sequence, float prevTime, bool evaluateSkippedData) override;
-	void sequenceTotalTimeChanged(Sequence *) override;
+	void sequenceTotalTimeChanged(Sequence*) override;
+	void sequencePlayDirectionChanged(Sequence *) override;
 	void sequenceLooped(Sequence *) override;
 
 	static int compareTime(TimeTrigger * t1, TimeTrigger * t2);
