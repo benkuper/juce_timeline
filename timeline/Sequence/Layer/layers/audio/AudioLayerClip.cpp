@@ -164,7 +164,7 @@ void AudioLayerClip::setupFromSource()
 	if (reader != nullptr)
 	{
 		std::unique_ptr<AudioFormatReaderSource> newSource(new AudioFormatReaderSource(reader, true));
-		transportSource.setSource(newSource.get(), 0, nullptr, reader->sampleRate, 4);
+		transportSource.setSource(newSource.get(), 0, nullptr, reader->sampleRate, reader->numChannels);
 		readerSource.reset(newSource.release());
 		sampleRate = reader->sampleRate;
 		clipDuration = reader->lengthInSamples / sampleRate;
