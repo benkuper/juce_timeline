@@ -17,9 +17,9 @@ Sequence::Sequence() :
 	isSeeking(false),
 	//timeAtSetTime(0),
 	millisAtSetTime(0),
-	targetTime(0),
 	prevMillis(0),
-	isBeingEdited(false),
+    targetTime(0),
+    isBeingEdited(false),
 	sequenceNotifier(10)
 {
 	itemDataType = "Sequence";
@@ -346,7 +346,7 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 	}
 	else if (p == playSpeed)
 	{
-		if (prevSpeed < 0 && playSpeed->floatValue() > 0 || prevSpeed > 0 && playSpeed->floatValue() < 0)
+		if ((prevSpeed < 0 && playSpeed->floatValue() > 0) || (prevSpeed > 0 && playSpeed->floatValue() < 0))
 		{
 			sequenceListeners.call(&SequenceListener::sequencePlayDirectionChanged, this);
 		}
