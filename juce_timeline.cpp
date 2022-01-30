@@ -40,6 +40,8 @@
 #include "timeline/Sequence/Layer/layers/SequenceBlock/SequenceBlockManager.cpp"
 #include "timeline/Sequence/Layer/layers/SequenceBlock/SequenceBlockLayer.cpp"
 
+#include "timeline/Sequence/Layer/layers/Group/LayerGroup.cpp"
+
 #include "timeline/Sequence/Layer/SequenceLayer.cpp"
 #include "timeline/Sequence/Layer/SequenceLayerManager.cpp"
 
@@ -72,6 +74,9 @@
 #include "timeline/Sequence/Layer/layers/SequenceBlock/ui/SequenceBlockManagerUI.cpp"
 #include "timeline/Sequence/Layer/layers/SequenceBlock/ui/SequenceBlockLayerPanel.cpp"
 #include "timeline/Sequence/Layer/layers/SequenceBlock/ui/SequenceBlockLayerTimeline.cpp"
+
+#include "timeline/Sequence/Layer/layers/Group/ui/LayerGroupPanel.cpp"
+#include "timeline/Sequence/Layer/layers/Group/ui/LayerGroupTimeline.cpp"
 
 #include "timeline/Sequence/ui/SequenceUI.cpp"
 #include "timeline/Sequence/ui/SequenceTransportUI.cpp"

@@ -18,16 +18,18 @@ class SequenceLayer :
 	public Sequence::SequenceListener
 {
 public:
-	SequenceLayer(Sequence * _sequence = nullptr, const String &name = "New Layer");
+	SequenceLayer(Sequence * _sequence = nullptr, const String &name = "New Layer", bool _isGroup = false);
 	virtual ~SequenceLayer();
 
 	Sequence * sequence;
+	bool isGroup;
 
 	//UI
 	IntParameter * uiHeight;
 	ColorParameter * color;
 
 	virtual void addDefaultContent() {}
+	virtual void getAllItems(Array<SequenceLayer*> * l) { jassert(false); }
 
 	Array<Inspectable *> selectAllItemsBetween(float start, float end);
 	virtual Array<Inspectable*> selectAllItemsBetweenInternal(float start, float end);

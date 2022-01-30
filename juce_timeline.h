@@ -99,6 +99,8 @@ using namespace juce;
 #include "timeline/Sequence/Layer/layers/SequenceBlock/SequenceBlockManager.h"
 #include "timeline/Sequence/Layer/layers/SequenceBlock/SequenceBlockLayer.h"
 
+#include "timeline/Sequence/Layer/layers/Group/LayerGroup.h"
+
 #include "timeline/Sequence/Layer/SequenceLayerManager.h"
 
 #include "timeline/Sequence/Cue/TimeCue.h"
@@ -129,6 +131,9 @@ using namespace juce;
 #include "timeline/Sequence/Layer/layers/SequenceBlock/ui/SequenceBlockManagerUI.h"
 #include "timeline/Sequence/Layer/layers/SequenceBlock/ui/SequenceBlockLayerPanel.h"
 #include "timeline/Sequence/Layer/layers/SequenceBlock/ui/SequenceBlockLayerTimeline.h"
+
+#include "timeline/Sequence/Layer/layers/Group/ui/LayerGroupPanel.h"
+#include "timeline/Sequence/Layer/layers/Group/ui/LayerGroupTimeline.h"
 
 #include "timeline/Sequence/Cue/ui/TimeCueUI.h"
 #include "timeline/Sequence/Cue/ui/TimeCueManagerUI.h"
