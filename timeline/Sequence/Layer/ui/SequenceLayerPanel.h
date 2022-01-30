@@ -14,7 +14,7 @@ class SequenceLayerPanel :
 	public BaseItemUI<SequenceLayer>
 {
 public:
-	SequenceLayerPanel(SequenceLayer *);
+	SequenceLayerPanel(SequenceLayer *, bool resizable = true);
 	virtual ~SequenceLayerPanel();
 
 	std::unique_ptr<BoolToggleUI> lockUI;

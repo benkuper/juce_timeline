@@ -8,8 +8,8 @@
   ==============================================================================
 */
 
-SequenceLayerPanel::SequenceLayerPanel(SequenceLayer * layer) :
-	BaseItemUI<SequenceLayer>(layer,Direction::VERTICAL)
+SequenceLayerPanel::SequenceLayerPanel(SequenceLayer * layer, bool resizable) :
+	BaseItemUI<SequenceLayer>(layer, resizable ? Direction::VERTICAL : Direction::NONE)
 {
 	setWantsKeyboardFocus(false); 
 	setMouseClickGrabsKeyboardFocus(false);

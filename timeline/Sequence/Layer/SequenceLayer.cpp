@@ -8,9 +8,10 @@
   ==============================================================================
 */
 
-SequenceLayer::SequenceLayer(Sequence * _sequence, const String &name) :
+SequenceLayer::SequenceLayer(Sequence * _sequence, const String &name, bool _isGroup) :
 	BaseItem(name,true),
-	sequence(_sequence)
+	sequence(_sequence),
+	isGroup(_isGroup)
 {
 	jassert(sequence != nullptr);
 
@@ -23,7 +24,6 @@ SequenceLayer::SequenceLayer(Sequence * _sequence, const String &name) :
 	color->hideInEditor = true;
 	addParameter(color);
 
-	sequence = _sequence;
 	sequence->addSequenceListener(this);
 
 }

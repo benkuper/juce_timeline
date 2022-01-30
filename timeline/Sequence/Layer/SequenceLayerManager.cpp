@@ -8,13 +8,21 @@
   ==============================================================================
 */
 
-SequenceLayerManager::SequenceLayerManager(Sequence * _sequence) :
+SequenceLayerManager::SequenceLayerManager(Sequence * _sequence, LayerGroup* _layerGroup) :
 	BaseManager<SequenceLayer>("Layers"),
-	sequence(_sequence)
+	sequence(_sequence),
+	layerGroup(_layerGroup)
 {
 	itemDataType = "SequenceLayer";
-	hideInEditor = true;
-	managerFactory = &factory;
+	if (_layerGroup == nullptr)
+	{
+		hideInEditor = true;
+		managerFactory = new Factory<SequenceLayer>();
+	}
+	else
+	{
+		managerFactory = _sequence->layerManager->managerFactory;
+	}
 }
 
 SequenceLayerManager::~SequenceLayerManager()
@@ -26,6 +34,21 @@ void SequenceLayerManager::fileDropped(String file)
 	if (file.endsWith("mp3") || file.endsWith("wav") || file.endsWith("aiff")) createAudioLayerForFile(file);
 }
 
+void SequenceLayerManager::getAllItems(Array<SequenceLayer*> * list)
+{
+	for (auto& l : items)
+	{
+		if (l->isGroup)
+		{
+			l->getAllItems(list);
+		}
+		else
+		{
+			list->add(l);
+		}
+	}
+}
+
 SequenceLayer * SequenceLayerManager::createItem()
 {
 	return new SequenceLayer(sequence);
@@ -33,11 +56,11 @@ SequenceLayer * SequenceLayerManager::createItem()
 
 void SequenceLayerManager::createAudioLayerForFile(File f)
 {
-	for (auto &d: factory.defs)
+	for (auto &d: managerFactory->defs)
 	{
 		if (((LayerDefinition*)d)->isAudio)
 		{
-			AudioLayer * layer = (AudioLayer *)factory.create(d);
+			AudioLayer * layer = (AudioLayer *)managerFactory->create(d);
 			AudioLayerClip* clip = new AudioLayerClip();
 			clip->filePath->setValue(f.getFullPathName());
 			layer->clipManager.addItem(clip, false, false);

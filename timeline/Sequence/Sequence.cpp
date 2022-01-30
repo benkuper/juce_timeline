@@ -159,21 +159,30 @@ void Sequence::setBeingEdited(bool value)
 void Sequence::selectAllItemsBetween(float start, float end)
 {
 	Array<Inspectable*> selection;
-	for (auto& l : layerManager->items) selection.addArray(l->selectAllItemsBetween(start, end));
+	Array<SequenceLayer*> layers;
+	layerManager->getAllItems(&layers);
+
+	for (auto& l : layers) selection.addArray(l->selectAllItemsBetween(start, end));
 	InspectableSelectionManager::mainSelectionManager->selectInspectables(selection);
 }
 
 void Sequence::removeAllItemsBetween(float start, float end)
 {
 	Array<UndoableAction*> actions;
-	for (auto& l : layerManager->items)  actions.addArray(l->getRemoveAllItemsBetween(start, end));
+	Array<SequenceLayer*> layers;
+	layerManager->getAllItems(&layers);
+
+	for (auto& l : layers)  actions.addArray(l->getRemoveAllItemsBetween(start, end));
 	UndoMaster::getInstance()->performActions("Remove items between timespan", actions);
 }
 
 void Sequence::removeTimespan(float start, float end)
 {
 	Array<UndoableAction*> actions;
-	for (auto& l : layerManager->items)  actions.addArray(l->getRemoveTimespan(start, end));
+	Array<SequenceLayer*> layers;
+	layerManager->getAllItems(&layers);
+
+	for (auto& l : layers)  actions.addArray(l->getRemoveTimespan(start, end));
 	actions.addArray(cueManager->getRemoveTimespan(start, end));
 	actions.add(totalTime->setUndoableValue(totalTime->floatValue(), totalTime->floatValue() - (end - start), true));
 	UndoMaster::getInstance()->performActions("Remove timespan", actions);
@@ -182,8 +191,11 @@ void Sequence::removeTimespan(float start, float end)
 void Sequence::insertTimespan(float start, float length)
 {
 	Array<UndoableAction*> actions;
+	Array<SequenceLayer*> layers;
 	actions.add(totalTime->setUndoableValue(totalTime->floatValue(), totalTime->floatValue() + length, true));
-	for (auto& l : layerManager->items)  actions.addArray(l->getInsertTimespan(start, length));
+	layerManager->getAllItems(&layers);
+
+	for (auto& l : layers)  actions.addArray(l->getInsertTimespan(start, length));
 	actions.addArray(cueManager->getInsertTimespan(start, length));
 	UndoMaster::getInstance()->performActions("Insert timespan", actions);
 }
@@ -191,8 +203,11 @@ void Sequence::insertTimespan(float start, float length)
 void Sequence::getSnapTimes(Array<float>* arrayToFill, float start, float end, const Array<float>& excludeValues)
 {
 	if (end == -1) end = totalTime->floatValue();
+
+	Array<SequenceLayer*> layers;
+	layerManager->getAllItems(&layers);
 	
-	for (auto& i : layerManager->items) i->getSnapTimes(arrayToFill);
+	for (auto& i : layers) i->getSnapTimes(arrayToFill);
 	
 	cueManager->getSnapTimes(arrayToFill);
 	arrayToFill->addIfNotAlreadyThere(currentTime->floatValue());

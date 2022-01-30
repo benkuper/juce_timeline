@@ -13,13 +13,15 @@ class SequenceLayerManager :
 	public BaseManager<SequenceLayer>
 {
 public:
-	SequenceLayerManager(Sequence * _sequence);
+	SequenceLayerManager(Sequence * _sequence, LayerGroup * _layerGroup = nullptr);
 	~SequenceLayerManager();
 
 	Sequence * sequence;
-	Factory<SequenceLayer> factory;
+	LayerGroup * layerGroup;
 	
 	virtual void fileDropped(String file);
+
+	void getAllItems(Array<SequenceLayer*> * list);
 
 	class LayerDefinition : 
 		public FactoryParametricDefinition<SequenceLayer, std::function<SequenceLayer *(Sequence *, var)>>
