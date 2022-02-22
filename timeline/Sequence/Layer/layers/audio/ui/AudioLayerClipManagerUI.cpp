@@ -48,14 +48,16 @@ void AudioLayerClipManagerUI::mouseDoubleClick(const MouseEvent & e)
 
 void AudioLayerClipManagerUI::addClipWithFileChooserAt(float position)
 {
-	FileChooser chooser("Load an audio file", File::getCurrentWorkingDirectory(), "*.wav;*.mp3;*.ogg;*.aiff");
-	chooser.launchAsync(FileBrowserComponent::openMode, [this, position](const FileChooser& fc)
+	FileChooser* chooser(new FileChooser("Load an audio file", File::getCurrentWorkingDirectory(), "*.wav;*.mp3;*.ogg;*.aiff"));
+	chooser->launchAsync(FileBrowserComponent::openMode, [this, position](const FileChooser& fc)
 		{
-			if (!fc.getResult().exists()) return;
+			File f = fc.getResult();
+			delete& fc;
+			if (f == File()) return;
 
 			float time = timeline->getTimeForX(position);
 			AudioLayerClip* clip = dynamic_cast<AudioLayerClip*>(manager->addBlockAt(time));
-			clip->filePath->setValue(fc.getResult().getFullPathName());
+			clip->filePath->setValue(f.getFullPathName());
 		}
 	);
 }
