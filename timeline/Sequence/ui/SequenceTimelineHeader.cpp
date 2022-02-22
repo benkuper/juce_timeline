@@ -1,9 +1,9 @@
 /*
   ==============================================================================
 
-    SequenceTimelineHeader.cpp
-    Created: 23 Nov 2016 11:32:15pm
-    Author:  Ben Kuper
+	SequenceTimelineHeader.cpp
+	Created: 23 Nov 2016 11:32:15pm
+	Author:  Ben Kuper
 
   ==============================================================================
 */
@@ -16,16 +16,16 @@ SequenceTimelineHeader::SequenceTimelineHeader(Sequence* _sequence, TimeCueManag
 	selectionSpan(-1, -1)
 {
 	sequence->addAsyncContainerListener(this);
-	
+
 	if (this->cueManagerUI == nullptr) this->cueManagerUI.reset(new TimeCueManagerUI(this, sequence->cueManager.get()));
 	addAndMakeVisible(this->cueManagerUI.get());
-	
+
 	if (needle == nullptr) needle.reset(new TimeNeedleUI());
 	addAndMakeVisible(needle.get());
 	needle->setInterceptsMouseClicks(false, false);
 
 	setSize(100, 20);
-    startTimerHz(20);
+	startTimerHz(20);
 }
 
 SequenceTimelineHeader::~SequenceTimelineHeader()
@@ -35,17 +35,17 @@ SequenceTimelineHeader::~SequenceTimelineHeader()
 
 #pragma warning(push)
 #pragma warning(disable:4244)
-void SequenceTimelineHeader::paint(Graphics & g)
+void SequenceTimelineHeader::paint(Graphics& g)
 {
-	
-	
+
+
 	Rectangle<int> r = getLocalBounds();
 	paintTime(g, r.removeFromTop(35));
 
 	if (sequence->bpmPreview->enabled) paintBPM(g, r);
 }
 
-void SequenceTimelineHeader::paintTime(Graphics &g, Rectangle<int> r)
+void SequenceTimelineHeader::paintTime(Graphics& g, Rectangle<int> r)
 {
 	Rectangle<int> tr = r.removeFromTop(r.getHeight() / 2);
 	g.setColour(BG_COLOR.brighter(.1f));
@@ -53,7 +53,7 @@ void SequenceTimelineHeader::paintTime(Graphics &g, Rectangle<int> r)
 
 	g.setColour(BG_COLOR.darker(.1f));
 	g.fillRect(r);
-	
+
 	//Draw ticks
 	float start = floorf(sequence->viewStartTime->floatValue());
 	float end = floorf(sequence->viewEndTime->floatValue());
@@ -111,7 +111,7 @@ void SequenceTimelineHeader::paintTime(Graphics &g, Rectangle<int> r)
 			g.setColour(BG_COLOR.brighter(.6f));
 			//g.drawLine(tx, 0, tx, getHeight(), 1);
 			g.drawVerticalLine(mtx, r.getY(), (float)r.getBottom());
-			
+
 			//g.setColour(BG_COLOR.darker(.6f));
 			//g.drawRoundedRectangle(r.toFloat(), 2, 2);
 
@@ -187,7 +187,7 @@ void SequenceTimelineHeader::paintTime(Graphics &g, Rectangle<int> r)
 	g.drawRoundedRectangle(getLocalBounds().toFloat(), 2, 2);
 }
 
-void SequenceTimelineHeader::paintBPM(Graphics &g, Rectangle<int> r)
+void SequenceTimelineHeader::paintBPM(Graphics& g, Rectangle<int> r)
 {
 	float start = floorf(sequence->viewStartTime->floatValue());
 	float end = floorf(sequence->viewEndTime->floatValue());
@@ -219,18 +219,18 @@ void SequenceTimelineHeader::paintBPM(Graphics &g, Rectangle<int> r)
 	for (int i = endBeat; i >= startBeat; i--) //reverse to show labels
 	{
 		float timeAtBeat = i * beatTime;
-		float timeAtNextBeat = (i+1) * beatTime;
+		float timeAtNextBeat = (i + 1) * beatTime;
 
 		int tx = getXForTime(timeAtBeat);
 		int tx2 = getXForTime(timeAtNextBeat);
 
 		int beatInBar = i % beatsPerBar;
-		float relBeat =  beatInBar* 1.0f / beatsPerBar;
+		float relBeat = beatInBar * 1.0f / beatsPerBar;
 
 		Rectangle<int> br = r.withX(tx).withRight(tx2);
 
 		Colour c = startColor.interpolatedWith(endColor, relBeat);
-			
+
 		g.setColour(c);
 		g.fillRect(br);
 
@@ -268,7 +268,7 @@ void SequenceTimelineHeader::updateNeedlePosition()
 
 #pragma warning(pop)
 
-void SequenceTimelineHeader::mouseDown(const MouseEvent & e)
+void SequenceTimelineHeader::mouseDown(const MouseEvent& e)
 {
 	if (e.mods.isRightButtonDown() || (e.mods.isLeftButtonDown() && e.mods.isCommandDown()))
 	{
@@ -276,26 +276,27 @@ void SequenceTimelineHeader::mouseDown(const MouseEvent & e)
 		selectionSpan.setXY(pos, pos);
 		selectionZoomMode = e.mods.isRightButtonDown();
 
-	}else if (e.mods.isLeftButtonDown())
+	}
+	else if (e.mods.isLeftButtonDown())
 	{
-		sequence->setCurrentTime(getTimeForX(e.getPosition().x), true, true);	
+		sequence->setCurrentTime(getTimeForX(e.getPosition().x), true, true);
 		snapTimes.clear();
 		sequence->getSnapTimes(&snapTimes);
 		snapTimes.removeAllInstancesOf(sequence->currentTime->floatValue());
 	}
 }
 
-void SequenceTimelineHeader::mouseDrag(const MouseEvent & e)
+void SequenceTimelineHeader::mouseDrag(const MouseEvent& e)
 {
-	if(e.mods.isRightButtonDown() || (e.mods.isLeftButtonDown() && e.mods.isCommandDown()))
+	if (e.mods.isRightButtonDown() || (e.mods.isLeftButtonDown() && e.mods.isCommandDown()))
 	{
 		float pos = getTimeForX(e.getPosition().x);
-		
+
 		if (selectionSpan.x < 0) selectionSpan.setX(pos);
 		selectionSpan.setY(pos);
 		repaint();
 	}
-	else if(e.mods.isLeftButtonDown())
+	else if (e.mods.isLeftButtonDown())
 	{
 		float targetTime = getTimeForX(e.getPosition().x);
 		if (e.mods.isShiftDown())
@@ -317,7 +318,7 @@ void SequenceTimelineHeader::mouseDrag(const MouseEvent & e)
 	}
 }
 
-void SequenceTimelineHeader::mouseDoubleClick(const MouseEvent & e)
+void SequenceTimelineHeader::mouseDoubleClick(const MouseEvent& e)
 {
 	if (e.mods.isLeftButtonDown())
 	{
@@ -348,25 +349,28 @@ void SequenceTimelineHeader::mouseUp(const MouseEvent& e)
 				m.addItem(3, "Remove timespan");
 				m.addItem(4, "Insert timespan");
 
-				int result = m.show();
-				switch (result)
-				{
-				case 1:
-					sequence->selectAllItemsBetween(minPos, maxPos);
-					break;
+				m.showMenuAsync(PopupMenu::Options(), [this, minPos, maxPos](int result)
+					{
+						switch (result)
+						{
+						case 1:
+							this->sequence->selectAllItemsBetween(minPos, maxPos);
+							break;
 
-				case 2:
-					sequence->removeAllItemsBetween(minPos, maxPos);
-					break;
+						case 2:
+							this->sequence->removeAllItemsBetween(minPos, maxPos);
+							break;
 
-				case 3:
-					sequence->removeTimespan(minPos, maxPos);
-					break;
+						case 3:
+							this->sequence->removeTimespan(minPos, maxPos);
+							break;
 
-				case 4:
-					sequence->insertTimespan(minPos, maxPos - minPos);
-					break;
-				}
+						case 4:
+							this->sequence->insertTimespan(minPos, maxPos - minPos);
+							break;
+						}
+					}
+				);
 			}
 		}
 	}
@@ -393,7 +397,7 @@ float SequenceTimelineHeader::getTimeForX(int tx)
 	return sequence->currentTime->getStepSnappedValueFor(jmap<float>((float)tx, 0, (float)getWidth(), viewStart, viewEnd));
 }
 
-void SequenceTimelineHeader::newMessage(const ContainerAsyncEvent & e)
+void SequenceTimelineHeader::newMessage(const ContainerAsyncEvent& e)
 {
 	switch (e.type)
 	{
@@ -405,10 +409,12 @@ void SequenceTimelineHeader::newMessage(const ContainerAsyncEvent & e)
 			repaint();
 			resized();
 			cueManagerUI->updateContent();
-		} else if (e.targetControllable == sequence->currentTime)
+		}
+		else if (e.targetControllable == sequence->currentTime)
 		{
-            shouldUpdateNeedle = true;
-		} else if (e.targetControllable == sequence->totalTime)
+			shouldUpdateNeedle = true;
+		}
+		else if (e.targetControllable == sequence->totalTime)
 		{
 			resized();
 		}
@@ -417,30 +423,30 @@ void SequenceTimelineHeader::newMessage(const ContainerAsyncEvent & e)
 			repaint();
 		}
 		break;
-		
+
 	default:
-	//other events not handled 
-	break;
+		//other events not handled 
+		break;
 	}
 }
 
 void SequenceTimelineHeader::timerCallback()
 {
-    if(shouldUpdateNeedle)
-    {
-        shouldUpdateNeedle = false;
-        updateNeedlePosition();
-    }
+	if (shouldUpdateNeedle)
+	{
+		shouldUpdateNeedle = false;
+		updateNeedlePosition();
+	}
 }
 
 
 #pragma warning(push)
 #pragma warning(disable:4244)
-void TimeNeedleUI::paint(Graphics & g)
+void TimeNeedleUI::paint(Graphics& g)
 {
 	g.setColour(HIGHLIGHT_COLOR);
 	Path p;
-	p.addTriangle(0, 0, getWidth(), 0, getWidth()/2.f, 4);
+	p.addTriangle(0, 0, getWidth(), 0, getWidth() / 2.f, 4);
 	p.addTriangle(0, getHeight(), getWidth() / 2, getHeight() - 4, getWidth(), getHeight());
 	g.fillPath(p);
 	g.drawVerticalLine(getWidth() / 2, 0, getHeight());

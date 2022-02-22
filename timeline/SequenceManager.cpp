@@ -1,9 +1,9 @@
 /*
   ==============================================================================
 
-    SequenceManager.cpp
-    Created: 28 Oct 2016 8:13:04pm
-    Author:  bkupe
+	SequenceManager.cpp
+	Created: 28 Oct 2016 8:13:04pm
+	Author:  bkupe
 
   ==============================================================================
 */
@@ -46,7 +46,8 @@ void SequenceManager::onContainerTriggerTriggered(Trigger* t)
 	if (t == playAllTrigger)
 	{
 		for (auto& i : items) i->playTrigger->trigger();
-	}else if (t == stopAllTrigger)
+	}
+	else if (t == stopAllTrigger)
 	{
 		for (auto& i : items) i->stopTrigger->trigger();
 	}
@@ -61,16 +62,17 @@ void SequenceManager::sequencePlayStateChanged(Sequence* s)
 	}
 }
 
-Sequence * SequenceManager::showMenuAndGetSequence()
+void SequenceManager::showMenuAndGetSequence(std::function<void(Sequence*)> returnFunc)
 {
 	PopupMenu menu;
 	int numItems = items.size();
-	for (int i = 0; i < numItems; ++i)
-	{
-		menu.addItem(1 + i, items[i]->niceName);
-	}
-	int result = menu.show();
-	return getSequenceForItemID(result);
+	for (int i = 0; i < numItems; ++i) menu.addItem(1 + i, items[i]->niceName);
+
+	menu.showMenuAsync(PopupMenu::Options(), [this, returnFunc](int result)
+		{
+			if (Sequence* s = this->getSequenceForItemID(result)) returnFunc(s);
+		}
+	);
 }
 
 Sequence* SequenceManager::getSequenceForItemID(int itemID)
@@ -79,7 +81,7 @@ Sequence* SequenceManager::getSequenceForItemID(int itemID)
 	return items[itemID - 1];
 }
 
-SequenceLayer* SequenceManager::showmMenuAndGetLayer()
+void SequenceManager::showMenuAndGetLayer(std::function<void(SequenceLayer*)> returnFunc)
 {
 	PopupMenu menu;
 	for (int i = 0; i < items.size(); ++i)
@@ -94,9 +96,11 @@ SequenceLayer* SequenceManager::showmMenuAndGetLayer()
 		menu.addSubMenu(items[i]->niceName, sMenu);
 	}
 
-	int result = menu.show();
-	if (result == 0) return nullptr;
-	return getLayerForItemID(result);
+	menu.showMenuAsync(PopupMenu::Options(), [this, returnFunc](int result)
+		{
+			if (SequenceLayer* l = this->getLayerForItemID(result)) returnFunc(l);
+		}
+	);
 }
 
 SequenceLayer* SequenceManager::getLayerForItemID(int itemID)
@@ -107,7 +111,7 @@ SequenceLayer* SequenceManager::getLayerForItemID(int itemID)
 	return items[sequenceIndex]->layerManager->items[layerIndex];
 }
 
-TimeCue* SequenceManager::showMenuAndGetCue()
+void SequenceManager::showMenuAndGetCue(std::function<void(TimeCue*)> returnFunc)
 {
 	PopupMenu menu;
 	for (int i = 0; i < items.size(); ++i)
@@ -116,17 +120,20 @@ TimeCue* SequenceManager::showMenuAndGetCue()
 		int numValues = items[i]->cueManager->items.size();
 		for (int j = 0; j < numValues; j++)
 		{
-			TimeCue * c = items[i]->cueManager->items[j];
+			TimeCue* c = items[i]->cueManager->items[j];
 			sMenu.addItem(i * 1000 + j + 1, c->niceName);
 		}
 		menu.addSubMenu(items[i]->niceName, sMenu);
 	}
 
-	int result = menu.show();
-	return getCueForItemID(result);
+	menu.showMenuAsync(PopupMenu::Options(), [this, returnFunc](int result)
+		{
+			if (TimeCue* t = this->getCueForItemID(result)) returnFunc(t);
+		}
+	);
 }
 
-TimeCue * SequenceManager::getCueForItemID(int itemID)
+TimeCue* SequenceManager::getCueForItemID(int itemID)
 {
 	if (itemID <= 0) return nullptr;
 	int moduleIndex = (int)floor((itemID - 1) / 1000);
@@ -134,7 +141,7 @@ TimeCue * SequenceManager::getCueForItemID(int itemID)
 	return items[moduleIndex]->cueManager->items[valueIndex];
 }
 
-AudioLayer * SequenceManager::showMenuAndGetAudioLayer()
+void SequenceManager::showMenuAndGetAudioLayer(std::function<void(AudioLayer*)> returnFunc)
 {
 	PopupMenu menu;
 	for (int i = 0; i < items.size(); ++i)
@@ -152,9 +159,11 @@ AudioLayer * SequenceManager::showMenuAndGetAudioLayer()
 		menu.addSubMenu(items[i]->niceName, sMenu);
 	}
 
-	int result = menu.show();
-	if (result == 0) return nullptr;
-	return getAudioLayerForItemID(result);
+	menu.showMenuAsync(PopupMenu::Options(), [this, returnFunc](int result)
+		{
+			if (AudioLayer* l = this->getAudioLayerForItemID(result)) returnFunc(l);
+		}
+	);
 }
 
 AudioLayer* SequenceManager::getAudioLayerForItemID(int itemID)
@@ -162,10 +171,10 @@ AudioLayer* SequenceManager::getAudioLayerForItemID(int itemID)
 	if (itemID <= 0) return nullptr;
 	int sequenceIndex = (int)floor((itemID - 1) / 1000);
 	int layerIndex = (itemID - 1) % 1000;
-	return (AudioLayer *)items[sequenceIndex]->layerManager->items[layerIndex];
+	return (AudioLayer*)items[sequenceIndex]->layerManager->items[layerIndex];
 }
 
-TimeTrigger* SequenceManager::showMenuAndGetTrigger()
+void SequenceManager::showMenuAndGetTrigger(std::function<void(TimeTrigger*)> returnFunc)
 {
 	Array<TimeTrigger*> ttItems;
 
@@ -176,7 +185,7 @@ TimeTrigger* SequenceManager::showMenuAndGetTrigger()
 		int numValues = items[i]->layerManager->items.size();
 		for (int j = 0; j < numValues; j++)
 		{
-			if (TriggerLayer * tl = dynamic_cast<TriggerLayer*>(items[i]->layerManager->items[j]))
+			if (TriggerLayer* tl = dynamic_cast<TriggerLayer*>(items[i]->layerManager->items[j]))
 			{
 				PopupMenu tm;
 				for (auto& tt : tl->ttm->items)
@@ -191,7 +200,10 @@ TimeTrigger* SequenceManager::showMenuAndGetTrigger()
 		menu.addSubMenu(items[i]->niceName, sMenu);
 	}
 
-	int result = menu.show();
-	if (result == 0) return nullptr;
-	return ttItems[result - 1];
+	menu.showMenuAsync(PopupMenu::Options(), [ttItems, returnFunc](int result)
+		{
+			if (result == 0) return;
+			returnFunc(ttItems[result - 1]);
+		}
+	);
 }

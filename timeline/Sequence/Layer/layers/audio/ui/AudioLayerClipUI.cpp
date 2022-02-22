@@ -46,7 +46,7 @@ void AudioLayerClipUI::paint(Graphics& g)
 	else
 	{
 		float volume = clip->volume->controlMode == Parameter::ControlMode::MANUAL ? clip->volume->floatValue() : 1;
-		thumbnail.drawChannels(g, getCoreBounds(), clip->clipStartOffset->floatValue(), clip->clipStartOffset->floatValue() + clip->coreLength->floatValue() / clip->stretchFactor->floatValue(),  volume);
+		thumbnail.drawChannels(g, getCoreBounds(), clip->clipStartOffset->floatValue(), clip->clipStartOffset->floatValue() + clip->coreLength->floatValue() / clip->stretchFactor->floatValue(), volume);
 	}
 
 	if (clip->fadeIn->floatValue() > 0)
@@ -67,7 +67,7 @@ void AudioLayerClipUI::paint(Graphics& g)
 		int fadeOutWidth = clip->fadeOut->floatValue() * getCoreWidth() / clip->coreLength->floatValue();
 		Path p;
 		p.startNewSubPath(getCoreWidth(), 0);
-		p.lineTo(getCoreWidth()-fadeOutWidth,0);
+		p.lineTo(getCoreWidth() - fadeOutWidth, 0);
 		p.lineTo(getCoreWidth(), getHeight());
 		p.closeSubPath();
 		g.fillPath(p);
@@ -79,7 +79,7 @@ void AudioLayerClipUI::paint(Graphics& g)
 		if (automationUI != nullptr)
 		{
 			/*if (dynamic_cast<GradientColorManagerUI*>(automationUI.get()) != nullptr) automationUI->setBounds(r.removeFromBottom(20));
-			else 
+			else
 			*/
 			automationUI->setBounds(r);
 		}
@@ -100,41 +100,46 @@ void AudioLayerClipUI::mouseDown(const MouseEvent& e)
 		p.addItem(2, "Edit enveloppe automation", automationUI == nullptr);
 		p.addItem(3, "Remove enveloppe automation", clip->volume->controlMode != Parameter::ControlMode::MANUAL);
 
-		int result = p.show();
-		switch (result)
-		{
-		case 1:
-			setTargetAutomation(nullptr);
-			break;
-
-		case 2:
-		{
-			if (clip->volume->controlMode != Parameter::ControlMode::AUTOMATION)
+		p.showMenuAsync(PopupMenu::Options(), [this](int result)
 			{
-				clip->volume->setControlMode(Parameter::ControlMode::AUTOMATION);
-				clip->volume->automation->setManualMode(true);
+				AudioLayerClip* clip = this->clip;
 
-				Automation* a = dynamic_cast<Automation*>(clip->volume->automation->automationContainer);
-
-				if (a != nullptr)
+				switch (result)
 				{
-					a->clear();
-					a->setLength(clip->coreLength->floatValue());
-					AutomationKey* k = a->addItem(0, 0);
-					k->setEasing(Easing::BEZIER);
-					a->addKey(a->length->floatValue(), 1);
+				case 1:
+					this->setTargetAutomation(nullptr);
+					break;
+
+				case 2:
+				{
+					if (clip->volume->controlMode != Parameter::ControlMode::AUTOMATION)
+					{
+						clip->volume->setControlMode(Parameter::ControlMode::AUTOMATION);
+						clip->volume->automation->setManualMode(true);
+
+						Automation* a = dynamic_cast<Automation*>(clip->volume->automation->automationContainer);
+
+						if (a != nullptr)
+						{
+							a->clear();
+							a->setLength(clip->coreLength->floatValue());
+							AutomationKey* k = a->addItem(0, 0);
+							k->setEasing(Easing::BEZIER);
+							a->addKey(a->length->floatValue(), 1);
+						}
+					}
+
+					this->setTargetAutomation(clip->volume->automation.get());
+				}
+				break;
+
+				case 3:
+					this->setTargetAutomation(nullptr);
+					clip->volume->setControlMode(Parameter::ControlMode::MANUAL);
+					break;
 				}
 			}
-
-			setTargetAutomation(clip->volume->automation.get());
-		}
-		break;
-
-		case 3:
-			setTargetAutomation(nullptr);
-			clip->volume->setControlMode(Parameter::ControlMode::MANUAL);
-			break;
-		}
+		);
 	}
 }
 
@@ -190,7 +195,7 @@ void AudioLayerClipUI::controllableFeedbackUpdateInternal(Controllable* c)
 {
 	LayerBlockUI::controllableFeedbackUpdateInternal(c);
 
-	if (c == item->time || c == item->coreLength  || c == clip->fadeIn || c == clip->fadeOut)
+	if (c == item->time || c == item->coreLength || c == clip->fadeIn || c == clip->fadeOut)
 	{
 		repaint();
 	}

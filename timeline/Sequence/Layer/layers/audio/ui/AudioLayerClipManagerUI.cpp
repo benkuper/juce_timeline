@@ -49,13 +49,15 @@ void AudioLayerClipManagerUI::mouseDoubleClick(const MouseEvent & e)
 void AudioLayerClipManagerUI::addClipWithFileChooserAt(float position)
 {
 	FileChooser chooser("Load an audio file", File::getCurrentWorkingDirectory(), "*.wav;*.mp3;*.ogg;*.aiff");
-	bool result = chooser.browseForFileToOpen();
-	if (result)
-	{
-		float time = timeline->getTimeForX(position);
-		AudioLayerClip* clip = dynamic_cast<AudioLayerClip*>(manager->addBlockAt(time));
-		clip->filePath->setValue(chooser.getResult().getFullPathName());
-	}
+	chooser.launchAsync(FileBrowserComponent::openMode, [this, position](const FileChooser& fc)
+		{
+			if (!fc.getResult().exists()) return;
+
+			float time = timeline->getTimeForX(position);
+			AudioLayerClip* clip = dynamic_cast<AudioLayerClip*>(manager->addBlockAt(time));
+			clip->filePath->setValue(fc.getResult().getFullPathName());
+		}
+	);
 }
 
 bool AudioLayerClipManagerUI::isInterestedInFileDrag(const StringArray& files)
