@@ -92,21 +92,20 @@ void LayerBlockManagerUI::blockUITimeChanged(LayerBlockUI * cui)
 	placeBlockUI(cui);
 }
 
-void LayerBlockManagerUI::blockUIMouseDown(LayerBlockUI* cui, const MouseEvent&)
+void LayerBlockManagerUI::blockUIMouseDown(LayerBlockUI* cui, const MouseEvent& e)
 {
 	snapTimes.clear();
 	timeline->item->sequence->getSnapTimes(&snapTimes);
 }
 
-void LayerBlockManagerUI::blockUIDragged(LayerBlockUI * cui, const MouseEvent & e)
+void LayerBlockManagerUI::blockUIDragged(LayerBlockUI * cui, const MouseEvent& e)
 {
 	if (miniMode) return;
 
 	float targetOffsetTime = timeline->getTimeForX(e.getOffsetFromDragStart().x, false);
 	//float targetTime = cui->timeAtMouseDown + targetOffsetTime;
 
-
-	if (e.mods.isShiftDown())
+	if (e.mods.isShiftDown() || timeline->item->sequence->autoSnap->boolValue())
 	{
 		float tTime = cui->item->movePositionReference.x + targetOffsetTime;
 		float clipLength = cui->item->getTotalLength();
@@ -147,6 +146,12 @@ void LayerBlockManagerUI::blockUIStartDragged(LayerBlockUI * cui, const MouseEve
 	float timeDiff = timeline->getTimeForX(e.getOffsetFromDragStart().x, false);
 	float targetTime = cui->item->movePositionReference.x +timeDiff;
 
+	if (timeline->item->sequence->autoSnap->boolValue())
+	{
+		targetTime = timeline->item->sequence->getClosestSnapTimeFor(snapTimes, targetTime);
+	}
+
+
 	int itemIndex = manager->items.indexOf(cui->item);
 	float minTime = (itemIndex > 0 && !manager->blocksCanOverlap) ? manager->items[itemIndex - 1]->getEndTime() : 0;
 	targetTime = jmax<float>(minTime, targetTime);
@@ -171,6 +176,14 @@ void LayerBlockManagerUI::blockUICoreDragged(LayerBlockUI * cui, const MouseEven
 	}
 
 	float targetCoreLength = cui->coreLengthAtMouseDown + timeline->getTimeForX(e.getOffsetFromDragStart().x, false);
+
+	if (timeline->item->sequence->autoSnap->boolValue())
+	{
+		float targetTime = cui->item->time->floatValue() + targetCoreLength;
+		targetTime = timeline->item->sequence->getClosestSnapTimeFor(snapTimes, targetTime);
+		targetCoreLength = targetTime - cui->item->time->floatValue();
+	}
+
 
 	if (!manager->blocksCanOverlap)
 	{
@@ -200,6 +213,12 @@ void LayerBlockManagerUI::blockUILoopDragged(LayerBlockUI * cui, const MouseEven
 		}
 	}
 	
+	if (e.mods.isShiftDown() || timeline->item->sequence->autoSnap->boolValue())
+	{
+		float targetTime = cui->item->getCoreEndTime() + targetLoopLength;
+		targetTime = timeline->item->sequence->getClosestSnapTimeFor(snapTimes, targetTime);
+		targetLoopLength = targetTime - cui->item->getCoreEndTime();
+	}
 	
 	cui->item->setLoopLength(targetLoopLength);
 	cui->setViewRange(timeline->item->sequence->viewStartTime->floatValue() - cui->item->time->floatValue(), timeline->item->sequence->viewEndTime->floatValue() - cui->item->time->floatValue());

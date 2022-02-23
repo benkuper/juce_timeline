@@ -33,6 +33,7 @@ public:
 	FloatParameter * playSpeed;
 	BoolParameter * loopParam;
 	IntParameter * fps;
+	BoolParameter* autoSnap;
 
 	FloatParameter* bpmPreview;
 	IntParameter * beatsPerBar;
@@ -89,6 +90,7 @@ public:
 	void insertTimespan(float start, float length);
 
 	virtual void getSnapTimes(Array<float>* arrayToFill, float start = 0, float end = -1, const Array<float> &excludeValues = Array<float>());
+	virtual float getClosestSnapTimeFor(Array<float> snapTimes, float t);
 
 	virtual bool paste() override;
 

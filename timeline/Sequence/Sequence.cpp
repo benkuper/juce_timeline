@@ -62,6 +62,8 @@ Sequence::Sequence() :
 	bpmPreview->canBeDisabledByUser = true;
 	beatsPerBar = addIntParameter("Beats Per Bar", "Number of beats in a bar. Only for preview in UI", 4, 1, 32, false);
 
+	autoSnap = addBoolParameter("Auto Snap", "If checked, this will automatically snap when moving items", false);
+
 	currentTime->unitSteps = fps->intValue();
 	totalTime->unitSteps = fps->intValue();
 
@@ -205,6 +207,22 @@ void Sequence::getSnapTimes(Array<float>* arrayToFill, float start, float end, c
 
 	arrayToFill->removeValuesIn(excludeValues);
 	if(start > 0 || end < totalTime->floatValue()) arrayToFill->removeIf([start, end](float v) {return v >= start && v <= end; });
+}
+
+float Sequence::getClosestSnapTimeFor(Array<float> snapTimes, float time)
+{
+	float result = time;
+	float diff = INT32_MAX;
+	for (auto& t : snapTimes)
+	{
+		float d = fabsf(time - t);
+		if (d < diff)
+		{
+			diff = d;
+			result = t;
+		}
+	}
+	return result;
 }
 
 bool Sequence::paste()

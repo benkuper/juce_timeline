@@ -118,20 +118,11 @@ void TimeCueManagerUI::cueDragged(TimeCueUI* ttui, const MouseEvent& e)
 {
 	float targetTime = header->getTimeForX(getMouseXYRelative().x);
 
-	if (e.mods.isShiftDown())
+	if (e.mods.isShiftDown() || header->sequence->autoSnap->boolValue())
 	{
-		float diff = INT32_MAX;
-		float tTime = targetTime;
-		for (auto& t : snapTimes)
-		{
-			float d = fabsf(tTime - t);
-			if (d < diff)
-			{
-				diff = d;
-				targetTime = t;
-			}
-		}
+		targetTime = header->sequence->getClosestSnapTimeFor(snapTimes, targetTime);
 	}
+
 
 	ttui->item->time->setValue(targetTime);
 

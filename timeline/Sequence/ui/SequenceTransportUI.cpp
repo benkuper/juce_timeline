@@ -37,12 +37,14 @@ SequenceTransportUI::SequenceTransportUI(Sequence* _sequence) :
 	nextCueUI.reset(sequence->nextCue->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::nextcue_png, TimelineBinaryData::nextcue_pngSize)));
 	prevCueUI.reset(sequence->prevCue->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::prevcue_png, TimelineBinaryData::prevcue_pngSize)));
 	loopUI.reset(sequence->loopParam->createToggle(ImageCache::getFromMemory(TimelineBinaryData::loop_png, TimelineBinaryData::loop_pngSize)));
+	snapUI.reset(sequence->autoSnap->createToggle(ImageCache::getFromMemory(TimelineBinaryData::snap_png, TimelineBinaryData::snap_pngSize)));
 
 	addAndMakeVisible(togglePlayUI.get());
 	addAndMakeVisible(stopUI.get());
 	addAndMakeVisible(nextCueUI.get());
 	addAndMakeVisible(prevCueUI.get());
 	addAndMakeVisible(loopUI.get());
+	addAndMakeVisible(snapUI.get());
 
 	sequence->addAsyncCoalescedSequenceListener(this);
 }
@@ -56,6 +58,7 @@ SequenceTransportUI::~SequenceTransportUI()
 	nextCueUI = nullptr;
 	prevCueUI = nullptr;
 	loopUI = nullptr;
+	snapUI = nullptr;
 }
 
 void SequenceTransportUI::resized()
@@ -72,7 +75,8 @@ void SequenceTransportUI::resized()
 	stopUI->setBounds(pr.removeFromLeft(pr.getHeight()).reduced(4, 2));
 	prevCueUI->setBounds(pr.removeFromLeft(pr.getHeight()).reduced(2));
 	nextCueUI->setBounds(pr.removeFromLeft(pr.getHeight()).reduced(2));
-	loopUI->setBounds(pr.removeFromLeft(30).reduced(4));
+	loopUI->setBounds(pr.removeFromLeft(30).reduced(2));
+	snapUI->setBounds(pr.removeFromLeft(30).reduced(4));
 	totalTimeLabel.setBounds(pr.removeFromRight(100));
 }
 

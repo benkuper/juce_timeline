@@ -2,9 +2,9 @@
 
 <JUCERPROJECT id="nJCeN1" name="timeline_resources" projectType="guiapp" version="1.0.0"
               bundleIdentifier="com.benkuper.timeline_resources" includeBinaryInAppConfig="1"
-              jucerVersion="5.4.7" displaySplashScreen="1" reportAppUsage="1"
-              splashScreenColour="Dark" cppLanguageStandard="11" companyCopyright=""
-              binaryDataNamespace="TimelineBinaryData">
+              displaySplashScreen="1" reportAppUsage="1" splashScreenColour="Dark"
+              companyCopyright="" binaryDataNamespace="TimelineBinaryData"
+              jucerFormatVersion="1">
   <MAINGROUP id="gdPnjI" name="timeline_resources">
     <GROUP id="{471DD8BF-5339-7ED5-BF79-1FCB0A8A6B3D}" name="Resources">
       <FILE id="x93MjG" name="loop.png" compile="0" resource="1" file="Resources/loop.png"/>

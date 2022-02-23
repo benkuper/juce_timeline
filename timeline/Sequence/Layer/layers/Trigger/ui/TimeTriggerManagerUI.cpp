@@ -1,4 +1,3 @@
-#include "TimeTriggerManagerUI.h"
 /*
   ==============================================================================
 
@@ -159,21 +158,9 @@ void TimeTriggerManagerUI::timeTriggerDragged(TimeTriggerUI * ttui, const MouseE
 	{
 		Point<float> offset(diffTime, e.mods.isShiftDown()?0:e.getDistanceFromDragStartY()*1.0f / (getHeight() -20)); //-20 is for subtracting flag height
 
-		if (e.mods.isShiftDown())
+		if (e.mods.isShiftDown() || timeline->item->sequence->autoSnap->boolValue())
 		{
-			float targetTime = ttui->item->movePositionReference.x + offset.x;
-			float diff = INT32_MAX;
-			float tTime = targetTime;
-			for (auto& t : snapTimes)
-			{
-				float d = fabsf(tTime - t);
-				if (d < diff)
-				{
-					diff = d;
-					targetTime = t;
-				}
-			}
-
+			float targetTime = timeline->item->sequence->getClosestSnapTimeFor(snapTimes, ttui->item->movePositionReference.x + offset.x);
 			offset.x = targetTime - ttui->item->movePositionReference.x;
 		}
 
