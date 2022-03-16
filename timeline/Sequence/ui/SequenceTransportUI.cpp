@@ -17,14 +17,18 @@ SequenceTransportUI::SequenceTransportUI(Sequence* _sequence) :
     totalTimeLabel(_sequence->totalTime)
 {
 	timeLabel.maxFontHeight = 20;
+	timeLabel.showLabel = false;
+
 	totalTimeLabel.maxFontHeight = 14;
 	totalTimeLabel.useCustomTextColor = true;
 	totalTimeLabel.customTextColor = TEXT_COLOR.darker();
+	totalTimeLabel.showLabel = false;
 	totalTimeLabel.updateUIParams();
 
 	timeStepLabel.maxFontHeight = 12;
 	timeStepLabel.useCustomTextColor = true;
 	timeStepLabel.customTextColor = TEXT_COLOR.darker(.2f);
+	timeStepLabel.showLabel = false;
 	timeStepLabel.setShowStepsMode(true);
 	timeStepLabel.updateUIParams();
 
