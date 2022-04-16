@@ -71,7 +71,6 @@ public:
 	BoolParameter* viewFollowTime;
 	float followViewRange;
 	bool isBeingEdited;
-	ColorParameter* color;
 
 	virtual void clearItem() override;
 
