@@ -15,7 +15,7 @@ SequenceUI::SequenceUI(Sequence* sequence) :
 
 	togglePlayUI.reset(item->togglePlayTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::play_png, TimelineBinaryData::play_pngSize)));
 	stopUI.reset(item->stopTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::stop_png, TimelineBinaryData::stop_pngSize)));
-	colorUI.reset(item->color->createColorParamUI());
+	colorUI.reset(item->itemColor->createColorParamUI());
 	addAndMakeVisible(togglePlayUI.get());
 	addAndMakeVisible(stopUI.get());
 	addAndMakeVisible(colorUI.get());
@@ -30,7 +30,7 @@ SequenceUI::SequenceUI(Sequence* sequence) :
 
 	addAndMakeVisible(timeUI.get());
 
-	bgColor = item->isBeingEdited ? HIGHLIGHT_COLOR.darker(.2f) : item->color->getColor();
+	bgColor = item->isBeingEdited ? HIGHLIGHT_COLOR.darker(.2f) : item->itemColor->getColor();
 
 	item->addAsyncContainerListener(this);
 	item->addAsyncSequenceListener(this);
@@ -69,9 +69,9 @@ void SequenceUI::controllableFeedbackUpdateInternal(Controllable* c)
 		timeUI->customFGColor = item->isPlaying->boolValue() ? Colour(252, 212, 98) : FEEDBACK_COLOR.withSaturation(.3f);
 		timeUI->repaint();
 	}
-	else if (c == item->color)
+	else if (c == item->itemColor)
 	{
-		bgColor = item->isBeingEdited ? HIGHLIGHT_COLOR.darker(.2f) : item->color->getColor();
+		bgColor = item->isBeingEdited ? HIGHLIGHT_COLOR.darker(.2f) : item->itemColor->getColor();
 		repaint();
 	}
 }
@@ -82,7 +82,7 @@ void SequenceUI::newMessage(const Sequence::SequenceEvent& e)
 	{
 	case Sequence::SequenceEvent::EDITING_STATE_CHANGED:
 	{
-		bgColor = item->isBeingEdited ? HIGHLIGHT_COLOR.darker(.2f) : item->color->getColor();
+		bgColor = item->isBeingEdited ? HIGHLIGHT_COLOR.darker(.2f) : item->itemColor->getColor();
 		repaint();
 	}
 	break;

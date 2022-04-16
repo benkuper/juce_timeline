@@ -12,7 +12,7 @@ SequenceLayerTimeline::SequenceLayerTimeline(SequenceLayer * layer) :
 	BaseItemMinimalUI<SequenceLayer>(layer),
 	seekManipulationMode(false)
 {
-	bgColor = item->color->getColor();
+	bgColor = item->itemColor->getColor();
 
 	item->sequence->addAsyncContainerListener(this);
 	setSize(100, item->uiHeight->intValue());
@@ -103,9 +103,9 @@ void SequenceLayerTimeline::controllableFeedbackUpdateInternal(Controllable * c)
 	else if (c == item->sequence->currentTime)
 	{
 		shouldUpdateNeedle = true;
-	} else if (c == item->color)
+	} else if (c == item->itemColor)
 	{
-		bgColor = item->color->getColor();
+		bgColor = item->itemColor->getColor();
         repaint();
 	}
 	else if (c == item->miniMode)
