@@ -25,7 +25,6 @@ public:
 
 	//UI
 	IntParameter * uiHeight;
-	ColorParameter * color;
 
 	virtual void addDefaultContent() {}
 

@@ -15,8 +15,8 @@ SequenceLayerPanel::SequenceLayerPanel(SequenceLayer * layer) :
 	setMouseClickGrabsKeyboardFocus(false);
 	bringToFrontOnSelect = false;
 
-	bgColor = item->color->getColor(); 
-	colorUI.reset(item->color->createColorParamUI());
+	bgColor = item->itemColor->getColor();
+	colorUI.reset(item->itemColor->createColorParamUI());
 	miniModeUI.reset(item->miniMode->createToggle(AssetManager::getInstance()->getMinusImage()));
 
 	lockUI.reset(item->isUILocked->createToggle(ImageCache::getFromMemory(OrganicUIBinaryData::padlock_png, OrganicUIBinaryData::padlock_pngSize)));
@@ -35,7 +35,7 @@ SequenceLayerPanel::~SequenceLayerPanel()
 
 void SequenceLayerPanel::paintOverChildren(Graphics & g)
 {
-	g.setColour(item->color->getColor());
+	g.setColour(item->itemColor->getColor());
 	g.drawRoundedRectangle(getLocalBounds().reduced(1).toFloat(), 2, 2);
 	BaseItemUI::paintOverChildren(g);
 }
@@ -64,11 +64,11 @@ void SequenceLayerPanel::controllableFeedbackUpdateInternal(Controllable * c)
 	{
 		if (!item->isCurrentlyLoadingData) setSize(getWidth(), item->uiHeight->intValue());
 	}
-	else if (c == item->color)
+	else if (c == item->itemColor)
 	{
 		if (!item->isCurrentlyLoadingData)
 		{
-			bgColor = item->color->getColor();
+			bgColor = item->itemColor->getColor();
 			repaint();
 		}
 	}
