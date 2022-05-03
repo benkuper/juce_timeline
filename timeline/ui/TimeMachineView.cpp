@@ -52,6 +52,7 @@ void TimeMachineView::setSequence(Sequence * sequence)
 {
 	if (editor != nullptr && editor->sequence == sequence) return;
 
+	MessageManagerLock mmLock;
 	if (editor != nullptr)
 	{
 		editor->sequence->removeInspectableListener(this);
