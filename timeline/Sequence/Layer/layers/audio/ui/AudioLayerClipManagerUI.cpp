@@ -49,7 +49,7 @@ void AudioLayerClipManagerUI::mouseDoubleClick(const MouseEvent & e)
 void AudioLayerClipManagerUI::addClipWithFileChooserAt(float position)
 {
 	FileChooser* chooser(new FileChooser("Load an audio file", File::getCurrentWorkingDirectory(), "*.wav;*.mp3;*.ogg;*.aiff"));
-	chooser->launchAsync(FileBrowserComponent::openMode, [this, position](const FileChooser& fc)
+	chooser->launchAsync(FileBrowserComponent::openMode | FileBrowserComponent::FileChooserFlags::canSelectFiles, [this, position](const FileChooser& fc)
 		{
 			File f = fc.getResult();
 			delete& fc;
