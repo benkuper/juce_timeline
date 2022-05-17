@@ -18,8 +18,8 @@ Sequence::Sequence() :
 	//timeAtSetTime(0),
 	millisAtSetTime(0),
 	prevMillis(0),
-    targetTime(0),
-    isBeingEdited(false),
+	targetTime(0),
+	isBeingEdited(false),
 	sequenceNotifier(10)
 {
 	itemDataType = "Sequence";
@@ -131,13 +131,13 @@ void Sequence::setCurrentTime(float time, bool forceOverPlaying, bool seekMode)
 
 int Sequence::getFrameForTime(float time, bool forceDirection, bool forcePrev)
 {
-	float f = time * fps->floatValue();
+	float f = time * fps->floatValue() / (playSpeed->floatValue() != 0 ? playSpeed->floatValue() : 1.0f);
 	return forceDirection ? (forcePrev ? floorf(f) : ceilf(f)) : round(f);
 }
 
 double Sequence::getTimeForFrame(float frame)
 {
-	return frame * 1.0 / fps->floatValue();
+	return frame * 1.0 / (fps->floatValue() / (playSpeed->floatValue() != 0 ? playSpeed->floatValue() : 1.0f));
 }
 
 double Sequence::getNextFrameTimeForTime(float time)
@@ -193,9 +193,9 @@ void Sequence::insertTimespan(float start, float length)
 void Sequence::getSnapTimes(Array<float>* arrayToFill, float start, float end, const Array<float>& excludeValues)
 {
 	if (end == -1) end = totalTime->floatValue();
-	
+
 	for (auto& i : layerManager->items) i->getSnapTimes(arrayToFill);
-	
+
 	cueManager->getSnapTimes(arrayToFill);
 	arrayToFill->addIfNotAlreadyThere(currentTime->floatValue());
 
@@ -206,7 +206,7 @@ void Sequence::getSnapTimes(Array<float>* arrayToFill, float start, float end, c
 	}
 
 	arrayToFill->removeValuesIn(excludeValues);
-	if(start > 0 || end < totalTime->floatValue()) arrayToFill->removeIf([start, end](float v) {return v >= start && v <= end; });
+	if (start > 0 || end < totalTime->floatValue()) arrayToFill->removeIf([start, end](float v) {return v >= start && v <= end; });
 }
 
 float Sequence::getClosestSnapTimeFor(Array<float> snapTimes, float time)
@@ -377,17 +377,20 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 		float minViewTime = jmax(minSequenceTime, totalTime->floatValue() / 100.f); //small hack to avoid UI hang when zooming too much
 		viewEndTime->setRange(viewStartTime->floatValue() + minViewTime, totalTime->floatValue()); //Should be a range value
 	}
-	else if (p == fps)
-	{
-		currentTime->unitSteps = fps->intValue();
-		totalTime->unitSteps = fps->intValue();
-		totalTime->setValue(totalTime->floatValue()); //force update
-		currentTime->setValue(currentTime->floatValue()); //force update
-	}
 	else if (p == includeCurrentTimeInSave)
 	{
 		currentTime->isSavable = includeCurrentTimeInSave->boolValue();
 	}
+
+	if (p == fps || p == playSpeed)
+	{
+		float steps = fps->floatValue() / (playSpeed->floatValue() != 0 ? playSpeed->floatValue() : 1.0f);
+		currentTime->unitSteps = steps;
+		totalTime->unitSteps = steps;
+		totalTime->setValue(totalTime->floatValue()); //force update
+		currentTime->setValue(currentTime->floatValue()); //force update
+	}
+
 }
 
 void Sequence::onContainerTriggerTriggered(Trigger* t)
@@ -466,7 +469,7 @@ void Sequence::run()
 		prevMillis = millis;
 
 		//double absoluteTargetTime = timeAtSetTime + (millisSinceSetTime / 1000.0) * playSpeed->floatValue();
-		
+
 		if (timeIsDrivenByAudio())
 		{
 			//DBG("Diff (ms): " << abs(hiResAudioTime - currentTime->floatValue()));
