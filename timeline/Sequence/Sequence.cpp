@@ -64,6 +64,8 @@ Sequence::Sequence() :
 
 	autoSnap = addBoolParameter("Auto Snap", "If checked, this will automatically snap when moving items", false);
 
+	evaluateOnSeekAndPlay = addBoolParameter("Evaluate on Seek", "If checked, this will evaluate data (like triggering time triggers) when seeking manually while the sequence is playing. If unchecked, seeking manually will disable temporarily evaluation.", true);
+
 	currentTime->unitSteps = fps->intValue();
 	totalTime->unitSteps = fps->intValue();
 
@@ -331,7 +333,7 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 			//timeAtSetTime = timeIsDrivenByAudio() ? hiResAudioTime : currentTime->floatValue();
 		}
 
-		sequenceListeners.call(&SequenceListener::sequenceCurrentTimeChanged, this, (float)prevTime, isPlaying->boolValue() && !isSeeking);
+		sequenceListeners.call(&SequenceListener::sequenceCurrentTimeChanged, this, (float)prevTime, isPlaying->boolValue() && (!isSeeking || evaluateOnSeekAndPlay->boolValue()));
 		prevTime = currentTime->floatValue();
 	}
 	else if (p == totalTime)
