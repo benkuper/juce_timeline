@@ -13,6 +13,9 @@ TimeTrigger::TimeTrigger(StringRef name) :
 {
 	itemDataType = "TimeTrigger"; 
 
+	setHasCustomColor(true);
+	itemColor->setDefaultValue(BG_COLOR.brighter(.2f));
+
 	showWarningInUI = true;
 
 	time = addFloatParameter("Time", "Time at which the action is triggered", 0, 0);

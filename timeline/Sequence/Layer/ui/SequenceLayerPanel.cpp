@@ -16,13 +16,11 @@ SequenceLayerPanel::SequenceLayerPanel(SequenceLayer * layer) :
 	bringToFrontOnSelect = false;
 
 	bgColor = item->itemColor->getColor();
-	colorUI.reset(item->itemColor->createColorParamUI());
 	miniModeUI.reset(item->miniMode->createToggle(AssetManager::getInstance()->getMinusImage()));
 
 	lockUI.reset(item->isUILocked->createToggle(ImageCache::getFromMemory(OrganicUIBinaryData::padlock_png, OrganicUIBinaryData::padlock_pngSize)));
 	addAndMakeVisible(lockUI.get());
 
-	addAndMakeVisible(colorUI.get());
 	addAndMakeVisible(miniModeUI.get());
 
 	setSize(100, item->uiHeight->intValue());
@@ -52,8 +50,6 @@ void SequenceLayerPanel::resizedInternalHeader(Rectangle<int>& r)
 	miniModeUI->setBounds(r.removeFromRight(r.getHeight()));
 	r.removeFromRight(2);
 	lockUI->setBounds(r.removeFromRight(r.getHeight()).reduced(2));
-	r.removeFromRight(2);
-	colorUI->setBounds(r.removeFromRight(r.getHeight()).reduced(2));
 }
 
 void SequenceLayerPanel::controllableFeedbackUpdateInternal(Controllable * c)
@@ -64,13 +60,4 @@ void SequenceLayerPanel::controllableFeedbackUpdateInternal(Controllable * c)
 	{
 		if (!item->isCurrentlyLoadingData) setSize(getWidth(), item->uiHeight->intValue());
 	}
-	else if (c == item->itemColor)
-	{
-		if (!item->isCurrentlyLoadingData)
-		{
-			bgColor = item->itemColor->getColor();
-			repaint();
-		}
-	}
-
 }
