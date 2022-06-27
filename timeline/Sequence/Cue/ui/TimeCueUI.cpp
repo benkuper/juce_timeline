@@ -33,7 +33,7 @@ TimeCueUI::TimeCueUI(TimeCue * timeCue) :
 	itemLabel.addListener(this);
 	addAndMakeVisible(&itemLabel);
 
-	setTooltip(item->niceName);
+	if(GlobalSettings::getInstance()->enableTooltips->boolValue()) setTooltip(item->niceName);
 
 	//setDisableDefaultMouseEvents(true);
 	//removeMouseListener(this);

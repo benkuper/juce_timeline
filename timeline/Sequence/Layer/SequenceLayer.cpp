@@ -19,6 +19,7 @@ SequenceLayer::SequenceLayer(Sequence * _sequence, const String &name) :
 	uiHeight = addIntParameter("UI Height", "Height of the layer in the editor", 60);
 	uiHeight->hideInEditor = true;
 
+	setHasCustomColor(true);
 	itemColor->setDefaultValue(BG_COLOR.brighter(.2f));
 
 	sequence = _sequence;

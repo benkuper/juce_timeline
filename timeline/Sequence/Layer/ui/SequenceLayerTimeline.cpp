@@ -103,10 +103,6 @@ void SequenceLayerTimeline::controllableFeedbackUpdateInternal(Controllable * c)
 	else if (c == item->sequence->currentTime)
 	{
 		shouldUpdateNeedle = true;
-	} else if (c == item->itemColor)
-	{
-		bgColor = item->itemColor->getColor();
-        repaint();
 	}
 	else if (c == item->miniMode)
 	{
