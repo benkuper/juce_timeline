@@ -62,7 +62,7 @@ void SequenceManager::sequencePlayStateChanged(Sequence* s)
 	}
 }
 
-void SequenceManager::showMenuAndGetSequence(std::function<void(Sequence*)> returnFunc)
+void SequenceManager::showMenuAndGetSequence(ControllableContainer* startFromCC, std::function<void(Sequence*)> returnFunc)
 {
 	PopupMenu menu;
 	int numItems = items.size();
@@ -81,20 +81,26 @@ Sequence* SequenceManager::getSequenceForItemID(int itemID)
 	return items[itemID - 1];
 }
 
-void SequenceManager::showMenuAndGetLayer(std::function<void(SequenceLayer*)> returnFunc)
+void SequenceManager::showMenuAndGetLayer(ControllableContainer* startFromCC, std::function<void(SequenceLayer*)> returnFunc)
 {
-	PopupMenu menu;
-	for (int i = 0; i < items.size(); ++i)
+
+	auto getMenuForSequence = [this](Sequence* s)
 	{
 		PopupMenu sMenu;
-		int numValues = items[i]->layerManager->items.size();
+		int numValues = s->layerManager->items.size();
 		for (int j = 0; j < numValues; j++)
 		{
-			SequenceLayer* c = items[i]->layerManager->items[j];
-			sMenu.addItem(i * 1000 + j + 1, c->niceName);
+			SequenceLayer* c = s->layerManager->items[j];
+			sMenu.addItem(items.indexOf(s) * 1000 + j + 1, c->niceName);
 		}
-		menu.addSubMenu(items[i]->niceName, sMenu);
-	}
+
+		return sMenu;
+	};
+
+
+	PopupMenu menu;
+	if (Sequence* s = dynamic_cast<Sequence*>(startFromCC)) menu = getMenuForSequence(s);
+	else for (auto& s : items) menu.addSubMenu(s->niceName, getMenuForSequence(s));
 
 	menu.showMenuAsync(PopupMenu::Options(), [this, returnFunc](int result)
 		{
@@ -111,20 +117,26 @@ SequenceLayer* SequenceManager::getLayerForItemID(int itemID)
 	return items[sequenceIndex]->layerManager->items[layerIndex];
 }
 
-void SequenceManager::showMenuAndGetCue(std::function<void(TimeCue*)> returnFunc)
+void SequenceManager::showMenuAndGetCue(ControllableContainer* startFromCC, std::function<void(TimeCue*)> returnFunc)
 {
-	PopupMenu menu;
-	for (int i = 0; i < items.size(); ++i)
+
+	auto getMenuForSequence = [this](Sequence* s)
 	{
 		PopupMenu sMenu;
-		int numValues = items[i]->cueManager->items.size();
+		int numValues = s->cueManager->items.size();
 		for (int j = 0; j < numValues; j++)
 		{
-			TimeCue* c = items[i]->cueManager->items[j];
-			sMenu.addItem(i * 1000 + j + 1, c->niceName);
+			TimeCue* c = s->cueManager->items[j];
+			sMenu.addItem(items.indexOf(s) * 1000 + j + 1, c->niceName);
 		}
-		menu.addSubMenu(items[i]->niceName, sMenu);
-	}
+
+		return sMenu;
+	};
+
+
+	PopupMenu menu;
+	if (Sequence* s = dynamic_cast<Sequence*>(startFromCC)) menu = getMenuForSequence(s);
+	else for (auto& s : items) menu.addSubMenu(s->niceName, getMenuForSequence(s));
 
 	menu.showMenuAsync(PopupMenu::Options(), [this, returnFunc](int result)
 		{
@@ -141,23 +153,29 @@ TimeCue* SequenceManager::getCueForItemID(int itemID)
 	return items[moduleIndex]->cueManager->items[valueIndex];
 }
 
-void SequenceManager::showMenuAndGetAudioLayer(std::function<void(AudioLayer*)> returnFunc)
+void SequenceManager::showMenuAndGetAudioLayer(ControllableContainer* startFromCC, std::function<void(AudioLayer*)> returnFunc)
 {
-	PopupMenu menu;
-	for (int i = 0; i < items.size(); ++i)
+
+	auto getMenuForSequence = [this](Sequence* s)
 	{
 		PopupMenu sMenu;
-		int numValues = items[i]->layerManager->items.size();
+		int numValues = s->layerManager->items.size();
 		for (int j = 0; j < numValues; j++)
 		{
-			if (AudioLayer* al = dynamic_cast<AudioLayer*>(items[i]->layerManager->items[j]))
+			if (AudioLayer* al = dynamic_cast<AudioLayer*>(s->layerManager->items[j]))
 			{
-				sMenu.addItem(i * 1000 + j + 1, al->niceName);
+				sMenu.addItem(items.indexOf(s) * 1000 + j + 1, al->niceName);
 
 			}
 		}
-		menu.addSubMenu(items[i]->niceName, sMenu);
-	}
+
+		return sMenu;
+	};
+
+
+	PopupMenu menu;
+	if (Sequence* s = dynamic_cast<Sequence*>(startFromCC)) menu = getMenuForSequence(s);
+	else for (auto& s : items) menu.addSubMenu(s->niceName, getMenuForSequence(s));
 
 	menu.showMenuAsync(PopupMenu::Options(), [this, returnFunc](int result)
 		{
@@ -174,31 +192,45 @@ AudioLayer* SequenceManager::getAudioLayerForItemID(int itemID)
 	return (AudioLayer*)items[sequenceIndex]->layerManager->items[layerIndex];
 }
 
-void SequenceManager::showMenuAndGetTrigger(std::function<void(TimeTrigger*)> returnFunc)
+void SequenceManager::showMenuAndGetTrigger(ControllableContainer* startFromCC, std::function<void(TimeTrigger*)> returnFunc)
 {
 	Array<TimeTrigger*> ttItems;
 
-	PopupMenu menu;
-	for (int i = 0; i < items.size(); ++i)
+	auto getMenuForLayer = [&ttItems](TriggerLayer* layer)
+	{
+		PopupMenu tm;
+		for (auto& tt : layer->ttm->items)
+		{
+			ttItems.add(tt);
+			tm.addItem(ttItems.size(), tt->niceName);
+		}
+
+		return tm;
+	};
+
+	auto getMenuForSequence = [getMenuForLayer, &ttItems](Sequence* s)
 	{
 		PopupMenu sMenu;
-		int numValues = items[i]->layerManager->items.size();
+		int numValues = s->layerManager->items.size();
 		for (int j = 0; j < numValues; j++)
 		{
-			if (TriggerLayer* tl = dynamic_cast<TriggerLayer*>(items[i]->layerManager->items[j]))
+			if (TriggerLayer* tl = dynamic_cast<TriggerLayer*>(s->layerManager->items[j]))
 			{
-				PopupMenu tm;
-				for (auto& tt : tl->ttm->items)
-				{
-					ttItems.add(tt);
-					tm.addItem(ttItems.size(), tt->niceName);
-				}
-
-				sMenu.addSubMenu(tl->niceName, tm);
+				sMenu.addSubMenu(tl->niceName, getMenuForLayer(tl));
 			}
 		}
-		menu.addSubMenu(items[i]->niceName, sMenu);
-	}
+
+		return sMenu;
+	};
+
+
+
+
+	PopupMenu menu;
+	if (Sequence* s = dynamic_cast<Sequence*>(startFromCC)) menu = getMenuForSequence(s);
+	else if (TriggerLayer* l = dynamic_cast<TriggerLayer*>(startFromCC)) menu = getMenuForLayer(l);
+	else for (auto& s : items) menu.addSubMenu(s->niceName, getMenuForSequence(s));
+
 
 	menu.showMenuAsync(PopupMenu::Options(), [ttItems, returnFunc](int result)
 		{

@@ -40,20 +40,20 @@ public:
 
 	virtual void sequencePlayStateChanged(Sequence* s) override;
 
-	void showMenuAndGetSequence(std::function<void(Sequence *)> returnFunc);
+	void showMenuAndGetSequence(ControllableContainer* startFromCC, std::function<void(Sequence *)> returnFunc);
 	Sequence * getSequenceForItemID(int itemID);
 
-	void showMenuAndGetLayer(std::function<void(SequenceLayer*)> returnFunc);
+	void showMenuAndGetLayer(ControllableContainer* startFromCC, std::function<void(SequenceLayer*)> returnFunc);
 	SequenceLayer * getLayerForItemID(int itemID);
 
-	void showMenuAndGetCue(std::function<void(TimeCue*)> returnFunc);
+	void showMenuAndGetCue(ControllableContainer* startFromCC, std::function<void(TimeCue*)> returnFunc);
 	TimeCue * getCueForItemID(int itemID);
 
 
-	void showMenuAndGetAudioLayer(std::function<void(AudioLayer*)> returnFunc);
+	void showMenuAndGetAudioLayer(ControllableContainer* startFromCC, std::function<void(AudioLayer*)> returnFunc);
 	AudioLayer* getAudioLayerForItemID(int itemID);
 
-	void showMenuAndGetTrigger(std::function<void(TimeTrigger*)> returnFunc);
+	void showMenuAndGetTrigger(ControllableContainer* startFromCC, std::function<void(TimeTrigger*)> returnFunc);
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceManager)
 };
