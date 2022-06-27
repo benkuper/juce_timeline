@@ -116,7 +116,10 @@ void TimeCueUI::mouseUp(const MouseEvent & e)
 {
 	if (e.eventComponent == &itemLabel || e.eventComponent == itemLabel.getCurrentTextEditor()) return;
 	BaseItemMinimalUI::mouseUp(e);
+
 	if(!item->isUILocked->boolValue() && item->time->floatValue() != timeAtMouseDown) item->time->setUndoableValue(timeAtMouseDown, item->time->floatValue());
+
+	if (!item->isUILocked->boolValue() && e.eventComponent != &itemLabel) cueUIListeners.call(&TimeCueUIListener::cueMouseUp, this, e);
 }
 
 void TimeCueUI::labelTextChanged(Label * l)

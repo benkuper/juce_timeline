@@ -38,6 +38,7 @@ public:
 	void removeItemUIInternal(TimeCueUI * ttui) override;
 
 	void cueMouseDown(TimeCueUI* ttui, const MouseEvent& e) override;
+	void cueMouseUp(TimeCueUI* ttui, const MouseEvent& e) override;
 	void cueDragged(TimeCueUI * ttui, const MouseEvent &e) override;
 	void cueTimeChanged(TimeCueUI * ttui) override;
 };

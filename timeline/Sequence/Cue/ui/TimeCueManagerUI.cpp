@@ -114,6 +114,11 @@ void TimeCueManagerUI::cueMouseDown(TimeCueUI* ttui, const MouseEvent& e)
 	header->sequence->getSnapTimes(&snapTimes);
 }
 
+void TimeCueManagerUI::cueMouseUp(TimeCueUI* ttui, const MouseEvent& e)
+{
+	manager->reorderItems();
+}
+
 void TimeCueManagerUI::cueDragged(TimeCueUI* ttui, const MouseEvent& e)
 {
 	float targetTime = header->getTimeForX(getMouseXYRelative().x);
