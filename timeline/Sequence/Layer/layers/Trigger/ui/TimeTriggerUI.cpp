@@ -186,4 +186,6 @@ void TimeTriggerUI::inspectableSelectionChanged(Inspectable * i)
 	itemColorUI->setVisible(item->isSelected);
 
 	updateSizeFromName();
+
+	triggerUIListeners.call(&TimeTriggerUIListener::timeTriggerDeselected, this);
 }
