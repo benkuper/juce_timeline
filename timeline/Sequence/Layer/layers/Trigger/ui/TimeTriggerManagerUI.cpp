@@ -173,6 +173,11 @@ void TimeTriggerManagerUI::timeTriggerTimeChanged(TimeTriggerUI * ttui)
 	placeTimeTriggerUI(ttui);
 }
 
+void TimeTriggerManagerUI::timeTriggerDeselected(TimeTriggerUI* ttui)
+{
+	placeTimeTriggerUI(ttui);
+}
+
 void TimeTriggerManagerUI::selectionEnded(Array<Component*> selectedComponents)
 {
 	if(InspectableSelector::getInstanceWithoutCreating()) InspectableSelector::getInstance()->removeSelectorListener(this);

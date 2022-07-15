@@ -46,7 +46,8 @@ public:
 	
 	void timeTriggerMouseDown(TimeTriggerUI* ttui, const MouseEvent& e) override;
 	void timeTriggerDragged(TimeTriggerUI * ttui, const MouseEvent &e) override;
-	void timeTriggerTimeChanged(TimeTriggerUI * ttui) override;
+	void timeTriggerTimeChanged(TimeTriggerUI* ttui) override;
+	void timeTriggerDeselected(TimeTriggerUI * ttui) override;
 
 
 	void selectionEnded(Array<Component *> selectedComponents) override;
