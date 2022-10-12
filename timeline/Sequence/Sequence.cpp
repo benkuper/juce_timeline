@@ -541,9 +541,9 @@ void Sequence::endLoadFile()
 }
 
 
-void Sequence::audioDeviceIOCallbackWithContext(const float* const* inputChannelData,
+void Sequence::audioDeviceIOCallbackWithContext(const float** inputChannelData,
 	int numInputChannels,
-	float* const* outputChannelData,
+	float** outputChannelData,
 	int numOutputChannels,
 	int numSamples,
 	const AudioIODeviceCallbackContext& context)
