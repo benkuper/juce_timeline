@@ -8,6 +8,8 @@
   ==============================================================================
 */
 
+#include "JuceHeader.h"
+
 Sequence::Sequence() :
 	BaseItem("Sequence", true),
 	Thread("Sequence"),
@@ -130,6 +132,34 @@ void Sequence::setCurrentTime(float time, bool forceOverPlaying, bool seekMode)
 	}
 
 	isSeeking = false;
+}
+
+void Sequence::handleCueAction(TimeCue* cue, TimeCue* originCue)
+{
+	if (!cue->enabled->boolValue()) return;
+	if (originCue == nullptr) originCue = cue;
+
+	TimeCue::CueAction a = cue->cueAction->getValueDataAsEnum<TimeCue::CueAction>();
+	if (a == TimeCue::NOTHING) return;
+	else if (a == TimeCue::PAUSE)
+	{
+		pauseTrigger->trigger();
+		prevTime = currentTime->floatValue();
+		currentTime->setValue(cue->time->floatValue());
+		return;
+	}
+	else if (a == TimeCue::LOOP_JUMP)
+	{
+		if (TimeCue* tc = dynamic_cast<TimeCue*>(cue->loopCue->targetContainer.get()))
+		{
+			if (tc != cue && tc != originCue)
+			{
+				setCurrentTime(tc->time->floatValue(), true, true);
+				TimeCue::CueAction a = cue->cueAction->getValueDataAsEnum<TimeCue::CueAction>();
+				if (a != TimeCue::NOTHING) handleCueAction(tc, originCue);
+			}
+		}
+	}
 }
 
 int Sequence::getFrameForTime(float time, bool forceDirection, bool forcePrev)
@@ -303,27 +333,7 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 			float maxTime = jmax<float>(prevTime, currentTime->floatValue());
 			bool playingForward = playSpeed->floatValue() > 0;
 			Array<TimeCue*> cues = cueManager->getCuesInTimespan(minTime, maxTime, !playingForward, playingForward);
-			for (auto& cue : cues)
-			{
-				if (!cue->enabled->boolValue()) continue;
-
-				TimeCue::CueAction a = cue->cueAction->getValueDataAsEnum<TimeCue::CueAction>();
-				if (a == TimeCue::NOTHING) continue;
-				else if (a == TimeCue::PAUSE)
-				{
-					pauseTrigger->trigger();
-					prevTime = currentTime->floatValue();
-					currentTime->setValue(cue->time->floatValue());
-					return;
-				}
-				else if (a == TimeCue::LOOP_JUMP)
-				{
-					if (TimeCue* tc = dynamic_cast<TimeCue*>(cue->loopCue->targetContainer.get()))
-					{
-						if (tc != cue) setCurrentTime(tc->time->floatValue(), true, true);
-					}
-				}
-			}
+			if (cues.size() > 0) handleCueAction(cues[0]);
 		}
 
 		if ((!isPlaying->boolValue() || isSeeking) && timeIsDrivenByAudio()) hiResAudioTime = currentTime->floatValue();

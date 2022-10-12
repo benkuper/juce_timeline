@@ -12,6 +12,7 @@
 
 class SequenceLayerManager;
 class TimeCueManager;
+class TimeCue;
 
 class Sequence :
 	public BaseItem,
@@ -76,6 +77,8 @@ public:
 	virtual void clearItem() override;
 
 	void setCurrentTime(float time, bool forceOverPlaying = true, bool seekMode = false);
+
+	void handleCueAction(TimeCue* cue, TimeCue* originCue = nullptr);
 
 	int getFrameForTime(float time, bool forceDirection = false, bool forcePrev = true);
 	double getTimeForFrame(float fame);
