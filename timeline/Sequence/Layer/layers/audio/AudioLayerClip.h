@@ -38,11 +38,16 @@ public:
 
 	FloatParameter * volume;
 
+
 	double clipDuration;
 	double sampleRate;
 	int clipSamplePos;
 
 	bool isLoading;
+	bool shouldStop;
+
+	void start();
+	void stop();
 
 	void updateAudioSourceFile();
 	void onContainerTriggerTriggered(Trigger* t) override;

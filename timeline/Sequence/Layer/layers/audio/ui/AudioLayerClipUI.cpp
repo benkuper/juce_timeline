@@ -8,6 +8,8 @@
   ==============================================================================
 */
 
+#include "JuceHeader.h"
+
 AudioLayerClipUI::AudioLayerClipUI(AudioLayerClip* _clip) :
 	LayerBlockUI(_clip),
 	thumbnailCache(100000),
@@ -15,10 +17,11 @@ AudioLayerClipUI::AudioLayerClipUI(AudioLayerClip* _clip) :
 	clip(_clip)
 {
 	dragAndDropEnabled = false;
+	bgColor = clip->isActive->boolValue() ? AUDIO_COLOR.brighter() : BG_COLOR.brighter(.1f);
 
 	clip->addAsyncClipListener(this);
 
-	bgColor = clip->isActive->boolValue() ? AUDIO_COLOR.brighter() : BG_COLOR.brighter(.1f);
+	thumbnail.addChangeListener(this);
 
 #if JUCE_WINDOWS
 	if (clip->filePath->stringValue().startsWithChar('/')) return;
@@ -225,5 +228,9 @@ void AudioLayerClipUI::newMessage(const AudioLayerClip::ClipEvent& e)
 		break;
 
 	}
+}
 
+void AudioLayerClipUI::changeListenerCallback(ChangeBroadcaster* source)
+{
+	repaint();
 }

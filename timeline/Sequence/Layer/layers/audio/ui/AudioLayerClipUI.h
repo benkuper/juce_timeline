@@ -12,7 +12,8 @@
 
 class AudioLayerClipUI :
 	public LayerBlockUI,
-	public AudioLayerClip::AsyncListener
+	public AudioLayerClip::AsyncListener,
+	public ChangeListener
 {
 public:
 	AudioLayerClipUI(AudioLayerClip * clip);
@@ -30,7 +31,6 @@ public:
 
 	void mouseDown(const MouseEvent &e) override;
 
-
 	virtual void setupThumbnail();
 
 	void setTargetAutomation(ParameterAutomation* a);
@@ -38,4 +38,5 @@ public:
 	virtual void controllableFeedbackUpdateInternal(Controllable *) override;
 	virtual void newMessage(const AudioLayerClip::ClipEvent &e) override;
 
+	virtual void changeListenerCallback(ChangeBroadcaster* source) override;
 };

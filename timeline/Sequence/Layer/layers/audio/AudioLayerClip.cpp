@@ -8,6 +8,8 @@
   ==============================================================================
 */
 
+#include "JuceHeader.h"
+
 AudioLayerClip::AudioLayerClip() :
 	LayerBlock(getTypeString()),
 	Thread("AudioClipReader"),
@@ -17,7 +19,7 @@ AudioLayerClip::AudioLayerClip() :
 	sampleRate(0),
 	clipSamplePos(0),
 	isLoading(false),
-
+	shouldStop(false),
 	audioClipAsyncNotifier(10)
 {
 	itemDataType = "AudioClip";
@@ -58,6 +60,17 @@ AudioLayerClip::~AudioLayerClip()
 	transportSource.releaseResources();
 }
 
+void AudioLayerClip::start()
+{
+	shouldStop = false;
+	transportSource.start();
+}
+
+void AudioLayerClip::stop()
+{
+	shouldStop = true;
+}
+
 void AudioLayerClip::updateAudioSourceFile()
 {
 	if (filePath->stringValue().isEmpty()) return;
@@ -91,10 +104,11 @@ void AudioLayerClip::onContainerParameterChangedInternal(Parameter* p)
 		if (isActive->boolValue())
 		{
 			clipSamplePos = 0;
+			start();
 		}
 		else
 		{
-			transportSource.stop();
+			stop();
 			clipSamplePos = -1;
 		}
 	}

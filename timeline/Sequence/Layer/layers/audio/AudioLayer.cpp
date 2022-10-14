@@ -8,6 +8,8 @@
   ==============================================================================
 */
 
+#include "JuceHeader.h"
+
 int AudioLayer::graphIDIncrement = 10;
 
 AudioLayer::AudioLayer(Sequence* _sequence, var params) :
@@ -134,7 +136,8 @@ void AudioLayer::updateCurrentClip()
 		currentClip->isActive->setValue(true);
 		float pos = currentClip->clipStartOffset->floatValue() + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue();
 		currentClip->transportSource.setPosition(pos);
-		if (sequence->isPlaying->boolValue()) currentClip->transportSource.start();
+
+		if (sequence->isPlaying->boolValue()) currentClip->start();
 		updateSelectedOutChannels();
 	}
 
@@ -364,7 +367,7 @@ void AudioLayer::sequencePlayStateChanged(Sequence*)
 		{
 			float pos = currentClip->clipStartOffset->floatValue() + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue();
 			currentClip->transportSource.setPosition(pos);
-			currentClip->transportSource.start();
+			currentClip->start();
 		}
 	}
 }
@@ -503,7 +506,15 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 	bufferToFill.startSample = 0;
 	bufferToFill.numSamples = buffer.getNumSamples();
 
-	if(currentClip != nullptr && (!noProcess || currentClip->transportSource.isPlaying() || layer->clipIsStopping)) currentClip->channelRemapAudioSource.getNextAudioBlock(bufferToFill);
+
+	if (currentClip != nullptr)
+	{
+		if (currentClip->shouldStop) currentClip->transportSource.stop();
+		if ((!noProcess || currentClip->transportSource.isPlaying() || layer->clipIsStopping))
+		{
+			currentClip->channelRemapAudioSource.getNextAudioBlock(bufferToFill);
+		}
+	}
 
 	if (noProcess)
 	{
@@ -534,18 +545,15 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 		volumeFactor *= fadeOut * fadeOut;
 	}
 
-	layer->currentClip->transportSource.setGain(volumeFactor);
-
+	//layer->currentClip->transportSource.setGain(volumeFactor);
+	buffer.applyGain(volumeFactor);
 	
-
-
 	if (buffer.getNumChannels() >= 2)
 	{
 		float panning = layer->panning->floatValue();
 		if (panning < 0) buffer.applyGain(1, bufferToFill.startSample, bufferToFill.numSamples, 1 + panning);
 		else if (panning > 0) buffer.applyGain(0, bufferToFill.startSample, bufferToFill.numSamples, 1 - panning);
 	}
-
 
 	float rms = 0;
 	for (int i = 0; i < buffer.getNumChannels(); ++i)
