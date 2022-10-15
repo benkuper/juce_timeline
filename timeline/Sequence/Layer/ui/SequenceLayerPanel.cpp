@@ -16,7 +16,7 @@ SequenceLayerPanel::SequenceLayerPanel(SequenceLayer * layer) :
 	bringToFrontOnSelect = false;
 
 	bgColor = item->itemColor->getColor();
-	miniModeUI.reset(item->miniMode->createToggle(AssetManager::getInstance()->getMinusImage()));
+	miniModeUI.reset(item->miniMode->createToggle(AssetManager::getInstance()->minusImage));
 
 	lockUI.reset(item->isUILocked->createToggle(ImageCache::getFromMemory(OrganicUIBinaryData::padlock_png, OrganicUIBinaryData::padlock_pngSize)));
 	addAndMakeVisible(lockUI.get());
