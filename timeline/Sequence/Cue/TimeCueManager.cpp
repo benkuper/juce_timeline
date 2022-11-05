@@ -8,6 +8,8 @@
   ==============================================================================
 */
 
+#include "JuceHeader.h"
+
 TimeCueManager::TimeCueManager() :
 	BaseManager("Cues")
 {
@@ -21,12 +23,16 @@ TimeCueManager::~TimeCueManager()
 
 TimeCue* TimeCueManager::createItem()
 {
+	if (customCreateCueFunc != nullptr) return customCreateCueFunc(0, this);
 	return new TimeCue(0, this);
 }
 
 void TimeCueManager::addCueAt(float time)
 {
-	TimeCue* t = new TimeCue(time, this);
+	TimeCue* t = nullptr;
+	if (customCreateCueFunc != nullptr) t = customCreateCueFunc(time, this);
+	else t = new TimeCue(time, this);
+
 	BaseManager::addItem(t);
 }
 

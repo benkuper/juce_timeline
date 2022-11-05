@@ -16,7 +16,7 @@ class TimeCue :
 {
 public:
 	TimeCue(const float &_time = 0, TimeCueManager * manager = nullptr);
-	~TimeCue();
+	virtual ~TimeCue();
 
 	FloatParameter * time;
 
@@ -24,7 +24,10 @@ public:
 	EnumParameter * cueAction;
 	TargetParameter* loopCue;
 
-	void onContainerParameterChangedInternal(Parameter* p) override;
+
+	virtual bool isCurrentlyActive(); // can be overriden by children 
+
+	virtual void onContainerParameterChangedInternal(Parameter* p) override;
 
 	Sequence * getSequence();
 };

@@ -136,19 +136,24 @@ void Sequence::setCurrentTime(float time, bool forceOverPlaying, bool seekMode)
 
 void Sequence::handleCueAction(TimeCue* cue, TimeCue* originCue)
 {
-	if (!cue->enabled->boolValue()) return;
+	if (cue == nullptr) return;
+	if (!cue->isCurrentlyActive()) return;
+
 	if (originCue == nullptr) originCue = cue;
 
 	TimeCue::CueAction a = cue->cueAction->getValueDataAsEnum<TimeCue::CueAction>();
-	if (a == TimeCue::NOTHING) return;
-	else if (a == TimeCue::PAUSE)
+	switch (a)
+	{
+	case TimeCue::PAUSE:
 	{
 		pauseTrigger->trigger();
 		prevTime = currentTime->floatValue();
 		currentTime->setValue(cue->time->floatValue());
 		return;
 	}
-	else if (a == TimeCue::LOOP_JUMP)
+	break;
+
+	case TimeCue::LOOP_JUMP:
 	{
 		if (TimeCue* tc = dynamic_cast<TimeCue*>(cue->loopCue->targetContainer.get()))
 		{
@@ -159,6 +164,8 @@ void Sequence::handleCueAction(TimeCue* cue, TimeCue* originCue)
 				if (a != TimeCue::NOTHING) handleCueAction(tc, originCue);
 			}
 		}
+	}
+	break;
 	}
 }
 

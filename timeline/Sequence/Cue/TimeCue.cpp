@@ -1,14 +1,16 @@
 /*
   ==============================================================================
 
-    TimeCue.cpp
-    Created: 6 Apr 2017 11:13:23am
-    Author:  Ben
+	TimeCue.cpp
+	Created: 6 Apr 2017 11:13:23am
+	Author:  Ben
 
   ==============================================================================
 */
 
-TimeCue::TimeCue(const float & _time, TimeCueManager * manager) :
+#include "JuceHeader.h"
+
+TimeCue::TimeCue(const float& _time, TimeCueManager* manager) :
 	BaseItem("Cue")
 {
 	//nameParam->hideInEditor = false;
@@ -34,6 +36,14 @@ TimeCue::~TimeCue()
 {
 }
 
+bool TimeCue::isCurrentlyActive()
+{
+	if (!enabled->boolValue() || cueAction->getValueDataAsEnum<CueAction>() == NOTHING) return false;
+
+	return true;
+}
+
+
 void TimeCue::onContainerParameterChangedInternal(Parameter* p)
 {
 	if (p == cueAction)
@@ -49,7 +59,7 @@ void TimeCue::onContainerParameterChangedInternal(Parameter* p)
 	}
 }
 
-Sequence * TimeCue::getSequence()
+Sequence* TimeCue::getSequence()
 {
 	if (parentContainer == nullptr) return nullptr;
 	return dynamic_cast<Sequence*>(parentContainer->parentContainer.get());
