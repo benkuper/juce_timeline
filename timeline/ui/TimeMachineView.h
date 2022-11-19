@@ -13,7 +13,7 @@
 
 class TimeMachineView :
 	public ShapeShifterContentComponent,
-	public InspectableSelectionManager::Listener,
+	public InspectableSelectionManager::AsyncListener,
 	public Inspectable::InspectableListener
 {
 public:
@@ -30,7 +30,7 @@ public:
 	virtual void setSequence(Sequence * sequence);
 	virtual SequenceEditorView * createEditorForSequence(Sequence * sequence);
 
-	virtual void inspectablesSelectionChanged() override;
+	virtual void newMessage(const InspectableSelectionManager::SelectionEvent& e) override;
 	void inspectableDestroyed(Inspectable * i) override;
 
 

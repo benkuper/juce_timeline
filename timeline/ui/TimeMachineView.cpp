@@ -8,12 +8,14 @@
   ==============================================================================
 */
 
+#include "JuceHeader.h"
+
 TimeMachineView::TimeMachineView(const String &contentName) :
 	ShapeShifterContentComponent(contentName),
 	autoSelectOnSequenceSelected(true)
 {
 	contentIsFlexible = true;
-	InspectableSelectionManager::mainSelectionManager->addSelectionListener(this);
+	InspectableSelectionManager::mainSelectionManager->addAsyncSelectionManagerListener(this);
 
 	Sequence * s = InspectableSelectionManager::mainSelectionManager->getInspectableAs<Sequence>();
 	if (s != nullptr) setSequence(s);
@@ -24,7 +26,7 @@ TimeMachineView::TimeMachineView(const String &contentName) :
 
 TimeMachineView::~TimeMachineView()
 {
-	if(InspectableSelectionManager::mainSelectionManager) InspectableSelectionManager::mainSelectionManager->removeSelectionListener(this);
+	if(InspectableSelectionManager::mainSelectionManager) InspectableSelectionManager::mainSelectionManager->removeAsyncSelectionManagerListener(this);
 	setSequence(nullptr);
 }
 
@@ -76,13 +78,16 @@ SequenceEditorView * TimeMachineView::createEditorForSequence(Sequence * sequenc
 	return new SequenceEditorView(sequence);
 }
 
-void TimeMachineView::inspectablesSelectionChanged()
+void TimeMachineView::newMessage(const InspectableSelectionManager::SelectionEvent& e)
 {
-	if (!autoSelectOnSequenceSelected) return;
-	if (InspectableSelectionManager::mainSelectionManager->isEmpty()) return;
-	
-	Sequence * s = InspectableSelectionManager::mainSelectionManager->getInspectableAs<Sequence>();
-	if (s != nullptr) setSequence(s);
+	if (e.type == e.SELECTION_CHANGED)
+	{
+		if (!autoSelectOnSequenceSelected) return;
+		if (InspectableSelectionManager::mainSelectionManager->isEmpty()) return;
+
+		Sequence* s = InspectableSelectionManager::mainSelectionManager->getInspectableAs<Sequence>();
+		if (s != nullptr) setSequence(s);
+	}
 }
 
 void TimeMachineView::inspectableDestroyed(Inspectable * i)
