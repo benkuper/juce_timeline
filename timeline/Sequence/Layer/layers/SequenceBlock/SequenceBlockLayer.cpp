@@ -7,6 +7,7 @@
 
   ==============================================================================
 */
+#include "JuceHeader.h"
 
 SequenceBlockLayer::SequenceBlockLayer(Sequence* _sequence, var params) :
 	SequenceLayer(_sequence, getTypeString()),
@@ -24,7 +25,7 @@ SequenceBlockLayer::~SequenceBlockLayer()
 	clearItem();
 }
 
-void SequenceBlockLayer::getSnapTimes(Array<float> * arrayToFill)
+void SequenceBlockLayer::getSnapTimes(Array<float>* arrayToFill)
 {
 	blockManager.getSnapTimes(arrayToFill);
 }
@@ -48,7 +49,7 @@ void SequenceBlockLayer::itemRemoved(LayerBlock* item)
 }
 void SequenceBlockLayer::updateCurrentBlock()
 {
-	SequenceBlock* b = (SequenceBlock *)blockManager.getBlockAtTime(sequence->currentTime->floatValue(), false, false);
+	SequenceBlock* b = (SequenceBlock*)blockManager.getBlockAtTime(sequence->currentTime->floatValue(), false, false);
 
 	ScopedLock lock(blockLock);
 
@@ -57,7 +58,7 @@ void SequenceBlockLayer::updateCurrentBlock()
 	if (!currentBlockRef.wasObjectDeleted() && currentBlock != nullptr)
 	{
 		currentBlock->isActive->setValue(false);
-		if(Sequence* s = currentBlock->getTargetSequence()) s->pauseTrigger->trigger();
+		if (Sequence* s = currentBlock->getTargetSequence()) s->pauseTrigger->trigger();
 	}
 
 	if (b != nullptr)
@@ -71,7 +72,7 @@ void SequenceBlockLayer::updateCurrentBlock()
 			}
 		}
 	}
-	
+
 
 	currentBlock = b;
 	currentBlockRef = b;
@@ -93,16 +94,22 @@ void SequenceBlockLayer::updateCurrentSequenceTime()
 	ScopedLock lock(blockLock);
 
 	if (currentBlock == nullptr) return;
-	
+
 	if (Sequence* s = currentBlock->getTargetSequence())
 	{
 		float t = currentBlock->getRelativeTime(sequence->currentTime->floatValue(), true);
-		if (sequence->isSeeking || t < s->currentTime->floatValue())
-		{
-			bool forcePlay = sequence->isPlaying->boolValue() && t < s->currentTime->floatValue();
-			s->setCurrentTime(t, true, true); //check also t < sequenceTime for looping
-			if(forcePlay) s->playTrigger->trigger(); //make sure that looping or seeking back restart the sequence if it has reached the end
 
+		if (sequence->isPlaying->boolValue())
+		{
+			if (sequence->isSeeking || t < s->currentTime->floatValue())
+			{
+				s->setCurrentTime(t, true, true);
+				s->playTrigger->trigger();
+			}
+		}
+		else
+		{
+			s->setCurrentTime(t, true, true);
 		}
 	}
 }
@@ -119,7 +126,7 @@ void SequenceBlockLayer::onControllableFeedbackUpdateInternal(ControllableContai
 			updateCurrentSequenceTime();
 		}
 		else if (c == currentBlock->time) updateCurrentSequenceTime();
-	
+
 	}
 }
 
@@ -165,7 +172,7 @@ void SequenceBlockLayer::sequencePlayStateChanged(Sequence*)
 	{
 		ScopedLock lock(blockLock);
 
-		if (currentBlock != nullptr) 
+		if (currentBlock != nullptr)
 		{
 			if (Sequence* s = currentBlock->getTargetSequence()) s->pauseTrigger->trigger();
 		}
@@ -173,7 +180,7 @@ void SequenceBlockLayer::sequencePlayStateChanged(Sequence*)
 	else
 	{
 		ScopedLock lock(blockLock);
-		
+
 		if (currentBlock != nullptr && enabled->boolValue())
 		{
 			if (Sequence* s = currentBlock->getTargetSequence())
