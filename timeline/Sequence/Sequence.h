@@ -101,20 +101,12 @@ public:
 	void updateSampleRate();
 
 	// Inherited via AudioIODeviceCallback
-	virtual void audioDeviceIOCallbackWithContext(const float** inputChannelData,
+	virtual void audioDeviceIOCallbackWithContext(const float* const* inputChannelData,
 		int numInputChannels,
-		float** outputChannelData,
+		float* const* outputChannelData,
 		int numOutputChannels,
 		int numSamples,
 		const AudioIODeviceCallbackContext& context) override;
-
-	//7.0.3
-	//(const float* const* inputChannelData,
-	//	int numInputChannels,
-	//	float* const* outputChannelData,
-	//	int numOutputChannels,
-	//	int numSamples,
-	//	const AudioIODeviceCallbackContext& context) override;
 
 	virtual void audioDeviceAboutToStart(AudioIODevice * device) override;
 	virtual void audioDeviceStopped() override;
