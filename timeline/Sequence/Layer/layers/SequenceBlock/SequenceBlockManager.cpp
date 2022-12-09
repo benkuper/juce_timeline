@@ -16,7 +16,6 @@ SequenceBlockManager::SequenceBlockManager(SequenceBlockLayer * layer, SequenceM
 {
 	jassert(refManager != nullptr);
 
-	itemDataType = "SequenceBlock";
 	blocksCanOverlap = false;
 
 	isSelectable = false;

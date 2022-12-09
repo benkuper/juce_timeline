@@ -11,7 +11,6 @@
 TimeTrigger::TimeTrigger(StringRef name) :
 	BaseItem(name)
 {
-	itemDataType = "TimeTrigger"; 
 
 	setHasCustomColor(true);
 	itemColor->setDefaultValue(BG_COLOR.brighter(.2f));

@@ -24,9 +24,6 @@ Sequence::Sequence() :
 	isBeingEdited(false),
 	sequenceNotifier(10)
 {
-	itemDataType = "Sequence";
-	helpID = "Sequence";
-
 	isPlaying = addBoolParameter("Is Playing", "Is the sequence playing ?", false);
 	isPlaying->setControllableFeedbackOnly(true);
 	//isPlaying->isSavable = false;

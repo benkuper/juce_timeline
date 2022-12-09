@@ -14,7 +14,6 @@ SequenceLayer::SequenceLayer(Sequence * _sequence, const String &name) :
 {
 	jassert(sequence != nullptr);
 
-	itemDataType = "SequenceLayer";
 
 	uiHeight = addIntParameter("UI Height", "Height of the layer in the editor", 60);
 	uiHeight->hideInEditor = true;

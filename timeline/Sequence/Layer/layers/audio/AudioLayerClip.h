@@ -64,7 +64,7 @@ public:
 
 	virtual void setupFromSource();
 
-	String getTypeString() const override { return "AudioClip"; }
+	DECLARE_TYPE("AudioClip");
 
 	class ClipListener
 	{

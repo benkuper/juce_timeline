@@ -53,7 +53,7 @@ public:
 
 
 	static SequenceBlockLayer* create(Sequence* sequence, var params) { return new SequenceBlockLayer(sequence, params); }
-	virtual String getTypeString() const override { return "Sequences"; }
+	DECLARE_TYPE("Sequences");
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceBlockLayer)
 	

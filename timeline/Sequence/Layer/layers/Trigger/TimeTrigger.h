@@ -31,4 +31,6 @@ public:
 
 	virtual void trigger();
 	virtual void triggerInternal() {}
+
+	DECLARE_TYPE("TimeTrigger");
 };

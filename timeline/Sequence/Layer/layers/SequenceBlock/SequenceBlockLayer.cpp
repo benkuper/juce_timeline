@@ -14,7 +14,6 @@ SequenceBlockLayer::SequenceBlockLayer(Sequence* _sequence, var params) :
 	blockManager(this, dynamic_cast<SequenceManager*>(Engine::mainEngine->getControllableContainerForAddress(params.getProperty("manager", "")))),
 	currentBlock(nullptr)
 {
-	helpID = "SequenceBlockLayer";
 
 	addChildControllableContainer(&blockManager);
 	blockManager.addBaseManagerListener(this);
