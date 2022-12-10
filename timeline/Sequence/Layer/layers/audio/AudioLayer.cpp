@@ -21,7 +21,7 @@ AudioLayer::AudioLayer(Sequence* _sequence, var params) :
 	channelsCC("Channels"),
 	enveloppe(nullptr),
 	numActiveOutputs(0),
-    graphID(0), //was -1 but since 5.2.1, generated warning. Should do otherwise ?
+	graphID(0), //was -1 but since 5.2.1, generated warning. Should do otherwise ?
 	audioOutputGraphID(2),
 	targetVolume(1),
 	volumeInterpolationAutomation(nullptr),
@@ -32,8 +32,8 @@ AudioLayer::AudioLayer(Sequence* _sequence, var params) :
 	helpID = "AudioLayer";
 
 	volume = addFloatParameter("Volume", "Volume multiplier for the layer", 1, 0, 10);
-	panning = addFloatParameter("Panning","Left/Right simple panning",0,-1,1);
-    
+	panning = addFloatParameter("Panning", "Left/Right simple panning", 0, -1, 1);
+
 	enveloppe = addFloatParameter("Enveloppe", "Enveloppe", 0, 0, 1);
 	enveloppe->isControllableFeedbackOnly = true;
 
@@ -42,7 +42,7 @@ AudioLayer::AudioLayer(Sequence* _sequence, var params) :
 
 	clipManager.addBaseManagerListener(this);
 
-	updateSelectedOutChannels();
+	if (!Engine::mainEngine->isLoadingFile) updateSelectedOutChannels();
 }
 
 AudioLayer::~AudioLayer()
@@ -60,7 +60,7 @@ void AudioLayer::clearItem()
 	SequenceLayer::clearItem();
 }
 
-void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph * graph, int outputGraphID)
+void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph* graph, int outputGraphID)
 {
 	if (currentGraph != nullptr)
 	{
@@ -76,14 +76,14 @@ void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph * graph, int outputG
 
 	if (currentGraph != nullptr)
 	{
-        
+
 		auto proc = std::unique_ptr<AudioLayerProcessor>(createAudioLayerProcessor());
-		currentProcessor = proc.get(); 
-		
+		currentProcessor = proc.get();
+
 		graphIDIncrement++;
 		graphID = AudioProcessorGraph::NodeID(graphIDIncrement);
 		currentGraph->addNode(std::move(proc), graphID);
-		
+
 		int numChannels = currentGraph->getMainBusNumOutputChannels();
 		AudioChannelSet channelSet = currentGraph->getChannelLayoutOfBus(false, 0);
 		for (int i = 0; i < numChannels; ++i)
@@ -177,44 +177,32 @@ void AudioLayer::updateSelectedOutChannels()
 
 	if (currentGraph == nullptr) return;
 
-	int newNumActiveOutputs = 0;
-	for (int i = 0; i < channelsCC.controllables.size(); ++i) if (((BoolParameter*)channelsCC.controllables[i])->boolValue()) newNumActiveOutputs++;
+	selectedOutChannels.clear();
+	for (int i = 0; i < channelsCC.controllables.size(); ++i) if (((BoolParameter*)channelsCC.controllables[i])->boolValue()) selectedOutChannels.add(i);
 
-	bool numOutputChanged = numActiveOutputs != newNumActiveOutputs;
-	numActiveOutputs = newNumActiveOutputs;
+	numActiveOutputs = selectedOutChannels.size();
 
-	if (numOutputChanged)
-	{
-		currentGraph->disconnectNode(graphID);
-		currentProcessor->setPlayConfigDetails(0, numActiveOutputs, currentGraph->getSampleRate(), currentGraph->getBlockSize());
-		currentProcessor->prepareToPlay(currentGraph->getSampleRate(), currentGraph->getBlockSize());
-	}
+	currentGraph->disconnectNode(graphID);
+
+	currentProcessor->setPlayConfigDetails(0, numActiveOutputs, currentGraph->getSampleRate(), currentGraph->getBlockSize());
+	currentProcessor->prepareToPlay(currentGraph->getSampleRate(), currentGraph->getBlockSize());
 
 	for (auto& c : clipManager.items)
 	{
 		updateClipConfig((AudioLayerClip*)c, false);
 	}
 
-	int index = 0;
-	for (int i = 0; i < channelsCC.controllables.size(); ++i)
-	{
-		if (((BoolParameter*)channelsCC.controllables[i])->boolValue())
-		{
-			if (numOutputChanged)
-			{
-				currentGraph->addConnection({ {graphID, index }, {(AudioProcessorGraph::NodeID)audioOutputGraphID, i} });
-			}
-
-			selectedOutChannels.add(i);
-			for (auto& c : clipManager.items) ((AudioLayerClip*)c)->channelRemapAudioSource.setOutputChannelMapping(index, index);
-			index++;
-		}
-	}
-
-
-	numActiveOutputs = selectedOutChannels.size();
 	for (auto& c : clipManager.items) ((AudioLayerClip*)c)->channelRemapAudioSource.setNumberOfChannelsToProduce(numActiveOutputs);
 
+	for (int i = 0; i < numActiveOutputs; ++i)
+	{
+		currentGraph->addConnection({ {graphID, i }, {(AudioProcessorGraph::NodeID)audioOutputGraphID, selectedOutChannels[i]} });
+
+		for (auto& c : clipManager.items)
+		{
+			((AudioLayerClip*)c)->channelRemapAudioSource.setOutputChannelMapping(i, i);
+		}
+	}
 }
 
 void AudioLayer::updateClipConfig(AudioLayerClip* clip, bool updateOutputChannelRemapping)
@@ -278,7 +266,7 @@ void AudioLayer::onControllableFeedbackUpdateInternal(ControllableContainer* cc,
 
 	if (cc == &channelsCC)
 	{
-		updateSelectedOutChannels();
+		if (!isCurrentlyLoadingData) updateSelectedOutChannels();
 	}
 	else if (currentClip != nullptr)
 	{
@@ -482,16 +470,16 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 
 	if (layer != nullptr)
 	{
-		if (!layer->enabled->boolValue() 
-			|| !layer->sequence->enabled->boolValue() 
-			|| !layer->sequence->isPlaying->boolValue() 
+		if (!layer->enabled->boolValue()
+			|| !layer->sequence->enabled->boolValue()
+			|| !layer->sequence->isPlaying->boolValue()
 			|| layer->sequence->playSpeed->floatValue() < 0) noProcess = true;
-		
+
 		currentClip = layer->currentClip;
-		
+
 		if (currentClip.wasObjectDeleted() || currentClip.get() == nullptr) noProcess = true;
 		else if (currentClip->filePath->stringValue().isEmpty()) noProcess = true;
-		
+
 	}
 	else
 	{
@@ -529,9 +517,9 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 	float relClipStart = currentTime - currentClip->time->floatValue();
 	float relClipEnd = currentClip->getEndTime() - currentTime;
 
-	float clipVolume = currentClip->volume->controlMode == Parameter::ControlMode::AUTOMATION ? ((Automation *)currentClip->volume->automation->automationContainer)->getValueAtPosition(relClipStart) : currentClip->volume->floatValue();
+	float clipVolume = currentClip->volume->controlMode == Parameter::ControlMode::AUTOMATION ? ((Automation*)currentClip->volume->automation->automationContainer)->getValueAtPosition(relClipStart) : currentClip->volume->floatValue();
 	float volumeFactor = clipVolume * layer->getVolumeFactor();
-	
+
 
 	if (relClipStart < currentClip->fadeIn->floatValue())
 	{
@@ -547,7 +535,7 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 
 	//layer->currentClip->transportSource.setGain(volumeFactor);
 	buffer.applyGain(volumeFactor);
-	
+
 	if (buffer.getNumChannels() >= 2)
 	{
 		float panning = layer->panning->floatValue();
@@ -564,11 +552,11 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 
 	tempRMS += rms;
 	rmsCount++;
-	if (rmsCount* bufferToFill.numSamples >= minEnveloppeSamples)
+	if (rmsCount * bufferToFill.numSamples >= minEnveloppeSamples)
 	{
-		 currentEnveloppe = tempRMS / rmsCount;
-		 rmsCount = 0;
-		 tempRMS = 0;
+		currentEnveloppe = tempRMS / rmsCount;
+		rmsCount = 0;
+		tempRMS = 0;
 	}
 
 
@@ -589,7 +577,7 @@ bool AudioLayerProcessor::producesMidi() const
 	return false;
 }
 
-AudioProcessorEditor * AudioLayerProcessor::createEditor()
+AudioProcessorEditor* AudioLayerProcessor::createEditor()
 {
 	return nullptr;
 }
@@ -618,14 +606,14 @@ const String AudioLayerProcessor::getProgramName(int index)
 	return String();
 }
 
-void AudioLayerProcessor::changeProgramName(int index, const String & newName)
+void AudioLayerProcessor::changeProgramName(int index, const String& newName)
 {
 }
 
-void AudioLayerProcessor::getStateInformation(juce::MemoryBlock & destData)
+void AudioLayerProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
 }
 
-void AudioLayerProcessor::setStateInformation(const void * data, int sizeInBytes)
+void AudioLayerProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
 }
