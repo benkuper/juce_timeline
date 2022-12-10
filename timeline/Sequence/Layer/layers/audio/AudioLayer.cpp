@@ -60,7 +60,7 @@ void AudioLayer::clearItem()
 	SequenceLayer::clearItem();
 }
 
-void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph* graph, int outputGraphID)
+void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph* graph, AudioProcessorGraph::NodeID outputGraphID)
 {
 	if (currentGraph != nullptr)
 	{
@@ -196,7 +196,7 @@ void AudioLayer::updateSelectedOutChannels()
 
 	for (int i = 0; i < numActiveOutputs; ++i)
 	{
-		currentGraph->addConnection({ {graphID, i }, {(AudioProcessorGraph::NodeID)audioOutputGraphID, selectedOutChannels[i]} });
+		currentGraph->addConnection({ {graphID, i }, {audioOutputGraphID, selectedOutChannels[i]} });
 
 		for (auto& c : clipManager.items)
 		{
@@ -450,7 +450,7 @@ void AudioLayerProcessor::clear()
 
 const String AudioLayerProcessor::getName() const
 {
-	return String();
+	return String("Sequence AudioLayer");
 }
 
 void AudioLayerProcessor::prepareToPlay(double sampleRate, int maximumExpectedSamplesPerBlock)

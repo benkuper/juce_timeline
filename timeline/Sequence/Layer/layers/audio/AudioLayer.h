@@ -1,9 +1,9 @@
 /*
   ==============================================================================
 
-    AudioLayer.h
-    Created: 20 Nov 2016 3:08:41pm
-    Author:  Ben Kuper
+	AudioLayer.h
+	Created: 20 Nov 2016 3:08:41pm
+	Author:  Ben Kuper
 
   ==============================================================================
 */
@@ -20,29 +20,29 @@ class AudioLayer :
 	public Inspectable::InspectableListener
 {
 public:
-	AudioLayer(Sequence * sequence, var params);
+	AudioLayer(Sequence* sequence, var params);
 	~AudioLayer();
-	
+
 	AudioLayerClipManager clipManager;
-	
-	AudioProcessorGraph * currentGraph;
+
+	AudioProcessorGraph* currentGraph;
 
 	WeakReference<AudioLayerClip> currentClip;
-	AudioLayerProcessor * currentProcessor;
+	AudioLayerProcessor* currentProcessor;
 
 	ControllableContainer channelsCC;
 	Array<int> selectedOutChannels;
 	var channelsData; //for ghosting
 
-    FloatParameter * volume;
-	FloatParameter * panning;
-	FloatParameter * enveloppe;
+	FloatParameter* volume;
+	FloatParameter* panning;
+	FloatParameter* enveloppe;
 
 	int numActiveOutputs;
 
 	AudioProcessorGraph::NodeID graphID;
 	static int graphIDIncrement;
-	int audioOutputGraphID;
+	AudioProcessorGraph::NodeID audioOutputGraphID;
 
 	//Volume animation
 	float targetVolume;
@@ -56,7 +56,7 @@ public:
 
 	virtual void clearItem() override;
 
-	void setAudioProcessorGraph(AudioProcessorGraph * graph, int audioOutputGraphID = 2);
+	void setAudioProcessorGraph(AudioProcessorGraph* graph, AudioProcessorGraph::NodeID graphOutputID = AudioProcessorGraph::NodeID(2));
 	virtual AudioLayerProcessor* createAudioLayerProcessor();
 
 	virtual AudioLayerClip* createAudioClip();
@@ -72,35 +72,35 @@ public:
 	void updateClipConfig(AudioLayerClip* clip, bool updateOutputChannelRemapping = true);
 
 	virtual float getVolumeFactor();
-	virtual void setVolume(float value, float time = 0, Automation * automation = nullptr, bool stopSequenceAtFinish = false);
+	virtual void setVolume(float value, float time = 0, Automation* automation = nullptr, bool stopSequenceAtFinish = false);
 
-	void onControllableFeedbackUpdateInternal(ControllableContainer *cc, Controllable * c) override;
+	void onControllableFeedbackUpdateInternal(ControllableContainer* cc, Controllable* c) override;
 
 	void selectAll(bool addToSelection = false) override;
 
 	virtual var getJSONData() override;
 	virtual void loadJSONDataInternal(var data) override;
 
-	virtual SequenceLayerPanel * getPanel() override;
-	virtual SequenceLayerTimeline * getTimelineUI() override;
-	
-	void sequenceCurrentTimeChanged(Sequence *, float prevTime, bool evaluatedSkippedData) override;
-	void sequencePlayStateChanged(Sequence *) override;
+	virtual SequenceLayerPanel* getPanel() override;
+	virtual SequenceLayerTimeline* getTimelineUI() override;
+
+	void sequenceCurrentTimeChanged(Sequence*, float prevTime, bool evaluatedSkippedData) override;
+	void sequencePlayStateChanged(Sequence*) override;
 	void sequencePlaySpeedChanged(Sequence*) override;
 	void sequencePlayDirectionChanged(Sequence*) override;
 
-	static AudioLayer * create(Sequence * sequence, var params) { return new AudioLayer(sequence, params); }
+	static AudioLayer* create(Sequence* sequence, var params) { return new AudioLayer(sequence, params); }
 	virtual String getTypeString() const override { return "Audio"; }
 
 	virtual void getSnapTimes(Array<float>* arrayToFill) override;
-	
+
 	//For volume interpolation
-    void run() override;
+	void run() override;
 
 	void inspectableDestroyed(Inspectable* i) override;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioLayer)
-	
+
 };
 
 
@@ -108,11 +108,11 @@ class AudioLayerProcessor :
 	public AudioProcessor
 {
 public:
-	AudioLayerProcessor(AudioLayer * layer);
+	AudioLayerProcessor(AudioLayer* layer);
 	~AudioLayerProcessor();
-	
-	AudioLayer * layer;
-	
+
+	AudioLayer* layer;
+
 	const int minEnveloppeSamples = 1024;
 	int rmsCount;
 	float tempRMS;
@@ -124,17 +124,17 @@ public:
 	virtual const String getName() const override;
 	virtual void prepareToPlay(double sampleRate, int maximumExpectedSamplesPerBlock) override;
 	virtual void releaseResources() override;
-	virtual void processBlock(AudioBuffer<float>& buffer, MidiBuffer & midiMessages) override;
+	virtual void processBlock(AudioBuffer<float>& buffer, MidiBuffer& midiMessages) override;
 	virtual double getTailLengthSeconds() const override;
 	virtual bool acceptsMidi() const override;
 	virtual bool producesMidi() const override;
-	virtual AudioProcessorEditor * createEditor() override;
+	virtual AudioProcessorEditor* createEditor() override;
 	virtual bool hasEditor() const override;
 	virtual int getNumPrograms() override;
 	virtual int getCurrentProgram() override;
 	virtual void setCurrentProgram(int index) override;
 	virtual const String getProgramName(int index) override;
-	virtual void changeProgramName(int index, const String & newName) override;
-	virtual void getStateInformation(juce::MemoryBlock & destData) override;
-	virtual void setStateInformation(const void * data, int sizeInBytes) override;
+	virtual void changeProgramName(int index, const String& newName) override;
+	virtual void getStateInformation(juce::MemoryBlock& destData) override;
+	virtual void setStateInformation(const void* data, int sizeInBytes) override;
 };
