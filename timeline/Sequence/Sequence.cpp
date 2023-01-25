@@ -370,7 +370,11 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 
 		if (isPlaying->boolValue())
 		{
-			if (currentTime->floatValue() >= totalTime->floatValue()) currentTime->setValue(0); //if reached the end when hit play, go to 0
+			if (currentTime->floatValue() >= totalTime->floatValue())
+			{
+				hiResAudioTime = 0;
+				currentTime->setValue(0); //if reached the end when hit play, go to 0
+			}
 
 			prevTime = currentTime->floatValue();
 			if (!isThreadRunning()) startThread();
