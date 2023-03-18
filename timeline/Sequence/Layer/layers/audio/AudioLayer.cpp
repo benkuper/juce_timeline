@@ -579,6 +579,7 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 
 	if (currentClip != nullptr)
 	{
+		bufferToFill.buffer = &buffer;
 		if (currentClip->shouldStop) currentClip->transportSource.stop();
 		if ((!noProcess || currentClip->transportSource.isPlaying() || layer->clipIsStopping))
 		{
@@ -620,6 +621,10 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 			volumeFactor *= fadeOut * fadeOut;
 		}
 		buffer.applyGain(volumeFactor);
+	}
+	else
+	{
+		buffer.clear();
 	}
 
 
