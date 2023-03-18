@@ -26,7 +26,9 @@ AudioLayer::AudioLayer(Sequence* _sequence, var params) :
 	targetVolume(1),
 	volumeInterpolationAutomation(nullptr),
 	stopAtVolumeInterpolationFinish(false),
-	clipIsStopping(false)
+	clipIsStopping(false),
+	metronomeCC("Metronome Channels"),
+	prevMetronomeBeat(0)
 {
 
 	helpID = "AudioLayer";
@@ -38,6 +40,12 @@ AudioLayer::AudioLayer(Sequence* _sequence, var params) :
 	enveloppe->isControllableFeedbackOnly = true;
 
 	addChildControllableContainer(&channelsCC);
+
+	metronomeVolume = addFloatParameter("Metronome", "Enable and control metronome volume here", 1, 0, 5, false);
+	metronomeVolume->canBeDisabledByUser = true;
+	addChildControllableContainer(&metronomeCC);
+
+	clipManager.hideInEditor = true;
 	addChildControllableContainer(&clipManager);
 
 	clipManager.addBaseManagerListener(this);
@@ -68,8 +76,10 @@ void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph* graph, AudioProcess
 		currentProcessor->clear();
 		currentProcessor = nullptr;
 		channelsData = channelsCC.getJSONData();
+		metronomeData = metronomeCC.getJSONData();
 
 		channelsCC.clear();
+		metronomeCC.clear();
 	}
 
 	currentGraph = graph;
@@ -89,12 +99,17 @@ void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph* graph, AudioProcess
 		for (int i = 0; i < numChannels; ++i)
 		{
 			String channelName = AudioChannelSet::getChannelTypeName(channelSet.getTypeOfChannel(i));
+
 			BoolParameter* b = channelsCC.addBoolParameter("Channel Out : " + channelName, "If enabled, sends audio from this layer to this channel", false);
 			b->setValue(i < 2, false);
+
+			BoolParameter* mb = metronomeCC.addBoolParameter("Channel Out : " + channelName, "If enabled, sends audio from this layer to this channel", false);
+			mb->setValue(i < 2, false);
 		}
 	}
 
 	channelsCC.loadJSONData(channelsData);
+	metronomeCC.loadJSONData(metronomeData);
 
 	audioOutputGraphID = outputGraphID;
 
@@ -172,15 +187,40 @@ void AudioLayer::clipSourceLoaded(AudioLayerClip* clip)
 
 void AudioLayer::updateSelectedOutChannels()
 {
-
 	selectedOutChannels.clear();
+	metronomeOutChannels.clear();
+
+	clipLocalChannels.clear();
+	metronomeLocalChannels.clear();
 
 	if (currentGraph == nullptr) return;
 
-	selectedOutChannels.clear();
-	for (int i = 0; i < channelsCC.controllables.size(); ++i) if (((BoolParameter*)channelsCC.controllables[i])->boolValue()) selectedOutChannels.add(i);
+	int numChannelsUsed = 0;
 
-	numActiveOutputs = selectedOutChannels.size();
+
+	for (int i = 0; i < channelsCC.controllables.size(); ++i)
+	{
+		bool chUsed = false;
+		if (((BoolParameter*)channelsCC.controllables[i])->boolValue()) {
+			selectedOutChannels.add(i);
+			clipLocalChannels.add(numChannelsUsed);
+			chUsed = true;
+		}
+
+		if (metronome != nullptr)
+		{
+			if (((BoolParameter*)metronomeCC.controllables[i])->boolValue())
+			{
+				metronomeOutChannels.add(i);
+				metronomeLocalChannels.add(numChannelsUsed);
+				chUsed = true;
+			}
+		}
+
+		if (chUsed) numChannelsUsed++;
+	}
+
+	numActiveOutputs = numChannelsUsed;
 
 	currentGraph->disconnectNode(graphID);
 
@@ -192,15 +232,38 @@ void AudioLayer::updateSelectedOutChannels()
 		updateClipConfig((AudioLayerClip*)c, false);
 	}
 
-	for (auto& c : clipManager.items) ((AudioLayerClip*)c)->channelRemapAudioSource.setNumberOfChannelsToProduce(numActiveOutputs);
+	for (auto& c : clipManager.items) ((AudioLayerClip*)c)->channelRemapAudioSource.setNumberOfChannelsToProduce(numChannelsUsed);
 
-	for (int i = 0; i < numActiveOutputs; ++i)
+	if (metronome != nullptr)
 	{
-		currentGraph->addConnection({ {graphID, i }, {audioOutputGraphID, selectedOutChannels[i]} });
+		for (auto& c : metronome->ticChannelRemap)
+		{
+			c->clearAllMappings();
+			c->prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
+			c->setNumberOfChannelsToProduce(numChannelsUsed);
+		}
+	}
+
+	for (int i = 0; i < selectedOutChannels.size(); ++i)
+	{
+		currentGraph->addConnection({ {graphID, clipLocalChannels[i]}, {audioOutputGraphID, selectedOutChannels[i]} });
 
 		for (auto& c : clipManager.items)
 		{
-			((AudioLayerClip*)c)->channelRemapAudioSource.setOutputChannelMapping(i, i);
+			((AudioLayerClip*)c)->channelRemapAudioSource.setOutputChannelMapping(i, clipLocalChannels[i]);
+		}
+	}
+
+	for (int i = 0; i < metronomeLocalChannels.size(); ++i)
+	{
+		currentGraph->addConnection({ {graphID, metronomeLocalChannels[i]}, {audioOutputGraphID, metronomeOutChannels[i]} }); //can brute force, addConnection will take care of not doubling conections
+
+		if (metronome != nullptr)
+		{
+			for (auto& c : metronome->ticChannelRemap)
+			{
+				c->setOutputChannelMapping(i, metronomeLocalChannels[i]);
+			}
 		}
 	}
 }
@@ -212,7 +275,7 @@ void AudioLayer::updateClipConfig(AudioLayerClip* clip, bool updateOutputChannel
 	clip->channelRemapAudioSource.clearAllMappings();
 	//clip->channelRemapAudioSource.prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
 	clip->setPlaySpeed(sequence->playSpeed->floatValue());
-	if (currentGraph != nullptr)	clip->prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
+	if (currentGraph != nullptr) clip->prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
 
 	if (updateOutputChannelRemapping)
 	{
@@ -264,7 +327,7 @@ void AudioLayer::onControllableFeedbackUpdateInternal(ControllableContainer* cc,
 {
 	SequenceLayer::onControllableFeedbackUpdateInternal(cc, c);
 
-	if (cc == &channelsCC)
+	if (cc == &channelsCC || cc == &metronomeCC)
 	{
 		if (!isCurrentlyLoadingData) updateSelectedOutChannels();
 	}
@@ -282,6 +345,19 @@ void AudioLayer::onControllableFeedbackUpdateInternal(ControllableContainer* cc,
 				currentClip->prepareToPlay(currentGraph->getBlockSize(), currentGraph->getSampleRate());
 			}
 		}
+	}
+}
+
+void AudioLayer::onControllableStateChanged(Controllable* c)
+{
+	SequenceLayer::onControllableStateChanged(c);
+	if (c == metronomeVolume)
+	{
+		{
+			GenericScopedLock mLock(metronomeLock);
+			metronome.reset(metronomeVolume->enabled ? new Metronome() : nullptr);
+		}
+		if (!isCurrentlyLoadingData) updateSelectedOutChannels();
 	}
 }
 
@@ -323,6 +399,8 @@ SequenceLayerTimeline* AudioLayer::getTimelineUI()
 
 void AudioLayer::sequenceCurrentTimeChanged(Sequence*, float, bool)
 {
+	if (sequence->isSeeking) prevMetronomeBeat = -1;
+
 	if (enveloppe == nullptr) return;
 
 	if (currentProcessor != nullptr) enveloppe->setValue(currentProcessor->currentEnveloppe);
@@ -339,6 +417,8 @@ void AudioLayer::sequenceCurrentTimeChanged(Sequence*, float, bool)
 
 void AudioLayer::sequencePlayStateChanged(Sequence*)
 {
+	prevMetronomeBeat = -1;
+
 	if (!sequence->isPlaying->boolValue())
 	{
 		enveloppe->setValue(0);
@@ -477,9 +557,11 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 
 		currentClip = layer->currentClip;
 
-		if (currentClip.wasObjectDeleted() || currentClip.get() == nullptr) noProcess = true;
-		else if (currentClip->filePath->stringValue().isEmpty()) noProcess = true;
-
+		if (!layer->metronomeVolume->enabled)
+		{
+			if ((currentClip.wasObjectDeleted() || currentClip.get() == nullptr)) noProcess = true;
+			else if (currentClip->filePath->stringValue().isEmpty()) noProcess = true;
+		}
 	}
 	else
 	{
@@ -513,28 +595,73 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 		return;
 	}
 
-	float currentTime = layer->sequence->currentTime->floatValue();
-	float relClipStart = currentTime - currentClip->time->floatValue();
-	float relClipEnd = currentClip->getEndTime() - currentTime;
-
-	float clipVolume = currentClip->volume->controlMode == Parameter::ControlMode::AUTOMATION ? ((Automation*)currentClip->volume->automation->automationContainer)->getValueAtPosition(relClipStart) : currentClip->volume->floatValue();
-	float volumeFactor = clipVolume * layer->getVolumeFactor();
 
 
-	if (relClipStart < currentClip->fadeIn->floatValue())
+	if (currentClip != nullptr)
 	{
-		float fadeIn = relClipStart / currentClip->fadeIn->floatValue();
-		volumeFactor *= fadeIn * fadeIn; //square to have an ease InOut
+
+		float currentTime = layer->sequence->currentTime->floatValue();
+		float relClipStart = currentTime - currentClip->time->floatValue();
+		float relClipEnd = currentClip->getEndTime() - currentTime;
+
+		float clipVolume = currentClip->volume->controlMode == Parameter::ControlMode::AUTOMATION ? ((Automation*)currentClip->volume->automation->automationContainer)->getValueAtPosition(relClipStart) : currentClip->volume->floatValue();
+		float volumeFactor = clipVolume * layer->getVolumeFactor();
+
+
+		if (relClipStart < currentClip->fadeIn->floatValue())
+		{
+			float fadeIn = relClipStart / currentClip->fadeIn->floatValue();
+			volumeFactor *= fadeIn * fadeIn; //square to have an ease InOut
+		}
+
+		if (relClipEnd < currentClip->fadeOut->floatValue())
+		{
+			float fadeOut = relClipEnd / currentClip->fadeOut->floatValue();
+			volumeFactor *= fadeOut * fadeOut;
+		}
+		buffer.applyGain(volumeFactor);
 	}
 
-	if (relClipEnd < currentClip->fadeOut->floatValue())
+
+	//METRONOME
 	{
-		float fadeOut = relClipEnd / currentClip->fadeOut->floatValue();
-		volumeFactor *= fadeOut * fadeOut;
+		GenericScopedLock mLock(layer->metronomeLock);
+		double bpm = layer->sequence->bpmPreview->enabled ? layer->sequence->bpmPreview->doubleValue() : -1;
+		if (bpm > 0 && layer->metronome != nullptr && layer->sequence->playSpeed->floatValue() > 0)
+		{
+			AudioSampleBuffer metronomeBuffer(buffer.getNumChannels(), buffer.getNumSamples());
+			AudioSourceChannelInfo bufInfo(metronomeBuffer);
+
+			double bpmTime = 60.0 / bpm;
+			int beats = layer->sequence->beatsPerBar->intValue();
+			double barTime = bpmTime * beats;
+			double relBarTime = fmod(layer->sequence->hiResAudioTime, barTime) * beats / barTime; //0->beats
+			int curBeat = floor(relBarTime);
+
+			int bIndex = curBeat == 0 ? 0 : 1;
+			AudioTransportSource* t = layer->metronome->ticTransports[bIndex];
+			ChannelRemappingAudioSource* ch = layer->metronome->ticChannelRemap[bIndex];
+
+			if (layer->prevMetronomeBeat != -1) //avoid launching on play after skip
+			{
+				if (curBeat != layer->prevMetronomeBeat)
+				{
+					t->setPosition(0);
+					t->start();
+				}
+
+				if (layer->prevMetronomeBeat != -1)
+				{
+					ch->getNextAudioBlock(bufInfo);
+					for (int i = 0; i < buffer.getNumChannels(); i++) buffer.addFrom(i, 0, metronomeBuffer, i, 0, buffer.getNumSamples(), layer->metronomeVolume->floatValue());
+				}
+			}
+
+			layer->prevMetronomeBeat = curBeat;
+		}
 	}
 
-	//layer->currentClip->transportSource.setGain(volumeFactor);
-	buffer.applyGain(volumeFactor);
+	
 
 	if (buffer.getNumChannels() >= 2)
 	{

@@ -411,6 +411,7 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 		totalTime->setValue(totalTime->floatValue()); //force update
 		currentTime->setValue(currentTime->floatValue()); //force update
 	}
+	
 
 }
 
@@ -550,17 +551,19 @@ void Sequence::endLoadFile()
 
 
 void Sequence::audioDeviceIOCallbackWithContext(const float* const* inputChannelData,
-		int numInputChannels,
-		float* const* outputChannelData,
-		int numOutputChannels,
-		int numSamples,
-		const AudioIODeviceCallbackContext& context)
+	int numInputChannels,
+	float* const* outputChannelData,
+	int numOutputChannels,
+	int numSamples,
+	const AudioIODeviceCallbackContext& context)
 {
 	for (int i = 0; i < numOutputChannels; ++i) FloatVectorOperations::clear(outputChannelData[i], numSamples);
 
-	if (isPlaying->boolValue()) hiResAudioTime += (numSamples / sampleRate) * playSpeed->floatValue();
+	if (isPlaying->boolValue())
+	{
+		hiResAudioTime += (numSamples / sampleRate) * playSpeed->floatValue();
+	}
 }
-
 void Sequence::audioDeviceAboutToStart(AudioIODevice*)
 {
 	updateSampleRate();

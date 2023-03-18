@@ -78,6 +78,7 @@ using namespace juce;
 
 #include "resources/BinaryData.h"
 
+#include "timeline/Sequence/Metronome.h"
 #include "timeline/Sequence/Sequence.h"
 #include "timeline/SequenceManager.h"
 

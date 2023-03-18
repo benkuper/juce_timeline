@@ -21,6 +21,7 @@
 
 #include "resources/BinaryData.cpp"
 
+#include "timeline/Sequence/Metronome.cpp"
 #include "timeline/Sequence/Sequence.cpp"
 #include "timeline/SequenceManager.cpp"
 

@@ -32,6 +32,7 @@ public:
 
 	ControllableContainer channelsCC;
 	Array<int> selectedOutChannels;
+	Array<int> clipLocalChannels;
 	var channelsData; //for ghosting
 
 	FloatParameter* volume;
@@ -54,6 +55,15 @@ public:
 	//thread transportSource stop flag
 	bool clipIsStopping;
 
+	FloatParameter* metronomeVolume;
+	ControllableContainer metronomeCC;
+	Array<int> metronomeOutChannels;
+	Array<int> metronomeLocalChannels;
+	std::unique_ptr<Metronome> metronome;
+	SpinLock metronomeLock;
+	int prevMetronomeBeat;
+	var metronomeData; //for ghosting
+
 	virtual void clearItem() override;
 
 	void setAudioProcessorGraph(AudioProcessorGraph* graph, AudioProcessorGraph::NodeID graphOutputID = AudioProcessorGraph::NodeID(2));
@@ -75,6 +85,7 @@ public:
 	virtual void setVolume(float value, float time = 0, Automation* automation = nullptr, bool stopSequenceAtFinish = false);
 
 	void onControllableFeedbackUpdateInternal(ControllableContainer* cc, Controllable* c) override;
+	void onControllableStateChanged(Controllable* c) override;
 
 	void selectAll(bool addToSelection = false) override;
 

@@ -32,8 +32,14 @@ namespace TimelineBinaryData
     extern const char*   stripe_png;
     const int            stripe_pngSize = 2043;
 
+    extern const char*   tic1_wav;
+    const int            tic1_wavSize = 7868;
+
+    extern const char*   tic2_wav;
+    const int            tic2_wavSize = 10220;
+
     // Number of elements in the namedResourceList and originalFileNames arrays.
-    const int namedResourceListSize = 8;
+    const int namedResourceListSize = 10;
 
     // Points to the start of a list of resource names.
     extern const char* namedResourceList[];

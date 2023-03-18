@@ -15,6 +15,8 @@
       <FILE id="pkaHsN" name="snap.png" compile="0" resource="1" file="Resources/snap.png"/>
       <FILE id="GpHsQl" name="stop.png" compile="0" resource="1" file="Resources/stop.png"/>
       <FILE id="PQskCp" name="stripe.png" compile="0" resource="1" file="Resources/stripe.png"/>
+      <FILE id="J5kCPO" name="tic1.wav" compile="0" resource="1" file="Resources/tic1.wav"/>
+      <FILE id="IfI8J1" name="tic2.wav" compile="0" resource="1" file="Resources/tic2.wav"/>
     </GROUP>
     <GROUP id="{279380FE-558A-8939-19FF-B071B9CB7AF4}" name="Source"/>
   </MAINGROUP>

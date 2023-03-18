@@ -40,6 +40,7 @@ public:
 	FloatParameter* bpmPreview;
 	IntParameter * beatsPerBar;
 
+
 	Trigger * playTrigger;
 	Trigger * pauseTrigger;
 	Trigger * stopTrigger;
