@@ -1,4 +1,3 @@
-#include "LayerBlockManager.h"
 /*
   ==============================================================================
 
@@ -8,6 +7,8 @@
 
   ==============================================================================
 */
+
+#include "JuceHeader.h"
 
 LayerBlockManager::LayerBlockManager(SequenceLayer* layer, StringRef name) :
 	BaseManager(name),
