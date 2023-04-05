@@ -147,6 +147,8 @@ void Sequence::handleCueAction(TimeCue* cue, TimeCue* originCue)
 		prevTime = currentTime->floatValue();
 		currentTime->setValue(cue->time->floatValue());
 		return;
+    default:
+        break;
 	}
 	break;
 
