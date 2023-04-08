@@ -435,6 +435,7 @@ void Sequence::onContainerTriggerTriggered(Trigger* t)
 	else if (t == finishTrigger)
 	{
 		isPlaying->setValue(false);
+		sequenceListeners.call(&SequenceListener::sequenceFinished, this);
 	}
 	else if (t == togglePlayTrigger)
 	{
