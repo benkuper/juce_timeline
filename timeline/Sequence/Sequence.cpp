@@ -545,6 +545,11 @@ void Sequence::endLoadFile()
 	Engine::mainEngine->removeEngineListener(this);
 	if (isBeingEdited) selectThis();
 
+	handleStartAtLoad();
+}
+
+void Sequence::handleStartAtLoad()
+{
 	if (startAtLoad->boolValue())
 	{
 		playTrigger->trigger();

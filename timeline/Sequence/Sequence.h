@@ -123,6 +123,7 @@ public:
 	virtual void run() override;
 
 	virtual void endLoadFile() override;
+	virtual void handleStartAtLoad();
 
 	virtual var getJSONData() override;
 	virtual void loadJSONDataInternal(var data) override;
