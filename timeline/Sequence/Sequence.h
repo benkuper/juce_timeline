@@ -136,6 +136,7 @@ public:
 		virtual ~SequenceListener() {}
 		virtual void sequencePlayStateChanged(Sequence *) {}
 		virtual void sequenceCurrentTimeChanged(Sequence *, float /*prevTime*/, bool /*evaluateSkippedData*/) {}
+		virtual void sequenceFinished(Sequence*) {}
 		virtual void sequenceLooped(Sequence *) {}
 		virtual void sequencePlaySpeedChanged(Sequence*) {}
 		virtual void sequencePlayDirectionChanged(Sequence*) {}

@@ -30,6 +30,7 @@ public:
 	Trigger* playAllTrigger;
 	Trigger* stopAllTrigger;
 	BoolParameter* onlyOneSequencePlaying;
+	BoolParameter* isOneSequencePlaying;
 
 	Factory<SequenceLayer>* defaultLayerFactory;
 

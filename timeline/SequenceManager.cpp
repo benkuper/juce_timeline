@@ -8,6 +8,8 @@
   ==============================================================================
 */
 
+#include "JuceHeader.h"
+
 #if TIMELINE_USE_SEQUENCEMANAGER_SINGLETON
 juce_ImplementSingleton(SequenceManager)
 #endif
@@ -22,6 +24,8 @@ SequenceManager::SequenceManager() :
 	playAllTrigger = addTrigger("Play All", "Play all sequences");
 	stopAllTrigger = addTrigger("Stop All", "Stop all sequences");
 	onlyOneSequencePlaying = addBoolParameter("Only one sequence playing", "If checked, as soon as one sequence is playing, all the other ones stop", false);
+	isOneSequencePlaying = addBoolParameter("Is one sequence playing", "If at least one sequence is playing", false);
+	isOneSequencePlaying->setControllableFeedbackOnly(true);
 }
 
 SequenceManager::~SequenceManager()
@@ -60,6 +64,18 @@ void SequenceManager::sequencePlayStateChanged(Sequence* s)
 	{
 		for (auto& i : items) if (i != s) i->stopTrigger->trigger();
 	}
+
+	bool oneSequenceP = false;
+	for (auto& i : items)
+	{
+		if (i->isPlaying->boolValue())
+		{
+			oneSequenceP = true;
+			break;
+		}
+	}
+	isOneSequencePlaying->setValue(oneSequenceP);
+
 }
 
 void SequenceManager::showMenuAndGetSequence(ControllableContainer* startFromCC, std::function<void(Sequence*)> returnFunc)
