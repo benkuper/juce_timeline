@@ -146,7 +146,7 @@ void AudioLayer::updateCurrentClip()
 
 	currentClip = target;
 
-	if (currentClip != nullptr)
+	if (currentClip != nullptr && !currentClip.wasObjectDeleted())
 	{
 		currentClip->isActive->setValue(true);
 		float pos = currentClip->clipStartOffset->floatValue() + (sequence->hiResAudioTime - currentClip->time->floatValue()) / currentClip->stretchFactor->floatValue();
