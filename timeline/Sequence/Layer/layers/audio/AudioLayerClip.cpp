@@ -22,7 +22,7 @@ AudioLayerClip::AudioLayerClip() :
 	shouldStop(false),
 	audioClipAsyncNotifier(10)
 {
-	itemDataType = "AudioClip";
+	itemDataType = getTypeString();
 
 	filePath = new FileParameter("File Path", "File Path", "");
 	addParameter(filePath);

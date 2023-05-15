@@ -8,14 +8,16 @@
   ==============================================================================
 */
 
+#include "JuceHeader.h"
 
 AudioLayerClipManager::AudioLayerClipManager(AudioLayer * layer) :
 	LayerBlockManager(layer, "Clips"),
 	audioLayer(layer)
 {
+	itemDataType = AudioLayerClip::getTypeStringStatic();
 	blocksCanOverlap = false;
 
-	isSelectable = false;
+	//isSelectable = false;
 }
 
 AudioLayerClipManager::~AudioLayerClipManager()
