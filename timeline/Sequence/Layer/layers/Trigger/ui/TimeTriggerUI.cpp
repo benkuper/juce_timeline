@@ -75,7 +75,7 @@ void TimeTriggerUI::resized()
 		itemColorUI->setBounds(p.removeFromRight(p.getHeight()).reduced(1));
 		enabledBT->setBounds(p.removeFromRight(15));
 		p.removeFromRight(2);
-		lockUI->setBounds(p.removeFromRight(p.getHeight()));
+		if(lockUI != nullptr) lockUI->setBounds(p.removeFromRight(p.getHeight()));
 	}
 
 	itemLabel.setBounds(p);
@@ -182,8 +182,8 @@ void TimeTriggerUI::inspectableSelectionChanged(Inspectable * i)
 	BaseItemUI::inspectableSelectionChanged(i);
 	removeBT->setVisible(item->isSelected);
 	enabledBT->setVisible(item->isSelected);
-	lockUI->setVisible(item->isSelected);
-	itemColorUI->setVisible(item->isSelected);
+	if(lockUI != nullptr) lockUI->setVisible(item->isSelected);
+	if(itemColorUI != nullptr) itemColorUI->setVisible(item->isSelected);
 
 	updateSizeFromName();
 
