@@ -417,7 +417,7 @@ void AudioLayer::sequenceCurrentTimeChanged(Sequence*, float, bool)
 
 void AudioLayer::sequencePlayStateChanged(Sequence*)
 {
-	prevMetronomeBeat = -1;
+	prevMetronomeBeat = sequence->currentTime->floatValue() == 0?-2: - 1; //-2 = play from start, -1 = play from anywhere else (avoid to play sound on each "resume")
 
 	if (!sequence->isPlaying->boolValue())
 	{
