@@ -1,30 +1,32 @@
 /*
   ==============================================================================
 
-    SequenceEditor.cpp
-    Created: 28 Oct 2016 8:27:18pm
-    Author:  bkupe
+	SequenceEditor.cpp
+	Created: 28 Oct 2016 8:27:18pm
+	Author:  bkupe
 
   ==============================================================================
 */
 
-SequenceEditorView::SequenceEditorView(Sequence * _sequence, SequenceTimelineNavigationUI * navigationUI, SequenceTransportUI * transportUI) :
+#include "JuceHeader.h"
+
+SequenceEditorView::SequenceEditorView(Sequence* _sequence, SequenceTimelineNavigationUI* navigationUI, SequenceTransportUI* transportUI) :
 	sequence(_sequence),
 	sequenceRef(_sequence),
 	navigationUI(navigationUI),
 	panelManagerUI(_sequence->layerManager.get()),
 	timelineManagerUI(_sequence->layerManager.get()),
 	transportUI(transportUI),
-    grabber(GapGrabber::HORIZONTAL),
+	grabber(GapGrabber::HORIZONTAL),
 	panelWidth(250)
 {
 	addAndMakeVisible(panelContainer);
 	addAndMakeVisible(timelineContainer);
-	
+
 	if (this->transportUI == nullptr) this->transportUI.reset(new SequenceTransportUI(sequence));
 	panelContainer.addAndMakeVisible(this->transportUI.get());
 	panelContainer.addAndMakeVisible(&panelManagerUI);
-	
+
 	if (this->navigationUI == nullptr) this->navigationUI.reset(new SequenceTimelineNavigationUI(sequence));
 	this->navigationUI->seeker->addSeekerListener(this);
 	timelineContainer.addAndMakeVisible(this->navigationUI.get());
@@ -49,14 +51,14 @@ SequenceEditorView::~SequenceEditorView()
 	//@Tom : on linux in Release mode (-O3), sequenceRef doesn't advertise as wasObjectDeleted() 
 	//but sequence pointer is still fucked up (debuggin sequence->currentTime->floatvalue() will crash)
 	//it's still showing "isClearing" as 1 so we can use that but's it's not proper
-	if (!sequenceRef.wasObjectDeleted() && !sequence->isClearing) 
+	if (!sequenceRef.wasObjectDeleted() && !sequence->isClearing)
 	{
 		sequence->removeAsyncContainerListener(this);
-		sequence->setBeingEdited(false); 
+		sequence->setBeingEdited(false);
 	}
 }
 
-void SequenceEditorView::paint(Graphics &)
+void SequenceEditorView::paint(Graphics&)
 {
 	//g.fillAll(Colours::red);
 	//g.setColour(Colours::yellow);
@@ -108,10 +110,24 @@ void SequenceEditorView::mouseWheelMove(const MouseEvent& e, const MouseWheelDet
 			//float sequenceViewMid = (sequence->viewStartTime->floatValue() + sequence->viewEndTime->floatValue()) / 2;	
 			//float zoomFactor = details.deltaY; //*navigationUI.seeker.getTimeForX(details.deltaY);	
 			float initDist = sequence->viewEndTime->floatValue() - sequence->viewStartTime->floatValue();
-			float zoomFactor = (details.deltaY * initDist) / 2;
-			sequence->viewStartTime->setValue(sequence->viewStartTime->floatValue() + zoomFactor);
-			sequence->viewEndTime->setValue(sequence->viewEndTime->floatValue() - zoomFactor);
+			float zoomFactor = (details.deltaY * initDist);
 
+			float time = navigationUI->header->getTimeForX(e.getEventRelativeTo(navigationUI->header.get()).x);
+
+			float viewStart = sequence->viewStartTime->floatValue();
+			float viewRange = sequence->viewEndTime->floatValue() - viewStart;
+			float diff = (time - viewStart) / viewRange;
+
+			float newViewStart = sequence->viewStartTime->floatValue() + zoomFactor * diff;
+			float newViewEnd = sequence->viewEndTime->floatValue() - zoomFactor * (1 - diff);
+
+			bool followPlayingMode = sequence->isPlaying->boolValue() && sequence->viewFollowTime->boolValue();
+			if (followPlayingMode) sequence->followViewRange = newViewEnd - newViewStart;
+			else
+			{
+				sequence->viewStartTime->setValue(newViewStart);
+				sequence->viewEndTime->setValue(newViewEnd);
+			}
 		}
 		else
 		{
@@ -130,7 +146,7 @@ void SequenceEditorView::mouseWheelMove(const MouseEvent& e, const MouseWheelDet
 	{
 		float wheelVal = details.deltaX == 0 ? details.deltaY : details.deltaX;
 		float initDist = sequence->viewEndTime->floatValue() - sequence->viewStartTime->floatValue();
-		sequence->viewStartTime->setValue(jmin(sequence->viewStartTime->floatValue() - initDist *  wheelVal, sequence->totalTime->floatValue() - initDist));
+		sequence->viewStartTime->setValue(jmin(sequence->viewStartTime->floatValue() - initDist * wheelVal, sequence->totalTime->floatValue() - initDist));
 		sequence->viewEndTime->setValue(sequence->viewStartTime->floatValue() + initDist);
 	}
 }
@@ -179,7 +195,7 @@ void SequenceEditorView::newMessage(const ContainerAsyncEvent& e)
 	}
 }
 
-void SequenceEditorView::grabberGrabUpdate(GapGrabber *, int relativeDist)
+void SequenceEditorView::grabberGrabUpdate(GapGrabber*, int relativeDist)
 {
 	panelWidth += relativeDist;
 	resized();

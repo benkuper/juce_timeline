@@ -71,6 +71,7 @@ public:
 	const float minSequenceTime = 1; //in seconds
 	FloatParameter * viewStartTime;
 	FloatParameter * viewEndTime;
+	FloatParameter* minViewTime;
 	BoolParameter* viewFollowTime;
 	float followViewRange;
 	bool isBeingEdited;

@@ -71,8 +71,13 @@ Sequence::Sequence() :
 	prevCue = addTrigger("Prev Cue", "Jump to previous cue, if previous cue is less than 1 sec before, jump to the one before that.");
 	nextCue = addTrigger("Next Cue", "Jump to the next cue");
 
-	viewStartTime = addFloatParameter("View start time", "Start time of the view", 0, 0, initTotalTime - minSequenceTime);
-	viewEndTime = addFloatParameter("View end time", "End time of the view", initTotalTime, minSequenceTime, initTotalTime);
+	viewStartTime = addFloatParameter("View start time", "Start time of the view", 0, 0, initTotalTime - .01f);
+	viewEndTime = addFloatParameter("View end time", "End time of the view", initTotalTime, 0.01f, initTotalTime);
+	minViewTime = addFloatParameter("Minimum view range", "Minimum range of the view when zooming", 1.f, 0.1f);
+	viewStartTime->defaultUI = FloatParameter::TIME;
+	viewEndTime->defaultUI = FloatParameter::TIME;
+	minViewTime->defaultUI = FloatParameter::TIME;
+
 	viewFollowTime = addBoolParameter("View follow time", "If checked, this will automatically follow the current time so the cursor is at the center of the timeline.", false);
 
 	setHasCustomColor(true);
@@ -354,11 +359,11 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 	}
 	else if (p == totalTime)
 	{
-		float minViewTime = jmax(minSequenceTime, totalTime->floatValue() / 100.f); //small hack to avoid UI hang when zooming too much
+		//float minViewTime = minSequenceTime;// jmax(minSequenceTime, totalTime->floatValue() / 100.f); //small hack to avoid UI hang when zooming too much
 
 		currentTime->setRange(0, totalTime->floatValue());
-		viewStartTime->setRange(0, totalTime->floatValue() - minViewTime);
-		viewEndTime->setRange(viewStartTime->floatValue() + minViewTime, totalTime->floatValue());
+		viewStartTime->setRange(0, totalTime->floatValue() - minViewTime->floatValue());
+		viewEndTime->setRange(viewStartTime->floatValue() + minViewTime->floatValue(), totalTime->floatValue());
 		sequenceListeners.call(&SequenceListener::sequenceTotalTimeChanged, this);
 	}
 	else if (p == isPlaying)
@@ -397,8 +402,8 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 	}
 	else if (p == viewStartTime)
 	{
-		float minViewTime = jmax(minSequenceTime, totalTime->floatValue() / 100.f); //small hack to avoid UI hang when zooming too much
-		viewEndTime->setRange(viewStartTime->floatValue() + minViewTime, totalTime->floatValue()); //Should be a range value
+		//float minViewTime = jmax(minSequenceTime, totalTime->floatValue() / 100.f); //small hack to avoid UI hang when zooming too much
+		viewEndTime->setRange(viewStartTime->floatValue() + minViewTime->floatValue(), totalTime->floatValue()); //Should be a range value
 	}
 	else if (p == includeCurrentTimeInSave)
 	{
