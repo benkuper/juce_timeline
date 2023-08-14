@@ -22,7 +22,7 @@ AudioLayerClip::AudioLayerClip() :
 	shouldStop(false),
 	audioClipAsyncNotifier(10)
 {
-	itemDataType = "AudioClip";
+	itemDataType = getTypeString();
 
 	filePath = new FileParameter("File Path", "File Path", "");
 	addParameter(filePath);
@@ -32,22 +32,21 @@ AudioLayerClip::AudioLayerClip() :
 	clipLength->setControllableFeedbackOnly(true);
 	clipLength->isSavable = false;
 
+	clipStartOffset = addFloatParameter("Clip Start Offset", "Offset at which the clip starts", 0, 0);
+	clipStartOffset->defaultUI = FloatParameter::TIME;
+
 	stretchFactor = addFloatParameter("Stretch Factor", "Stretching of  this clip", 1);
 	stretchFactor->defaultUI = FloatParameter::TIME;
 	stretchFactor->setControllableFeedbackOnly(true);
 	stretchFactor->isSavable = false;
+	resetStretch = addTrigger("Reset Stretch", "Reset the stretch factor to 1");
 
-	clipStartOffset = addFloatParameter("Clip Start Offset", "Offset at which the clip starts", 0, 0);
-	clipStartOffset->defaultUI = FloatParameter::TIME;
+	volume = addFloatParameter("Volume", "Volume multiplier", 1, 0);
 
 	fadeIn = addFloatParameter("Fade In", "Fade time at start of the clip", 0, 0);
 	fadeIn->defaultUI = FloatParameter::TIME;
 	fadeOut = addFloatParameter("Fade Out", "Fade time at end of the clip", 0, 0);
 	fadeOut->defaultUI = FloatParameter::TIME;
-
-	resetStretch = addTrigger("Reset Stretch", "Reset the stretch factor to 1");
-
-	volume = addFloatParameter("Volume", "Volume multiplier", 1, 0);
 
 	formatManager.registerBasicFormats();
 
