@@ -56,6 +56,9 @@ public:
 	bool clipIsStopping;
 
 	FloatParameter* metronomeVolume;
+	FileParameter* bip1File;
+	FileParameter* bip2File;
+
 	ControllableContainer metronomeCC;
 	Array<int> metronomeOutChannels;
 	Array<int> metronomeLocalChannels;
@@ -84,6 +87,8 @@ public:
 	virtual float getVolumeFactor();
 	virtual void setVolume(float value, float time = 0, Automation* automation = nullptr, bool stopSequenceAtFinish = false);
 
+	void resetMetronome();
+
 	void onControllableFeedbackUpdateInternal(ControllableContainer* cc, Controllable* c) override;
 	void onControllableStateChanged(Controllable* c) override;
 
@@ -91,6 +96,8 @@ public:
 
 	virtual var getJSONData() override;
 	virtual void loadJSONDataInternal(var data) override;
+
+	virtual void afterLoadJSONDataInternal() override;
 
 	virtual SequenceLayerPanel* getPanel() override;
 	virtual SequenceLayerTimeline* getTimelineUI() override;

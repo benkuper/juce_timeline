@@ -1,18 +1,31 @@
 #include "JuceHeader.h"
 
-Metronome::Metronome()
+Metronome::Metronome(File bip, File bop)
 {
+	int numTics = 2;
 
-	WavAudioFormat wavFormat;
+	formatManager.registerBasicFormats() ;
 
-	Array<const char*> ticData{ TimelineBinaryData::tic1_wav ,TimelineBinaryData::tic2_wav };
-	Array<int> ticSizes{ TimelineBinaryData::tic1_wavSize ,TimelineBinaryData::tic2_wavSize };
+	Array<const char*> ticData{ TimelineBinaryData::tic1_wav, TimelineBinaryData::tic2_wav };
+	Array<int> ticSizes { TimelineBinaryData::tic1_wavSize, TimelineBinaryData::tic2_wavSize };
 
-	for (int i = 0; i < ticData.size(); i++)
+	Array<File> customFiles { bip, bop};
+
+	for (int i = 0; i < numTics; i++)
 	{
-		MemoryInputStream* ts(new MemoryInputStream(ticData[i], ticSizes[i], true));
-		AudioFormatReader* reader(wavFormat.createReaderFor(ts, true));
-		
+		AudioFormatReader* reader = nullptr;
+
+		if (customFiles[i].existsAsFile())
+		{
+			std::unique_ptr<FileInputStream> s(new FileInputStream(customFiles[i]));
+			reader = formatManager.createReaderFor(std::move(s));
+		}
+		else
+		{
+			std::unique_ptr<MemoryInputStream> ts(new MemoryInputStream(ticData[i], ticSizes[i], true));
+			reader = formatManager.createReaderFor(std::move(ts));
+		}
+
 		AudioFormatReaderSource* newSource = new AudioFormatReaderSource(reader, true);
 		AudioTransportSource* transport = new AudioTransportSource();
 		ChannelRemappingAudioSource* channelRemap = new ChannelRemappingAudioSource(transport, false);
@@ -21,7 +34,6 @@ Metronome::Metronome()
 		ticTransports.add(transport);
 		ticReaders.add(newSource);
 		ticChannelRemap.add(channelRemap);
-		
 	}
 
 }

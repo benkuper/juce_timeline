@@ -13,9 +13,10 @@
 class Metronome
 {
 public:
-    Metronome();
+    Metronome(File bip = File(), File bop = File());
     ~Metronome();
 
+    AudioFormatManager formatManager;
     OwnedArray<AudioFormatReaderSource> ticReaders;
     OwnedArray<AudioTransportSource> ticTransports;
     OwnedArray<ChannelRemappingAudioSource> ticChannelRemap;

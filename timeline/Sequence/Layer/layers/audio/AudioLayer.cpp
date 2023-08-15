@@ -43,7 +43,14 @@ AudioLayer::AudioLayer(Sequence* _sequence, var params) :
 
 	metronomeVolume = addFloatParameter("Metronome", "Enable and control metronome volume here", 1, 0, 5, false);
 	metronomeVolume->canBeDisabledByUser = true;
+
+	bip1File = addFileParameter("Custom Bip", "Custom 1st beat sound file for metronome", "", false);
+	bip2File = addFileParameter("Custom Bop", "Custom other beats sound file for metronome", "", false);
+	bip1File->canBeDisabledByUser = true;
+	bip2File->canBeDisabledByUser = true;
+
 	addChildControllableContainer(&metronomeCC);
+
 
 	clipManager.hideInEditor = true;
 	addChildControllableContainer(&clipManager);
@@ -323,11 +330,28 @@ void AudioLayer::setVolume(float value, float time, Automation* automation, bool
 	startThread();
 }
 
+void AudioLayer::resetMetronome()
+{
+	if (isCurrentlyLoadingData) return;
+
+	{
+		GenericScopedLock mLock(metronomeLock);
+		metronome.reset(metronomeVolume->enabled ? new Metronome(bip1File->enabled ? bip1File->getFile() : File(), bip2File->enabled ? bip2File->getFile() : File()) : nullptr);
+	}
+
+	updateSelectedOutChannels();
+}
+
+
 void AudioLayer::onControllableFeedbackUpdateInternal(ControllableContainer* cc, Controllable* c)
 {
 	SequenceLayer::onControllableFeedbackUpdateInternal(cc, c);
 
-	if (cc == &channelsCC || cc == &metronomeCC)
+	if (c == bip1File || c == bip2File)
+	{
+		resetMetronome();
+	}
+	else if (cc == &channelsCC || cc == &metronomeCC)
 	{
 		if (!isCurrentlyLoadingData) updateSelectedOutChannels();
 	}
@@ -351,13 +375,9 @@ void AudioLayer::onControllableFeedbackUpdateInternal(ControllableContainer* cc,
 void AudioLayer::onControllableStateChanged(Controllable* c)
 {
 	SequenceLayer::onControllableStateChanged(c);
-	if (c == metronomeVolume)
+	if (c == metronomeVolume || c == bip1File || c == bip2File)
 	{
-		{
-			GenericScopedLock mLock(metronomeLock);
-			metronome.reset(metronomeVolume->enabled ? new Metronome() : nullptr);
-		}
-		if (!isCurrentlyLoadingData) updateSelectedOutChannels();
+		resetMetronome();
 	}
 }
 
@@ -385,6 +405,11 @@ void AudioLayer::loadJSONDataInternal(var data)
 	SequenceLayer::loadJSONDataInternal(data);
 	clipManager.loadJSONData(data.getProperty(clipManager.shortName, var()));
 	updateSelectedOutChannels();
+}
+
+void AudioLayer::afterLoadJSONDataInternal()
+{
+	resetMetronome();
 }
 
 SequenceLayerPanel* AudioLayer::getPanel()
