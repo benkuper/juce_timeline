@@ -8,6 +8,8 @@
   ==============================================================================
 */
 
+#include "JuceHeader.h"
+
 SequenceTimelineSeeker::SequenceTimelineSeeker(Sequence * _sequence) :
 	sequence(_sequence)
 {
@@ -114,13 +116,16 @@ void SequenceTimelineSeeker::mouseDrag(const MouseEvent & e)
 			float newViewStart = timeAnchorAtMouseDown - startDist*viewTimeFactor + getTimeForX(offset.x);
 			float newViewEnd = timeAnchorAtMouseDown - endDist*viewTimeFactor + getTimeForX(offset.x);
 
-			//newViewEnd = jmax<float>(newViewEnd, newViewStart + 1);
-
-			if (followPlayingMode) sequence->followViewRange = newViewEnd - newViewStart;
-			else
+			float newViewRange = newViewEnd - newViewStart;
+			
+			if (newViewRange >= sequence->minViewTime->floatValue() || fabsf(offset.x) > 20)
 			{
-				sequence->viewStartTime->setValue(newViewStart);
-				sequence->viewEndTime->setValue(newViewEnd);
+				if (followPlayingMode) sequence->followViewRange = newViewEnd - newViewStart;
+				else
+				{
+					sequence->viewStartTime->setValue(newViewStart);
+					sequence->viewEndTime->setValue(newViewEnd);
+				}
 			}
 		}
 		else

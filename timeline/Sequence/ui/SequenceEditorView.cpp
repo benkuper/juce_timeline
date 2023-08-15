@@ -116,17 +116,22 @@ void SequenceEditorView::mouseWheelMove(const MouseEvent& e, const MouseWheelDet
 
 			float viewStart = sequence->viewStartTime->floatValue();
 			float viewRange = sequence->viewEndTime->floatValue() - viewStart;
+
 			float diff = (time - viewStart) / viewRange;
 
 			float newViewStart = sequence->viewStartTime->floatValue() + zoomFactor * diff;
 			float newViewEnd = sequence->viewEndTime->floatValue() - zoomFactor * (1 - diff);
+			float newViewRange = newViewEnd - newViewStart;
 
-			bool followPlayingMode = sequence->isPlaying->boolValue() && sequence->viewFollowTime->boolValue();
-			if (followPlayingMode) sequence->followViewRange = newViewEnd - newViewStart;
-			else
+			if (newViewRange >= sequence->minViewTime->floatValue())
 			{
-				sequence->viewStartTime->setValue(newViewStart);
-				sequence->viewEndTime->setValue(newViewEnd);
+				bool followPlayingMode = sequence->isPlaying->boolValue() && sequence->viewFollowTime->boolValue();
+				if (followPlayingMode) sequence->followViewRange = newViewEnd - newViewStart;
+				else
+				{
+					sequence->viewStartTime->setValue(newViewStart);
+					sequence->viewEndTime->setValue(newViewEnd);
+				}
 			}
 		}
 		else
