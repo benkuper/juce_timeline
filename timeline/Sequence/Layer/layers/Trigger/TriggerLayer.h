@@ -20,7 +20,9 @@ public :
 	std::unique_ptr<TimeTriggerManager> ttm;
 	
 	Trigger * lockAll;
-	Trigger * unlockAll;
+	Trigger* unlockAll;
+	Trigger* goToNextKey;
+	Trigger * goToPrevKey;
 	BoolParameter * triggerWhenSeeking;
 
 	void setManager(TimeTriggerManager * ttm);

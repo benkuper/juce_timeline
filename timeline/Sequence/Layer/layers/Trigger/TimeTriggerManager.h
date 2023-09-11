@@ -31,6 +31,8 @@ public:
 	Array<TimeTrigger *> addItemsFromClipboard(bool showWarning = true) override;
 	bool canAddItemOfType(const String & typeToCheck) override;
 
+	TimeTrigger* getPrevTrigger(float time, bool includeCurrentTime = false);
+	TimeTrigger* getNextTrigger(float time, bool includeCurrentTime = false);
 	Array<TimeTrigger *> getTriggersInTimespan(float startTime, float endTime, bool includeAlreadyTriggered = false);
 
 	Array<UndoableAction*> getMoveKeysBy(float start, float offset);
