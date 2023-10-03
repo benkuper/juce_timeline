@@ -1,3 +1,4 @@
+#include "SequenceManagerUI.h"
 /*
   ==============================================================================
 
@@ -38,4 +39,9 @@ void SequenceManagerUI::mouseDoubleClick(const MouseEvent & e)
 {
 	BaseManagerShapeShifterUI::mouseDoubleClick(e);
 	manager->addItem();
+}
+
+void SequenceManagerUI::addMenuExtraItems(juce::PopupMenu& p, int startIndex)
+{
+	p.addItem("Import audio files", [this]() {manager->importMultipleAudioFiles();});
 }
