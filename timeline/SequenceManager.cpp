@@ -9,6 +9,7 @@
 */
 
 #include "JuceHeader.h"
+#include "SequenceManager.h"
 
 #if TIMELINE_USE_SEQUENCEMANAGER_SINGLETON
 juce_ImplementSingleton(SequenceManager)
@@ -254,4 +255,33 @@ void SequenceManager::showMenuAndGetTrigger(ControllableContainer* startFromCC, 
 			returnFunc(ttItems[result - 1]);
 		}
 	);
+}
+
+void SequenceManager::importMultipleAudioFiles()
+{
+	fileChooser = std::make_unique<FileChooser>("Import audio files", File::getCurrentWorkingDirectory(), "*.wav;*.mp3;*.ogg;*.aiff");
+	auto fileChooserFlags = FileBrowserComponent::canSelectMultipleItems;
+	fileChooser->launchAsync(fileChooserFlags, [this](const FileChooser& chooser)
+		{
+			auto results = chooser.getResults();
+			for (int i = 0; i < results.size(); i++) {
+				File f = results[i];
+				createSequenceFromAudioFile(f);
+			}
+		});
+}
+
+void SequenceManager::createSequenceFromAudioFile(File f)
+{
+	Sequence* seq = new Sequence();
+	addItem(seq);
+	seq->setNiceName(f.getFileNameWithoutExtension());
+
+	AudioLayer* l = new AudioLayer(seq, var());
+	seq->layerManager->addItem(l);
+	l->uiHeight->setValue(80);
+
+	AudioLayerClip* clip = new AudioLayerClip();
+	l->clipManager.addItem(clip);
+	clip->filePath->setValue(f.getFullPathName());
 }

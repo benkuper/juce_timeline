@@ -56,5 +56,9 @@ public:
 
 	void showMenuAndGetTrigger(ControllableContainer* startFromCC, std::function<void(TimeTrigger*)> returnFunc);
 
+	std::unique_ptr<FileChooser> fileChooser;
+	virtual void importMultipleAudioFiles();
+	virtual void createSequenceFromAudioFile(File f);
+
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceManager)
 };
