@@ -23,6 +23,9 @@ public:
 	void resizedInternalHeader(Rectangle<int>& r) override;
 	void mouseDoubleClick(const MouseEvent &e) override;
 
+	void addMenuExtraItems(juce::PopupMenu& p, int startIndex) override;
+
+
 #if TIMELINE_USE_SEQUENCEMANAGER_SINGLETON
 	static SequenceManagerUI* create(const String& contentName) { return new SequenceManagerUI(contentName, SequenceManager::getInstance()); }
 #else
