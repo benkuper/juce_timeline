@@ -28,7 +28,8 @@ AudioLayer::AudioLayer(Sequence* _sequence, var params) :
 	stopAtVolumeInterpolationFinish(false),
 	clipIsStopping(false),
 	metronomeCC("Metronome Channels"),
-	prevMetronomeBeat(0)
+	prevMetronomeBeat(0),
+	settingAudioGraph(false)
 {
 
 	helpID = "AudioLayer";
@@ -77,6 +78,8 @@ void AudioLayer::clearItem()
 
 void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph* graph, AudioProcessorGraph::NodeID outputGraphID)
 {
+	settingAudioGraph = true;
+
 	if (currentGraph != nullptr)
 	{
 		currentGraph->removeNode(graphID);
@@ -121,6 +124,9 @@ void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph* graph, AudioProcess
 	audioOutputGraphID = outputGraphID;
 
 	updateSelectedOutChannels();
+
+	settingAudioGraph = false;
+
 }
 
 AudioLayerProcessor* AudioLayer::createAudioLayerProcessor()
@@ -216,6 +222,7 @@ void AudioLayer::updateSelectedOutChannels()
 
 		if (metronome != nullptr)
 		{
+			if(metronomeCC.controllables[i])
 			if (((BoolParameter*)metronomeCC.controllables[i])->boolValue())
 			{
 				metronomeOutChannels.add(i);
@@ -353,7 +360,7 @@ void AudioLayer::onControllableFeedbackUpdateInternal(ControllableContainer* cc,
 	}
 	else if (cc == &channelsCC || cc == &metronomeCC)
 	{
-		if (!isCurrentlyLoadingData) updateSelectedOutChannels();
+		if (!isCurrentlyLoadingData && !settingAudioGraph) updateSelectedOutChannels();
 	}
 	else if (currentClip != nullptr)
 	{

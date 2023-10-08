@@ -67,6 +67,9 @@ public:
 	int prevMetronomeBeat;
 	var metronomeData; //for ghosting
 
+	//safety
+	bool settingAudioGraph;
+
 	virtual void clearItem() override;
 
 	void setAudioProcessorGraph(AudioProcessorGraph* graph, AudioProcessorGraph::NodeID graphOutputID = AudioProcessorGraph::NodeID(2));
