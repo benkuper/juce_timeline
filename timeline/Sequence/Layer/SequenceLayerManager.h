@@ -60,7 +60,8 @@ public:
 	virtual void createAudioLayerForFile(File f);
 
 #if TIMELINE_UNIQUE_LAYER_FACTORY
-	SequenceLayer * addItemFromData(var data, bool fromUndoableAction = false) override;
+	SequenceLayer* addItemFromData(var data, bool addToUndo = false) override;
+	Array<SequenceLayer*> addItemsFromData(var data, bool addToUndo = false) override;
 #endif
 
 	
