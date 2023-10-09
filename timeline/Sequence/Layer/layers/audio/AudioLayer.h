@@ -79,8 +79,10 @@ public:
 
 	virtual void updateCurrentClip();
 
-	void itemAdded(LayerBlock*) override;
+	void itemAdded(LayerBlock* clip) override;
+	void itemsAdded(Array<LayerBlock*> clips) override;
 	void itemRemoved(LayerBlock* clip) override;
+	void itemsRemoved(Array<LayerBlock*> clips) override;
 
 	void clipSourceLoaded(AudioLayerClip* clip) override;
 

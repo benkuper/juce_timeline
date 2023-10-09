@@ -180,9 +180,32 @@ void AudioLayer::itemAdded(LayerBlock* item)
 	updateSelectedOutChannels();
 }
 
+void AudioLayer::itemsAdded(Array<LayerBlock*> clips)
+{
+	for (auto& clip : clips)
+	{
+		((AudioLayerClip*)clip)->addClipListener(this);
+
+		if (isCurrentlyLoadingData || Engine::mainEngine->isLoadingFile) continue;
+		updateClipConfig((AudioLayerClip*)clip, true);
+	}
+
+	updateSelectedOutChannels();
+}
+
 void AudioLayer::itemRemoved(LayerBlock* item)
 {
 	((AudioLayerClip*)item)->removeClipListener(this);
+
+	updateCurrentClip();
+}
+
+void AudioLayer::itemsRemoved(Array<LayerBlock*> clips)
+{
+	for (auto& clip : clips)
+	{
+		((AudioLayerClip*)clip)->removeClipListener(this);
+	}
 
 	updateCurrentClip();
 }
@@ -222,13 +245,13 @@ void AudioLayer::updateSelectedOutChannels()
 
 		if (metronome != nullptr)
 		{
-			if(metronomeCC.controllables[i])
-			if (((BoolParameter*)metronomeCC.controllables[i])->boolValue())
-			{
-				metronomeOutChannels.add(i);
-				metronomeLocalChannels.add(numChannelsUsed);
-				chUsed = true;
-			}
+			if (metronomeCC.controllables[i])
+				if (((BoolParameter*)metronomeCC.controllables[i])->boolValue())
+				{
+					metronomeOutChannels.add(i);
+					metronomeLocalChannels.add(numChannelsUsed);
+					chUsed = true;
+				}
 		}
 
 		if (chUsed) numChannelsUsed++;

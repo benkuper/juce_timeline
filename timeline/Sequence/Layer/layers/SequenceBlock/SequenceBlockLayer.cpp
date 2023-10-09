@@ -41,11 +41,23 @@ void SequenceBlockLayer::itemAdded(LayerBlock* item)
 	updateCurrentBlock();
 }
 
+void SequenceBlockLayer::itemsAdded(Array<LayerBlock*> items)
+{
+	if (isCurrentlyLoadingData || Engine::mainEngine->isLoadingFile) return;
+	updateCurrentBlock();
+}
+
 void SequenceBlockLayer::itemRemoved(LayerBlock* item)
 {
 	if (isClearing) return;
 	updateCurrentBlock();
 }
+void SequenceBlockLayer::itemsRemoved(Array<LayerBlock*> items)
+{
+	if (isClearing) return;
+	updateCurrentBlock();
+}
+
 void SequenceBlockLayer::updateCurrentBlock()
 {
 	SequenceBlock* b = (SequenceBlock*)blockManager.getBlockAtTime(sequence->currentTime->floatValue(), false, false);
