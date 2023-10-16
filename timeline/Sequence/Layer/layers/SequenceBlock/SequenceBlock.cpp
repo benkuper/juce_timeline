@@ -9,7 +9,7 @@
 */
 
 
-SequenceBlock::SequenceBlock(SequenceManager * manager) :
+SequenceBlock::SequenceBlock(SequenceManager* manager) :
 	LayerBlock(getTypeString()),
 	targetSequence(nullptr)
 {
