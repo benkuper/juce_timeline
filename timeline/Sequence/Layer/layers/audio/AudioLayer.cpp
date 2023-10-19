@@ -620,7 +620,7 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 	if (layer != nullptr)
 	{
 		if (!layer->enabled->boolValue()
-			|| !layer->sequence->enabled->boolValue()
+			|| (layer->sequence->enabled != nullptr && !layer->sequence->enabled->boolValue())
 			|| !layer->sequence->isPlaying->boolValue()
 			|| layer->sequence->playSpeed->doubleValue() < 0) noProcess = true;
 
