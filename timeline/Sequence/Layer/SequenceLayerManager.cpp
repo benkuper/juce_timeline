@@ -1,4 +1,3 @@
-#include "SequenceLayerManager.h"
 /*
   ==============================================================================
 
@@ -8,6 +7,8 @@
 
   ==============================================================================
 */
+
+#include "JuceHeader.h"
 
 SequenceLayerManager::SequenceLayerManager(Sequence* _sequence) :
 	BaseManager<SequenceLayer>("Layers"),
