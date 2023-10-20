@@ -37,7 +37,9 @@ public:
 	virtual void getSnapTimes(Array<float>* arrayToFill, bool includeStart = true, bool includeEnd = true, bool includeCoreEnd = false);
 
 	void addItemInternal(LayerBlock* item, var) override;
+	void addItemsInternal(Array<LayerBlock*> items, var) override;
 	void removeItemInternal(LayerBlock* item) override;
+	void removeItemsInternal(Array<LayerBlock*> items) override;
 
 	void askForPlaceBlockTime(LayerBlock* block, float desiredTime) override;
 	void placeBlockAt(LayerBlock* block, float desiredTime);

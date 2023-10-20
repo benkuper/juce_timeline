@@ -158,9 +158,19 @@ void LayerBlockManager::addItemInternal(LayerBlock* item, var)
 	item->addBlockListener(this);
 }
 
+void LayerBlockManager::addItemsInternal(Array<LayerBlock*> items, var)
+{
+	for (auto& item : items) item->addBlockListener(this);
+}
+
 void LayerBlockManager::removeItemInternal(LayerBlock* item)
 {
 	item->removeBlockListener(this);
+}
+
+void LayerBlockManager::removeItemsInternal(Array<LayerBlock*> items)
+{
+	for (auto& item : items) item->removeBlockListener(this);
 }
 
 void LayerBlockManager::askForPlaceBlockTime(LayerBlock* block, float desiredTime)

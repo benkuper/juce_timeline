@@ -45,6 +45,11 @@ void TimeTriggerManager::addItemInternal(TimeTrigger* t, var data)
 	t->time->setRange(0, sequence->totalTime->floatValue());
 }
 
+void TimeTriggerManager::addItemsInternal(Array<TimeTrigger*> items, var data)
+{
+	for (auto& t : items) t->time->setRange(0, sequence->totalTime->floatValue());
+}
+
 Array<TimeTrigger*> TimeTriggerManager::addItemsFromClipboard(bool showWarning)
 {
 	Array<TimeTrigger*> triggers = BaseManager::addItemsFromClipboard(showWarning);

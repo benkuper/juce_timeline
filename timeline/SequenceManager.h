@@ -35,7 +35,9 @@ public:
 	Factory<SequenceLayer>* defaultLayerFactory;
 
 	virtual void addItemInternal(Sequence* item, var data) override;
+	virtual void addItemsInternal(Array<Sequence*> item, var data) override;
 	virtual void removeItemInternal(Sequence* s) override;
+	virtual void removeItemsInternal(Array<Sequence*> s) override;
 
 	virtual void onContainerTriggerTriggered(Trigger*) override;
 

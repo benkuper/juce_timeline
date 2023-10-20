@@ -40,9 +40,24 @@ void SequenceManager::addItemInternal(Sequence* item, var data)
 	item->addSequenceListener(this);
 }
 
+void SequenceManager::addItemsInternal(Array<Sequence*> items, var data)
+{
+	for (auto& item : items)
+	{
+		if (defaultLayerFactory != nullptr) item->layerManager->managerFactory = defaultLayerFactory;
+		item->addSequenceListener(this);
+	}
+}
+
 void SequenceManager::removeItemInternal(Sequence* item)
 {
 	item->removeSequenceListener(this);
+}
+
+void SequenceManager::removeItemsInternal(Array<Sequence*> items)
+{
+	for (auto& item : items) item->removeSequenceListener(this);
+
 }
 
 void SequenceManager::onContainerTriggerTriggered(Trigger* t)
@@ -102,17 +117,17 @@ void SequenceManager::showMenuAndGetLayer(ControllableContainer* startFromCC, st
 {
 
 	auto getMenuForSequence = [this](Sequence* s)
-	{
-		PopupMenu sMenu;
-		int numValues = s->layerManager->items.size();
-		for (int j = 0; j < numValues; j++)
 		{
-			SequenceLayer* c = s->layerManager->items[j];
-			sMenu.addItem(items.indexOf(s) * 1000 + j + 1, c->niceName);
-		}
+			PopupMenu sMenu;
+			int numValues = s->layerManager->items.size();
+			for (int j = 0; j < numValues; j++)
+			{
+				SequenceLayer* c = s->layerManager->items[j];
+				sMenu.addItem(items.indexOf(s) * 1000 + j + 1, c->niceName);
+			}
 
-		return sMenu;
-	};
+			return sMenu;
+		};
 
 
 	PopupMenu menu;
@@ -138,17 +153,17 @@ void SequenceManager::showMenuAndGetCue(ControllableContainer* startFromCC, std:
 {
 
 	auto getMenuForSequence = [this](Sequence* s)
-	{
-		PopupMenu sMenu;
-		int numValues = s->cueManager->items.size();
-		for (int j = 0; j < numValues; j++)
 		{
-			TimeCue* c = s->cueManager->items[j];
-			sMenu.addItem(items.indexOf(s) * 1000 + j + 1, c->niceName);
-		}
+			PopupMenu sMenu;
+			int numValues = s->cueManager->items.size();
+			for (int j = 0; j < numValues; j++)
+			{
+				TimeCue* c = s->cueManager->items[j];
+				sMenu.addItem(items.indexOf(s) * 1000 + j + 1, c->niceName);
+			}
 
-		return sMenu;
-	};
+			return sMenu;
+		};
 
 
 	PopupMenu menu;
@@ -174,20 +189,20 @@ void SequenceManager::showMenuAndGetAudioLayer(ControllableContainer* startFromC
 {
 
 	auto getMenuForSequence = [this](Sequence* s)
-	{
-		PopupMenu sMenu;
-		int numValues = s->layerManager->items.size();
-		for (int j = 0; j < numValues; j++)
 		{
-			if (AudioLayer* al = dynamic_cast<AudioLayer*>(s->layerManager->items[j]))
+			PopupMenu sMenu;
+			int numValues = s->layerManager->items.size();
+			for (int j = 0; j < numValues; j++)
 			{
-				sMenu.addItem(items.indexOf(s) * 1000 + j + 1, al->niceName);
+				if (AudioLayer* al = dynamic_cast<AudioLayer*>(s->layerManager->items[j]))
+				{
+					sMenu.addItem(items.indexOf(s) * 1000 + j + 1, al->niceName);
 
+				}
 			}
-		}
 
-		return sMenu;
-	};
+			return sMenu;
+		};
 
 
 	PopupMenu menu;
@@ -214,31 +229,31 @@ void SequenceManager::showMenuAndGetTrigger(ControllableContainer* startFromCC, 
 	Array<TimeTrigger*> ttItems;
 
 	auto getMenuForLayer = [&ttItems](TriggerLayer* layer)
-	{
-		PopupMenu tm;
-		for (auto& tt : layer->ttm->items)
 		{
-			ttItems.add(tt);
-			tm.addItem(ttItems.size(), tt->niceName);
-		}
+			PopupMenu tm;
+			for (auto& tt : layer->ttm->items)
+			{
+				ttItems.add(tt);
+				tm.addItem(ttItems.size(), tt->niceName);
+			}
 
-		return tm;
-	};
+			return tm;
+		};
 
 	auto getMenuForSequence = [getMenuForLayer, &ttItems](Sequence* s)
-	{
-		PopupMenu sMenu;
-		int numValues = s->layerManager->items.size();
-		for (int j = 0; j < numValues; j++)
 		{
-			if (TriggerLayer* tl = dynamic_cast<TriggerLayer*>(s->layerManager->items[j]))
+			PopupMenu sMenu;
+			int numValues = s->layerManager->items.size();
+			for (int j = 0; j < numValues; j++)
 			{
-				sMenu.addSubMenu(tl->niceName, getMenuForLayer(tl));
+				if (TriggerLayer* tl = dynamic_cast<TriggerLayer*>(s->layerManager->items[j]))
+				{
+					sMenu.addSubMenu(tl->niceName, getMenuForLayer(tl));
+				}
 			}
-		}
 
-		return sMenu;
-	};
+			return sMenu;
+		};
 
 
 
