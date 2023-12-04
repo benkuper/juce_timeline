@@ -53,7 +53,7 @@ void TimeCue::onContainerTriggerTriggered(Trigger* t)
 	{
 		if (Sequence* seq = getSequence())
 		{
-			seq->setCurrentTime(time->floatValue());
+			seq->setCurrentTime(time->floatValue(),true, true);
 			seq->playTrigger->trigger();
 		}
 	}
