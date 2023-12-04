@@ -23,10 +23,11 @@ public:
 	enum CueAction { NOTHING, PAUSE, LOOP_JUMP };
 	EnumParameter * cueAction;
 	TargetParameter* loopCue;
-
+	Trigger* playFromHere;
 
 	virtual bool isCurrentlyActive(); // can be overriden by children 
 
+	virtual void onContainerTriggerTriggered(Trigger* t) override;
 	virtual void onContainerParameterChangedInternal(Parameter* p) override;
 
 	Sequence * getSequence();
