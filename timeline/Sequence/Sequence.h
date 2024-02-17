@@ -36,6 +36,7 @@ public:
 	IntParameter * fps;
 	BoolParameter* autoSnap;
 	BoolParameter* evaluateOnSeekAndPlay;
+	BoolParameter* evaluateOnSetTime;
 
 	FloatParameter* bpmPreview;
 	IntParameter * beatsPerBar;
