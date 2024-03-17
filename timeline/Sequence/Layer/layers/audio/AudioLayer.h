@@ -39,6 +39,7 @@ public:
 	FloatParameter* panning;
 	FloatParameter* enveloppe;
 
+	int numActiveInputs;
 	int numActiveOutputs;
 
 	AudioProcessorGraph::NodeID graphID;
@@ -86,7 +87,9 @@ public:
 
 	void clipSourceLoaded(AudioLayerClip* clip) override;
 
-	void updateSelectedOutChannels();
+	virtual void updateSelectedOutChannels();
+	void updatePlayConfigDetails();
+
 	void updateClipConfig(AudioLayerClip* clip, bool updateOutputChannelRemapping = true);
 
 	virtual float getVolumeFactor();

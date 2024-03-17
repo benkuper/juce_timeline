@@ -20,6 +20,7 @@ AudioLayer::AudioLayer(Sequence* _sequence, var params) :
 	currentProcessor(nullptr),
 	channelsCC("Channels"),
 	enveloppe(nullptr),
+	numActiveInputs(0),
 	numActiveOutputs(0),
 	graphID(0), //was -1 but since 5.2.1, generated warning. Should do otherwise ?
 	audioOutputGraphID(2),
@@ -261,8 +262,7 @@ void AudioLayer::updateSelectedOutChannels()
 
 	currentGraph->disconnectNode(graphID);
 
-	currentProcessor->setPlayConfigDetails(0, numActiveOutputs, currentGraph->getSampleRate(), currentGraph->getBlockSize());
-	currentProcessor->prepareToPlay(currentGraph->getSampleRate(), currentGraph->getBlockSize());
+	updatePlayConfigDetails();
 
 	for (auto& c : clipManager.items)
 	{
@@ -303,6 +303,15 @@ void AudioLayer::updateSelectedOutChannels()
 			}
 		}
 	}
+}
+
+void AudioLayer::updatePlayConfigDetails()
+{
+	if (currentProcessor == nullptr) return;
+	if (currentGraph == nullptr) return;
+
+	currentProcessor->setPlayConfigDetails(numActiveInputs, numActiveOutputs, currentGraph->getSampleRate(), currentGraph->getBlockSize());
+	currentProcessor->prepareToPlay(currentGraph->getSampleRate(), currentGraph->getBlockSize());
 }
 
 void AudioLayer::updateClipConfig(AudioLayerClip* clip, bool updateOutputChannelRemapping)
