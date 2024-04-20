@@ -101,8 +101,8 @@ void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph* graph, AudioProcess
 		auto proc = std::unique_ptr<AudioLayerProcessor>(createAudioLayerProcessor());
 		currentProcessor = proc.get();
 
-		graphIDIncrement++;
-		graphID = AudioProcessorGraph::NodeID(graphIDIncrement);
+		int graphIDInc = getNodeGraphIDIncrement();
+		graphID = AudioProcessorGraph::NodeID(graphIDInc);
 		currentGraph->addNode(std::move(proc), graphID);
 
 		int numChannels = currentGraph->getMainBusNumOutputChannels();
