@@ -88,6 +88,7 @@ public:
 	void clipSourceLoaded(AudioLayerClip* clip) override;
 
 	virtual void updateSelectedOutChannels();
+	virtual void updateSelectedOutChannelsInternal() {}
 	void updatePlayConfigDetails();
 
 	void updateClipConfig(AudioLayerClip* clip, bool updateOutputChannelRemapping = true);

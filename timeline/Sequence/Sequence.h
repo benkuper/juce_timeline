@@ -146,7 +146,7 @@ public:
 		virtual void sequenceEditingStateChanged(Sequence *) {}
 	};
 
-	ListenerList<SequenceListener> sequenceListeners;
+	ListenerList<SequenceListener, Array<SequenceListener*, CriticalSection>> sequenceListeners;
 	void addSequenceListener(SequenceListener* newListener) { sequenceListeners.add(newListener); }
 	void removeSequenceListener(SequenceListener* listener) { sequenceListeners.remove(listener); }
 

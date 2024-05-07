@@ -167,7 +167,7 @@ void AudioLayer::updateCurrentClip()
 		currentClip->transportSource.setPosition(pos);
 
 		if (sequence->isPlaying->boolValue()) currentClip->start();
-		updateSelectedOutChannels();
+		//updateSelectedOutChannels();
 	}
 
 }
@@ -261,6 +261,8 @@ void AudioLayer::updateSelectedOutChannels()
 	numActiveOutputs = numChannelsUsed;
 
 	currentGraph->disconnectNode(graphID);
+
+	updateSelectedOutChannelsInternal();
 
 	updatePlayConfigDetails();
 
