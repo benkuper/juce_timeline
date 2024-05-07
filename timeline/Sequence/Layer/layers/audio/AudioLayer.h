@@ -76,6 +76,8 @@ public:
 	void setAudioProcessorGraph(AudioProcessorGraph* graph, AudioProcessorGraph::NodeID graphOutputID = AudioProcessorGraph::NodeID(2));
 	virtual AudioLayerProcessor* createAudioLayerProcessor();
 
+	virtual int getNodeGraphIDIncrement() { return graphIDIncrement++; }
+
 	virtual AudioLayerClip* createAudioClip();
 
 	virtual void updateCurrentClip();
