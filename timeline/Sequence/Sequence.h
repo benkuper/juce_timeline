@@ -120,6 +120,8 @@ public:
 	virtual void onControllableStateChanged(Controllable* c) override;
 
 	virtual void parameterControlModeChanged(Parameter* p) override;
+
+	virtual String getPanelName() const;
 	
 	virtual void run() override;
 

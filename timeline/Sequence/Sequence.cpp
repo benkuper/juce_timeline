@@ -9,6 +9,7 @@
 */
 
 #include "JuceHeader.h"
+#include "Sequence.h"
 
 Sequence::Sequence() :
 	BaseItem("Sequence", true),
@@ -475,6 +476,11 @@ void Sequence::parameterControlModeChanged(Parameter* p)
 		includeCurrentTimeInSave->setValue(currentTime->controlMode != Parameter::MANUAL);
 		includeCurrentTimeInSave->setEnabled(currentTime->controlMode == Parameter::MANUAL);
 	}
+}
+
+String Sequence::getPanelName() const
+{
+	return niceName;
 }
 
 void Sequence::run()
