@@ -115,7 +115,7 @@ Array<LayerBlock*> LayerBlockManager::getBlocksInRange(float start, float end, b
 	for (auto& c : items)
 	{
 		if (!includeDisabled && !c->enabled->boolValue()) continue;
-		if (c->getEndTime() >= start || c->time->floatValue() <= end) result.add(c);
+		if (c->getEndTime() >= start && c->time->floatValue() <= end) result.add(c);
 	}
 	return result;
 }
