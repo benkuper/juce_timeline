@@ -514,7 +514,7 @@ void Sequence::run()
 
 		//DBG(deltaMillis << " : " << (targetTime - currentTime->floatValue()));
 
-		currentTime->setValue(targetTime);
+		if(!isSeeking) currentTime->setValue(targetTime);
 
 		if (viewFollowTime->boolValue())
 		{
