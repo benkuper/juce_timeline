@@ -35,7 +35,9 @@ public:
 	BoolParameter * loopParam;
 	IntParameter * fps;
 	BoolParameter* autoSnap;
-	BoolParameter* evaluateOnSeekAndPlay;
+
+	enum EvaluateMode { NEVER, ONLY_PLAYING, ONLY_NOT_PLAYING, ALWAYS };
+	EnumParameter* evaluateOnSeek;
 
 	FloatParameter* bpmPreview;
 	IntParameter * beatsPerBar;

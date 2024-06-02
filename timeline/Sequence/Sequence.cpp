@@ -64,8 +64,9 @@ Sequence::Sequence() :
 
 	autoSnap = addBoolParameter("Auto Snap", "If checked, this will automatically snap when moving items", false);
 
-	evaluateOnSeekAndPlay = addBoolParameter("Evaluate on Seek", "If checked, this will evaluate data (like triggering time triggers) when seeking manually while the sequence is playing. If unchecked, seeking manually will disable temporarily evaluation.", true);
-
+	evaluateOnSeek = addEnumParameter("Evaluate on Seek", "This decides when it should evaluate data (like triggering time triggers) when seeking manually.");
+	evaluateOnSeek->addOption("When Playing Only", ONLY_PLAYING)->addOption("When Not Playing", ONLY_NOT_PLAYING)->addOption("Always", ALWAYS)->addOption("Never", NEVER);
+	
 	currentTime->unitSteps = fps->intValue();
 	totalTime->unitSteps = fps->intValue();
 
@@ -153,8 +154,8 @@ void Sequence::handleCueAction(TimeCue* cue, TimeCue* originCue)
 		prevTime = currentTime->floatValue();
 		currentTime->setValue(cue->time->floatValue());
 		return;
-    default:
-        break;
+	default:
+		break;
 	}
 	break;
 
@@ -355,7 +356,10 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 			//timeAtSetTime = timeIsDrivenByAudio() ? hiResAudioTime : currentTime->floatValue();
 		}
 
-		sequenceListeners.call(&SequenceListener::sequenceCurrentTimeChanged, this, (float)prevTime, isPlaying->boolValue() && (!isSeeking || evaluateOnSeekAndPlay->boolValue()));
+		EvaluateMode e = evaluateOnSeek->getValueDataAsEnum<EvaluateMode>();
+		bool shouldEvaluate = false;
+		if (isSeeking) shouldEvaluate = e == ALWAYS || (e == ONLY_PLAYING && isPlaying->boolValue()) || (e == ONLY_NOT_PLAYING && !isPlaying->boolValue());
+		sequenceListeners.call(&SequenceListener::sequenceCurrentTimeChanged, this, (float)prevTime, shouldEvaluate);
 		prevTime = currentTime->floatValue();
 	}
 	else if (p == totalTime)
@@ -419,7 +423,7 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 		totalTime->setValue(totalTime->floatValue()); //force update
 		currentTime->setValue(currentTime->floatValue()); //force update
 	}
-	
+
 
 }
 
@@ -514,7 +518,7 @@ void Sequence::run()
 
 		//DBG(deltaMillis << " : " << (targetTime - currentTime->floatValue()));
 
-		if(!isSeeking) currentTime->setValue(targetTime);
+		if (!isSeeking) currentTime->setValue(targetTime);
 
 		if (viewFollowTime->boolValue())
 		{
