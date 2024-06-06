@@ -123,6 +123,8 @@ public:
 
 	virtual void parameterControlModeChanged(Parameter* p) override;
 
+	virtual bool handleRemoteControlData(Controllable* c, const juce::OSCMessage& m, const juce::String& cliendId) override;
+
 	virtual String getPanelName() const;
 	
 	virtual void run() override;

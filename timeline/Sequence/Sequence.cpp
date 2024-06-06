@@ -66,7 +66,7 @@ Sequence::Sequence() :
 
 	evaluateOnSeek = addEnumParameter("Evaluate on Seek", "This decides when it should evaluate data (like triggering time triggers) when seeking manually.");
 	evaluateOnSeek->addOption("When Playing Only", ONLY_PLAYING)->addOption("When Not Playing", ONLY_NOT_PLAYING)->addOption("Always", ALWAYS)->addOption("Never", NEVER);
-	
+
 	currentTime->unitSteps = fps->intValue();
 	totalTime->unitSteps = fps->intValue();
 
@@ -357,8 +357,7 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 		}
 
 		EvaluateMode e = evaluateOnSeek->getValueDataAsEnum<EvaluateMode>();
-		bool shouldEvaluate = false;
-		if (isSeeking) shouldEvaluate = e == ALWAYS || (e == ONLY_PLAYING && isPlaying->boolValue()) || (e == ONLY_NOT_PLAYING && !isPlaying->boolValue());
+		bool shouldEvaluate = e == ALWAYS || (e == ONLY_PLAYING && isPlaying->boolValue()) || (e == ONLY_NOT_PLAYING && !isPlaying->boolValue());
 		sequenceListeners.call(&SequenceListener::sequenceCurrentTimeChanged, this, (float)prevTime, shouldEvaluate);
 		prevTime = currentTime->floatValue();
 	}
@@ -480,6 +479,16 @@ void Sequence::parameterControlModeChanged(Parameter* p)
 		includeCurrentTimeInSave->setValue(currentTime->controlMode != Parameter::MANUAL);
 		includeCurrentTimeInSave->setEnabled(currentTime->controlMode == Parameter::MANUAL);
 	}
+}
+
+bool Sequence::handleRemoteControlData(Controllable* c, const juce::OSCMessage& m, const juce::String& cliendId)
+{
+	if (c == currentTime)
+	{
+		if (m.size() >= 1) setCurrentTime(OSCHelpers::getFloatArg(m[0]), true, true);
+		return true;
+	}
+	return false;
 }
 
 String Sequence::getPanelName() const
