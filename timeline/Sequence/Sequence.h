@@ -154,7 +154,10 @@ public:
 
 	ListenerList<SequenceListener, Array<SequenceListener*, CriticalSection>> sequenceListeners;
 	void addSequenceListener(SequenceListener* newListener) { sequenceListeners.add(newListener); }
-	void removeSequenceListener(SequenceListener* listener) { sequenceListeners.remove(listener); }
+	void removeSequenceListener(SequenceListener* listener) {
+		if (isClearing || isBeingDestroyed) return;
+		sequenceListeners.remove(listener);
+	}
 
 
 	class SequenceEvent {
