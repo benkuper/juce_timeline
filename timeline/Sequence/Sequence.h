@@ -152,32 +152,8 @@ public:
 		virtual void sequenceEditingStateChanged(Sequence *) {}
 	};
 
-	ListenerList<SequenceListener, Array<SequenceListener*, CriticalSection>> sequenceListeners;
-	void addSequenceListener(SequenceListener* newListener) { sequenceListeners.add(newListener); }
-	void removeSequenceListener(SequenceListener* listener) {
-		if (isClearing || isBeingDestroyed) return;
-		sequenceListeners.remove(listener);
-	}
-
-
-	class SequenceEvent {
-	public:
-		enum Type { EDITING_STATE_CHANGED, PLAY_STATE_CHANGED };
-		SequenceEvent(Type type, Sequence * s) : type(type), sequence(s) {}
-		Type type;
-		Sequence * sequence;
-	};
-
-	QueuedNotifier<SequenceEvent> sequenceNotifier;
-	typedef QueuedNotifier<SequenceEvent>::Listener AsyncListener;
-
-	void addAsyncSequenceListener(AsyncListener* newListener) { sequenceNotifier.addListener(newListener); }
-	void addAsyncCoalescedSequenceListener(AsyncListener* newListener) { sequenceNotifier.addAsyncCoalescedListener(newListener); }
-	void removeAsyncSequenceListener(AsyncListener* listener) {
-		if(isClearing || isBeingDestroyed) return;
-		sequenceNotifier.removeListener(listener); 
-	}
-
+	DECLARE_INSPECTACLE_CRITICAL_LISTENER(Sequence, sequence);
+	DECLARE_ITEM_ASYNC_EVENT(Sequence, Sequence, sequence, ENUM_LIST(EDITING_STATE_CHANGED, PLAY_STATE_CHANGED));
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Sequence)
 
