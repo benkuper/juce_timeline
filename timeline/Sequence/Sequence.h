@@ -173,7 +173,10 @@ public:
 
 	void addAsyncSequenceListener(AsyncListener* newListener) { sequenceNotifier.addListener(newListener); }
 	void addAsyncCoalescedSequenceListener(AsyncListener* newListener) { sequenceNotifier.addAsyncCoalescedListener(newListener); }
-	void removeAsyncSequenceListener(AsyncListener* listener) { sequenceNotifier.removeListener(listener); }
+	void removeAsyncSequenceListener(AsyncListener* listener) {
+		if(isClearing || isBeingDestroyed) return;
+		sequenceNotifier.removeListener(listener); 
+	}
 
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Sequence)
