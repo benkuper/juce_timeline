@@ -25,7 +25,7 @@ void SequenceBlockUI::paint(Graphics& g)
 	LayerBlockUI::paint(g);
 
 	g.setColour(TEXT_COLOR);
-	g.setFont(jmin(getHeight() - 5, 16));
+	g.setFont(FontOptions(jmin(getHeight() - 5, 16)));
 
 	Sequence* s = block->getTargetSequence();
 	g.drawFittedText(s != nullptr ? s->niceName : "No Sequence selected", getLocalBounds(), Justification::centred, 2);

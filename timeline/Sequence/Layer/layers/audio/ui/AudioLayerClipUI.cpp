@@ -42,7 +42,7 @@ void AudioLayerClipUI::paint(Graphics& g)
 	g.setColour(Colours::white.withAlpha(.5f));
 	if (clip->isLoading)
 	{
-		g.setFont(20);
+		g.setFont(FontOptions(20));
 		g.drawText("Loading...", getLocalBounds(), Justification::centred);
 
 	}

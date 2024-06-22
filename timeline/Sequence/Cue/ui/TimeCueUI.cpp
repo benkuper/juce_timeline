@@ -26,7 +26,7 @@ TimeCueUI::TimeCueUI(TimeCue * timeCue) :
 	itemLabel.setColour(itemLabel.backgroundWhenEditingColourId, Colours::black);
 	itemLabel.setColour(itemLabel.textWhenEditingColourId, Colours::white);
 	itemLabel.setColour(CaretComponent::caretColourId, Colours::orange);
-	itemLabel.setFont(14);
+	itemLabel.setFont(FontOptions(14));
 	itemLabel.setJustificationType(Justification::centredLeft);
 
 	itemLabel.setEditable(false, item->nameCanBeChangedByUser);

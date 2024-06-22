@@ -97,7 +97,7 @@ void SequenceTimelineHeader::paintTime(Graphics& g, Rectangle<int> r)
 	int minuteStartTime = floor((start / minuteSteps) / 60) * minuteSteps;
 	int minuteEndTime = ceil((end / minuteSteps) / 60) * minuteSteps;
 
-	g.setFont(12);
+	g.setFont(FontOptions(12));
 	float fadeAlpha = jlimit<float>(0, 1, jmap<float>(secondGap, minGap, fadeGap, 0, 1));
 
 
@@ -214,7 +214,7 @@ void SequenceTimelineHeader::paintBPM(Graphics& g, Rectangle<int> r)
 
 	int showBarNextStep = showBarStep * 2;
 
-	g.setFont(10);
+	g.setFont(FontOptions(10));
 
 	for (int i = endBeat; i >= startBeat; i--) //reverse to show labels
 	{
