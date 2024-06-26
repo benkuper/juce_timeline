@@ -17,6 +17,9 @@ SequenceLayerManager::SequenceLayerManager(Sequence* _sequence) :
 	itemDataType = "SequenceLayer";
 	hideInEditor = true;
 	managerFactory = &factory;
+
+	hideInRemoteControl = true;
+	defaultHideInRemoteControl = true;
 }
 
 SequenceLayerManager::~SequenceLayerManager()
