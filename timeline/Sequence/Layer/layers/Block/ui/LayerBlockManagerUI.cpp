@@ -55,11 +55,18 @@ LayerBlockUI* LayerBlockManagerUI::createUIForItem(LayerBlock* block)
 
 void LayerBlockManagerUI::placeBlockUI(LayerBlockUI* cui)
 {
-	int tx = timeline->getXForTime(cui->item->time->floatValue());
-	int tx2 = timeline->getXForTime(cui->item->time->floatValue() + cui->item->getTotalLength());
+	float itemStart = cui->item->time->floatValue();
+	float itemEnd = cui->item->getEndTime();
 
-	cui->setViewRange(timeline->item->sequence->viewStartTime->floatValue() - cui->item->time->floatValue(), timeline->item->sequence->viewEndTime->floatValue() - cui->item->time->floatValue());
-	cui->setBounds(tx, 0, tx2 - tx, getHeight());
+	int xStart = jmax(0, timeline->getXForTime(itemStart));
+	int xEnd = jmin(getWidth(), timeline->getXForTime(itemEnd));
+	
+	float itemViewStart = timeline->getTimeForX(xStart);
+	float itemViewEnd = timeline->getTimeForX(xEnd);
+
+	cui->setViewRange(itemViewStart, itemViewEnd);;
+
+	cui->setBounds(xStart, 0, xEnd - xStart, getHeight());
 
 	updateItemVisibility(cui);
 }

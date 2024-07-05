@@ -49,7 +49,10 @@ void AudioLayerClipUI::paint(Graphics& g)
 	else
 	{
 		float volume = clip->volume->controlMode == Parameter::ControlMode::MANUAL ? clip->volume->floatValue() : 1;
-		thumbnail.drawChannels(g, getCoreBounds(), clip->clipStartOffset->floatValue(), clip->clipStartOffset->floatValue() + clip->coreLength->floatValue() / clip->stretchFactor->floatValue(), volume);
+		float stretch = clip->stretchFactor->floatValue();
+		float startOffset = clip->clipStartOffset->floatValue();
+		DBG("Draw channels");
+		thumbnail.drawChannels(g, getCoreBounds(), startOffset + viewStart / stretch, startOffset + viewCoreEnd / stretch, volume);
 	}
 
 	if (clip->fadeIn->floatValue() > 0)
@@ -149,7 +152,7 @@ void AudioLayerClipUI::mouseDown(const MouseEvent& e)
 void AudioLayerClipUI::setupThumbnail()
 {
 	thumbnail.setSource(new FileInputSource(clip->filePath->getFile()));
-	repaint();
+	shouldRepaint = true;
 }
 
 void AudioLayerClipUI::setTargetAutomation(ParameterAutomation* a)
@@ -200,17 +203,17 @@ void AudioLayerClipUI::controllableFeedbackUpdateInternal(Controllable* c)
 
 	if (c == item->time || c == item->coreLength || c == clip->fadeIn || c == clip->fadeOut)
 	{
-		repaint();
+		shouldRepaint = true;
 	}
 	else if (c == clip->volume && clip->volume->controlMode == Parameter::ControlMode::MANUAL)
 	{
-		repaint();
+		shouldRepaint = true;
 	}
 
 	if (c == clip->isActive)
 	{
 		bgColor = clip->isActive->boolValue() ? AUDIO_COLOR.brighter() : BG_COLOR.brighter(.1f);
-		repaint();
+		shouldRepaint = true;
 	}
 }
 
@@ -220,7 +223,7 @@ void AudioLayerClipUI::newMessage(const AudioLayerClip::ClipEvent& e)
 	{
 	case AudioLayerClip::ClipEvent::SOURCE_LOAD_START:
 		thumbnail.setSource(nullptr);
-		repaint();
+		shouldRepaint = true;
 		break;
 
 	case AudioLayerClip::ClipEvent::SOURCE_LOAD_END:
@@ -232,5 +235,5 @@ void AudioLayerClipUI::newMessage(const AudioLayerClip::ClipEvent& e)
 
 void AudioLayerClipUI::changeListenerCallback(ChangeBroadcaster* source)
 {
-	repaint();
+	shouldRepaint = true;
 }
