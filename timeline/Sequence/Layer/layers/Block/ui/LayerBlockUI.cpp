@@ -7,8 +7,12 @@
 
   ==============================================================================
 */
+
+#include "JuceHeader.h"
+
 LayerBlockUI::LayerBlockUI(LayerBlock * block) :
 	BaseItemMinimalUI(block),
+	UITimerTarget(ORGANICUI_SLOW_TIMER),
 	viewStart(0),
 	viewEnd(block->getTotalLength()),
 	viewCoreEnd(block->coreLength->floatValue()),
@@ -29,7 +33,6 @@ LayerBlockUI::LayerBlockUI(LayerBlock * block) :
 		addChildComponent(&coreGrabber);
 		addChildComponent(&loopGrabber);
 	}
-	
 }
 
 LayerBlockUI::~LayerBlockUI()
@@ -55,6 +58,11 @@ void LayerBlockUI::paintOverChildren(Graphics& g)
 		g.setTiledImageFill(ImageCache::getFromMemory(TimelineBinaryData::stripe_png, TimelineBinaryData::stripe_pngSize), 0, 0, .1f);
 		g.fillAll();
 	}
+}
+
+void LayerBlockUI::handlePaintTimerInternal()
+{
+	repaint();
 }
 
 void LayerBlockUI::resized()
@@ -240,4 +248,6 @@ void LayerBlockUI::setViewRange(float relativeStart, float relativeEnd)
 
 	viewCoreEnd = jmin(viewEnd, item->coreLength->floatValue());
 	setViewRangeInternal();
+
+	shouldRepaint = true;
 }

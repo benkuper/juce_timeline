@@ -12,7 +12,8 @@
 
 
 class LayerBlockUI :
-	public BaseItemMinimalUI<LayerBlock>
+	public BaseItemMinimalUI<LayerBlock>,
+	public UITimerTarget
 {
 public:
 	LayerBlockUI(LayerBlock * block);
@@ -40,6 +41,9 @@ public:
 
 	virtual void paint(Graphics &g) override;
 	virtual void paintOverChildren(Graphics& g) override;
+	
+
+	virtual void handlePaintTimerInternal() override;
 
 	virtual void resized() override;
 	virtual void resizedBlockInternal() {};
@@ -60,6 +64,7 @@ public:
 
 	void setViewRange(float relativeStart, float relativeEnd);
 	virtual void setViewRangeInternal() {}
+
 
 
 	class BlockUIListener

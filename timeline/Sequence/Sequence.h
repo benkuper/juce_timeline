@@ -102,7 +102,7 @@ public:
 	virtual bool paste() override;
 
 	void setAudioDeviceManager(AudioDeviceManager * am);
-	void updateSampleRate();
+	virtual void updateSampleRate();
 
 	// Inherited via AudioIODeviceCallback
 	virtual void audioDeviceIOCallbackWithContext(const float* const* inputChannelData,
