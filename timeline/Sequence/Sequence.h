@@ -78,6 +78,8 @@ public:
 	float followViewRange;
 	bool isBeingEdited;
 
+	CriticalSection sequenceTimeLock;
+
 	virtual void clearItem() override;
 
 	void setCurrentTime(float time, bool forceOverPlaying = true, bool seekMode = false);

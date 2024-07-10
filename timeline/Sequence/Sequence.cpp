@@ -119,6 +119,8 @@ void Sequence::setCurrentTime(float time, bool forceOverPlaying, bool seekMode)
 
 	if (isPlaying->boolValue() && !forceOverPlaying) return;
 
+	GenericScopedLock lock(sequenceTimeLock);
+
 	isSeeking = seekMode;
 
 	millisAtSetTime = Time::getMillisecondCounterHiRes();
@@ -128,7 +130,7 @@ void Sequence::setCurrentTime(float time, bool forceOverPlaying, bool seekMode)
 	if (timeIsDrivenByAudio())
 	{
 		hiResAudioTime = time;
-		if (!isPlaying->boolValue() || isSeeking) currentTime->setValue(time);
+		if (!isPlaying->boolValue() || isSeeking || forceOverPlaying) currentTime->setValue(time);
 	}
 	else
 	{
@@ -152,7 +154,7 @@ void Sequence::handleCueAction(TimeCue* cue, TimeCue* originCue)
 	{
 		pauseTrigger->trigger();
 		prevTime = currentTime->floatValue();
-		currentTime->setValue(cue->time->floatValue());
+		setCurrentTime(cue->time->floatValue());
 		return;
 	default:
 		break;
@@ -384,7 +386,7 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 			if (currentTime->floatValue() >= totalTime->floatValue())
 			{
 				hiResAudioTime = 0;
-				currentTime->setValue(0); //if reached the end when hit play, go to 0
+				setCurrentTime(0, true, true); //if reached the end when hit play, go to 0
 			}
 
 			prevTime = currentTime->floatValue();
@@ -419,11 +421,11 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 		float steps = fps->floatValue() / (playSpeed->floatValue() != 0 ? playSpeed->floatValue() : 1.0f);
 		currentTime->unitSteps = steps;
 		totalTime->unitSteps = steps;
+
+		//right now this makes crash because of cross listener call during threads
 		totalTime->setValue(totalTime->floatValue()); //force update
-		currentTime->setValue(currentTime->floatValue()); //force update
+		setCurrentTime(currentTime->floatValue()); //force update
 	}
-
-
 }
 
 void Sequence::onContainerTriggerTriggered(Trigger* t)
@@ -527,7 +529,7 @@ void Sequence::run()
 
 		//DBG(deltaMillis << " : " << (targetTime - currentTime->floatValue()));
 
-		if (!isSeeking) currentTime->setValue(targetTime);
+		if (!isSeeking) setCurrentTime(targetTime);
 
 		if (viewFollowTime->boolValue())
 		{
