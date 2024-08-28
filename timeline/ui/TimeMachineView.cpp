@@ -10,6 +10,8 @@
 
 #include "JuceHeader.h"
 
+std::function<Sequence*()> TimeMachineView::getEditingSequenceCustomFunc = nullptr;
+
 TimeMachineView::TimeMachineView(const String& contentName) :
 	ShapeShifterContentComponent(contentName),
 	autoSelectOnSequenceSelected(true)
@@ -17,8 +19,12 @@ TimeMachineView::TimeMachineView(const String& contentName) :
 	contentIsFlexible = true;
 	InspectableSelectionManager::mainSelectionManager->addAsyncSelectionManagerListener(this);
 
-	Sequence* s = InspectableSelectionManager::mainSelectionManager->getInspectableAs<Sequence>();
-	if (s != nullptr) setSequence(s);
+	if(Sequence* s = InspectableSelectionManager::mainSelectionManager->getInspectableAs<Sequence>()) setSequence(s);
+
+	if (getEditingSequenceCustomFunc != nullptr)
+	{
+		if (Sequence* s = getEditingSequenceCustomFunc()) setSequence(s);
+	}
 
 	helpID = "SequenceEditor";
 

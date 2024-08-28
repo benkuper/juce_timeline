@@ -24,6 +24,8 @@ public:
 	std::unique_ptr<SequenceEditorView> editor;
 
 	bool autoSelectOnSequenceSelected;
+	static std::function<Sequence* ()> getEditingSequenceCustomFunc;
+	
 	void paint(Graphics &g) override;
 	void resized() override;
 
