@@ -42,7 +42,7 @@ void TimeMachineView::paint(Graphics& g)
 
 	if (editor == nullptr)
 	{
-		g.setFont(FontOptions(20));
+		g.setFont(juce::FontOptions(20));
 		g.setColour(BG_COLOR.brighter(.1f));
 		g.drawFittedText("Create a sequence from the Sequences Panel to edit this sequence here.", getLocalBounds(), Justification::centred, 3);
 	}
