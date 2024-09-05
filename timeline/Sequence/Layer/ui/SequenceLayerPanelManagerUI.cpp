@@ -12,6 +12,7 @@ SequenceLayerPanelManagerUI::SequenceLayerPanelManagerUI(SequenceLayerManager * 
 	BaseManagerUI<SequenceLayerManager, SequenceLayer, SequenceLayerPanel>("SequenceLayers", _manager)
 {
 	viewport.setScrollBarsShown(false, false, true, false);
+	animateItemOnAdd = false;
 	addExistingItems();
 }
 
