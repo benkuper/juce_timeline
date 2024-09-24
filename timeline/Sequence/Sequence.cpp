@@ -567,7 +567,7 @@ void Sequence::run()
 	}
 }
 
-void Sequence::endLoadFile()
+void Sequence::fileLoaded()
 {
 	Engine::mainEngine->removeEngineListener(this);
 	if (isBeingEdited) selectThis();
