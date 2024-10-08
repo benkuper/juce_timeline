@@ -61,10 +61,10 @@ void LayerBlockManagerUI::placeBlockUI(LayerBlockUI* cui)
 	int xStart = jmax(0, timeline->getXForTime(itemStart));
 	int xEnd = jmin(getWidth(), timeline->getXForTime(itemEnd));
 	
-	float itemViewStart = timeline->getTimeForX(xStart);
-	float itemViewEnd = timeline->getTimeForX(xEnd);
+	float itemViewStart = timeline->getTimeForX(xStart) - cui->item->time->floatValue();
+	float itemViewEnd = timeline->getTimeForX(xEnd) - cui->item->time->floatValue();
 
-	cui->setViewRange(itemViewStart, itemViewEnd);;
+	cui->setViewRange(itemViewStart, itemViewEnd);
 
 	cui->setBounds(xStart, 0, xEnd - xStart, getHeight());
 
