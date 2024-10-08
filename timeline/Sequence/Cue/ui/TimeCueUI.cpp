@@ -38,19 +38,19 @@ TimeCueUI::TimeCueUI(TimeCue * timeCue) :
 	//setDisableDefaultMouseEvents(true);
 	//removeMouseListener(this);
 
-	setSize(arrowSize + 12 + itemLabel.getFont().getStringWidth(itemLabel.getText()), getHeight());
+	setSize(arrowSize + 12 + TextLayout::getStringWidth(itemLabel.getFont(),itemLabel.getText()), getHeight());
 
 	//setSize(10, 20);
-	 
+
 }
 
 TimeCueUI::~TimeCueUI()
 {
 }
 
-void TimeCueUI::paint(Graphics & g)
+void TimeCueUI::paint(Graphics& g)
 {
-	
+
 	Colour c = bgColor;
 	if (item->isSelected) c = HIGHLIGHT_COLOR;
 	else
@@ -63,10 +63,10 @@ void TimeCueUI::paint(Graphics & g)
 	if (isMouseOver()) c = c.brighter();
 
 	if (item->isUILocked->boolValue()) c = c.interpolatedWith(RED_COLOR, .5f);
-	
+
 	g.setColour(c);
 	g.fillPath(drawPath);
-	
+
 	g.setColour(c.darker());
 	g.strokePath(drawPath, PathStrokeType(1));
 
@@ -91,13 +91,13 @@ void TimeCueUI::resized()
 
 }
 
-void TimeCueUI::mouseDoubleClick(const MouseEvent & e)
+void TimeCueUI::mouseDoubleClick(const MouseEvent& e)
 {
 	BaseItemMinimalUI::mouseDoubleClick(e);
 	if (e.mods.isCommandDown()) item->remove();
 }
 
-void TimeCueUI::mouseDown(const MouseEvent & e)
+void TimeCueUI::mouseDown(const MouseEvent& e)
 {
 	if (e.eventComponent == &itemLabel || e.eventComponent == itemLabel.getCurrentTextEditor()) return;
 	BaseItemMinimalUI::mouseDown(e);
@@ -105,34 +105,34 @@ void TimeCueUI::mouseDown(const MouseEvent & e)
 	if (!item->isUILocked->boolValue() && e.eventComponent != &itemLabel) cueUIListeners.call(&TimeCueUIListener::cueMouseDown, this, e);
 }
 
-void TimeCueUI::mouseDrag(const MouseEvent & e)
+void TimeCueUI::mouseDrag(const MouseEvent& e)
 {
 	if (e.eventComponent == &itemLabel || e.eventComponent == itemLabel.getCurrentTextEditor()) return;
 	BaseItemMinimalUI::mouseDrag(e);
-	if(!item->isUILocked->boolValue() && e.eventComponent != &itemLabel) cueUIListeners.call(&TimeCueUIListener::cueDragged, this, e);
+	if (!item->isUILocked->boolValue() && e.eventComponent != &itemLabel) cueUIListeners.call(&TimeCueUIListener::cueDragged, this, e);
 }
 
-void TimeCueUI::mouseUp(const MouseEvent & e)
+void TimeCueUI::mouseUp(const MouseEvent& e)
 {
 	if (e.eventComponent == &itemLabel || e.eventComponent == itemLabel.getCurrentTextEditor()) return;
 	BaseItemMinimalUI::mouseUp(e);
 
-	if(!item->isUILocked->boolValue() && item->time->floatValue() != timeAtMouseDown) item->time->setUndoableValue(timeAtMouseDown, item->time->floatValue());
+	if (!item->isUILocked->boolValue() && item->time->floatValue() != timeAtMouseDown) item->time->setUndoableValue(timeAtMouseDown, item->time->floatValue());
 
 	if (!item->isUILocked->boolValue() && e.eventComponent != &itemLabel) cueUIListeners.call(&TimeCueUIListener::cueMouseUp, this, e);
 }
 
-void TimeCueUI::labelTextChanged(Label * l)
+void TimeCueUI::labelTextChanged(Label* l)
 {
 	if (l == &itemLabel)
 	{
 		if (l->getText().isEmpty()) itemLabel.setText(this->baseItem->niceName, dontSendNotification); //avoid setting empty names
 		else this->baseItem->setUndoableNiceName(l->getText());
-		setSize(arrowSize + 12 + itemLabel.getFont().getStringWidth(itemLabel.getText()), getHeight());
+		setSize(arrowSize + 12 + TextLayout::getStringWidth(itemLabel.getFont(),itemLabel.getText()), getHeight());
 	}
 }
 
-void TimeCueUI::controllableFeedbackUpdateInternal(Controllable * c)
+void TimeCueUI::controllableFeedbackUpdateInternal(Controllable* c)
 {
 	if (c == item->time)
 	{
@@ -148,8 +148,8 @@ void TimeCueUI::controllableFeedbackUpdateInternal(Controllable * c)
 	}
 }
 
-void TimeCueUI::containerChildAddressChangedAsync(ControllableContainer * cc)
+void TimeCueUI::containerChildAddressChangedAsync(ControllableContainer* cc)
 {
 	itemLabel.setText(item->niceName, dontSendNotification);
-	setSize(arrowSize + 12 + itemLabel.getFont().getStringWidth(itemLabel.getText()), getHeight());
+	setSize(arrowSize + 12 + TextLayout::getStringWidth(itemLabel.getFont(),itemLabel.getText()), getHeight());
 }

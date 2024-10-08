@@ -90,7 +90,7 @@ bool TimeTriggerUI::hitTest(int x, int y)
 
 void TimeTriggerUI::updateSizeFromName()
 {
-	int newWidth = itemLabel.getFont().getStringWidth(itemLabel.getText())+ 15;
+	int newWidth = TextLayout::getStringWidth(itemLabel.getFont(), itemLabel.getText())+ 15;
 	if (item->isSelected)
 	{
 		newWidth += 60; //for all the buttons
