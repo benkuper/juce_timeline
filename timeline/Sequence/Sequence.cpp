@@ -130,7 +130,7 @@ void Sequence::setCurrentTime(float time, bool forceOverPlaying, bool seekMode)
 	if (timeIsDrivenByAudio())
 	{
 		hiResAudioTime = time;
-		if (!isPlaying->boolValue() || isSeeking || forceOverPlaying) currentTime->setValue(time);
+		if (!isPlaying->boolValue() || isSeeking || forceOverPlaying) currentTime->setValue(time, false, true);
 	}
 	else
 	{
@@ -567,7 +567,7 @@ void Sequence::run()
 	}
 }
 
-void Sequence::endLoadFile()
+void Sequence::fileLoaded()
 {
 	Engine::mainEngine->removeEngineListener(this);
 	if (isBeingEdited) selectThis();

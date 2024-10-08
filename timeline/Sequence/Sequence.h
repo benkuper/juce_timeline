@@ -131,7 +131,7 @@ public:
 	
 	virtual void run() override;
 
-	virtual void endLoadFile() override;
+	virtual void fileLoaded() override;
 	virtual void handleStartAtLoad();
 
 	virtual var getJSONData() override;
