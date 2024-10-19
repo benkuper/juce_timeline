@@ -154,7 +154,7 @@ public:
 		virtual void sequenceEditingStateChanged(Sequence *) {}
 	};
 
-	DECLARE_INSPECTACLE_LIGHT_LISTENER(Sequence, sequence);
+	DECLARE_INSPECTACLE_SAFE_LISTENER(Sequence, sequence);
 	DECLARE_ASYNC_EVENT(Sequence, Sequence, sequence, ENUM_LIST(EDITING_STATE_CHANGED, PLAY_STATE_CHANGED), EVENT_ITEM_CHECK);
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Sequence)
