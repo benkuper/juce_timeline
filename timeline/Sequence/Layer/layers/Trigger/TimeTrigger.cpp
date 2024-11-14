@@ -51,8 +51,8 @@ Point<float> TimeTrigger::getPosition()
 
 void TimeTrigger::addUndoableMoveAction(Array<UndoableAction*>& actions)
 {
-	actions.add(time->setUndoableValue(movePositionReference.x, time->floatValue(), true));
-	actions.add(flagY->setUndoableValue(movePositionReference.y, flagY->floatValue(), true));
+	actions.addArray(time->setUndoableValue(movePositionReference.x, time->floatValue(), true));
+	actions.addArray(flagY->setUndoableValue(movePositionReference.y, flagY->floatValue(), true));
 
 }
 
