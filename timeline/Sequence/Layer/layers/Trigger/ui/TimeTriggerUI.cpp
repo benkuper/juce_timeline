@@ -147,8 +147,8 @@ void TimeTriggerUI::mouseUp(const MouseEvent & e)
 	else
 	{
 		Array<UndoableAction*> actions;
-		actions.addArray(item->flagY->setUndoableValue(flagYAtMouseDown, item->flagY->floatValue(), true, false));
-		if (!item->isUILocked->boolValue()) actions.addArray(item->time->setUndoableValue(timeAtMouseDown, item->time->floatValue(), true, false));
+		actions.addArray(item->flagY->setUndoableValue(item->flagY->floatValue(), true, false));
+		if (!item->isUILocked->boolValue()) actions.addArray(item->time->setUndoableValue(item->time->floatValue(), true, false));
 		UndoMaster::getInstance()->performActions("Move Trigger \"" + item->niceName + "\"", actions);
 	}
 }

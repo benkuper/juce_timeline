@@ -217,7 +217,7 @@ void AudioLayer::clipSourceLoaded(AudioLayerClip* clip)
 	if (clipManager.items.size() == 1 && clip->getTotalLength() > sequence->totalTime->doubleValue())
 	{
 		clip->time->setValue(0);
-		sequence->totalTime->setUndoableValue(sequence->totalTime->doubleValue(), clip->getTotalLength());
+		sequence->totalTime->setUndoableValue(clip->getTotalLength());
 		NLOG(niceName, "Imported audio file is longer than the sequence, expanding total time to match the audio file length.");
 	}
 }

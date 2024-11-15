@@ -174,17 +174,17 @@ void LayerBlockUI::mouseUp(const MouseEvent & e)
 		}
 		else if (e.eventComponent == &grabber)
 		{
-			item->time->setUndoableValue(item->movePositionReference.x, item->time->floatValue());
-			item->coreLength->setUndoableValue(coreLengthAtMouseDown, item->coreLength->floatValue());
+			item->time->setUndoableValue(item->time->floatValue());
+			item->coreLength->setUndoableValue(item->coreLength->floatValue());
 		}
 		else if (e.eventComponent == &coreGrabber)
 		{
-			item->time->setUndoableValue(item->movePositionReference.x, item->time->floatValue());
-			item->coreLength->setUndoableValue(coreLengthAtMouseDown, item->coreLength->floatValue());
+			item->time->setUndoableValue(item->time->floatValue());
+			item->coreLength->setUndoableValue(item->coreLength->floatValue());
 		}
 		else if (e.eventComponent == &loopGrabber)
 		{
-			item->loopLength->setUndoableValue(loopLengthAtMouseDown, item->loopLength->floatValue());
+			item->loopLength->setUndoableValue(item->loopLength->floatValue());
 		}
 
 		isDragging = false;
