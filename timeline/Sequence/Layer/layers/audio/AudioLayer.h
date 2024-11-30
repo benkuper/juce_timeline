@@ -39,6 +39,7 @@ public:
 	FloatParameter* panning;
 	FloatParameter* enveloppe;
 
+	int numActiveInputs;
 	int numActiveOutputs;
 
 	AudioProcessorGraph::NodeID graphID;
@@ -67,21 +68,31 @@ public:
 	int prevMetronomeBeat;
 	var metronomeData; //for ghosting
 
+	//safety
+	bool settingAudioGraph;
+
 	virtual void clearItem() override;
 
 	void setAudioProcessorGraph(AudioProcessorGraph* graph, AudioProcessorGraph::NodeID graphOutputID = AudioProcessorGraph::NodeID(2));
 	virtual AudioLayerProcessor* createAudioLayerProcessor();
 
+	virtual int getNodeGraphIDIncrement() { return graphIDIncrement++; }
+
 	virtual AudioLayerClip* createAudioClip();
 
 	virtual void updateCurrentClip();
 
-	void itemAdded(LayerBlock*) override;
+	void itemAdded(LayerBlock* clip) override;
+	void itemsAdded(Array<LayerBlock*> clips) override;
 	void itemRemoved(LayerBlock* clip) override;
+	void itemsRemoved(Array<LayerBlock*> clips) override;
 
 	void clipSourceLoaded(AudioLayerClip* clip) override;
 
-	void updateSelectedOutChannels();
+	virtual void updateSelectedOutChannels();
+	virtual void updateSelectedOutChannelsInternal() {}
+	void updatePlayConfigDetails();
+
 	void updateClipConfig(AudioLayerClip* clip, bool updateOutputChannelRemapping = true);
 
 	virtual float getVolumeFactor();

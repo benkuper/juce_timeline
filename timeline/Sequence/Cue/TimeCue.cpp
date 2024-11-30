@@ -28,6 +28,8 @@ TimeCue::TimeCue(const float& _time, TimeCueManager* manager) :
 	loopCue->maxDefaultSearchLevel = 0;
 	loopCue->showParentNameInEditor = false;
 
+	playFromHere = addTrigger("Play From Here", "Play the sequence from this cue");
+
 	isUILocked->hideInEditor = false;
 
 }
@@ -43,6 +45,19 @@ bool TimeCue::isCurrentlyActive()
 	return true;
 }
 
+
+void TimeCue::onContainerTriggerTriggered(Trigger* t)
+{
+
+	if (t == playFromHere)
+	{
+		if (Sequence* seq = getSequence())
+		{
+			seq->setCurrentTime(time->floatValue(),true, true);
+			seq->playTrigger->trigger();
+		}
+	}
+}
 
 void TimeCue::onContainerParameterChangedInternal(Parameter* p)
 {

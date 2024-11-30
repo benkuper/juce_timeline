@@ -23,7 +23,6 @@ public :
 	Trigger* unlockAll;
 	Trigger* goToNextKey;
 	Trigger * goToPrevKey;
-	BoolParameter * triggerWhenSeeking;
 
 	void setManager(TimeTriggerManager * ttm);
 

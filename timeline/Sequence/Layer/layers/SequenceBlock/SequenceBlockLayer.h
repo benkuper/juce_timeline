@@ -30,8 +30,10 @@ public:
 	virtual void clearItem() override;
 
 
-	void itemAdded(LayerBlock*) override;
-	void itemRemoved(LayerBlock* clip) override;
+	void itemAdded(LayerBlock* item) override;
+	void itemsAdded(Array<LayerBlock*> items) override;
+	void itemRemoved(LayerBlock* item) override;
+	void itemsRemoved(Array<LayerBlock*> items) override;
 
 	void updateCurrentBlock();
 

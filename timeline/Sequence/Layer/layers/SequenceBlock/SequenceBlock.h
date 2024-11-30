@@ -29,7 +29,7 @@ public:
 
 
 	void onContainerParameterChangedInternal(Parameter *) override;
-	String getTypeString() const override { return "SequenceBlock"; }
+	DECLARE_TYPE("SequenceBlock");
 };
 
 

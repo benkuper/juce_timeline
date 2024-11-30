@@ -1,15 +1,15 @@
 /*
   ==============================================================================
 
-    LayerBlockManagerUI::.cpp
-    Created: 14 Feb 2019 11:15:08am
-    Author:  bkupe
+	LayerBlockManagerUI::.cpp
+	Created: 14 Feb 2019 11:15:08am
+	Author:  bkupe
 
   ==============================================================================
 */
 
 
-LayerBlockManagerUI::LayerBlockManagerUI(SequenceLayerTimeline * timeline, LayerBlockManager * manager) :
+LayerBlockManagerUI::LayerBlockManagerUI(SequenceLayerTimeline* timeline, LayerBlockManager* manager) :
 	BaseManagerUI("Block Manager", manager, false),
 	timeline(timeline),
 	miniMode(false)
@@ -35,7 +35,7 @@ void LayerBlockManagerUI::resized()
 
 void LayerBlockManagerUI::updateContent()
 {
-	for (auto &cui : itemsUI) placeBlockUI(cui);
+	for (auto& cui : itemsUI) placeBlockUI(cui);
 }
 
 void LayerBlockManagerUI::setMiniMode(bool value)
@@ -46,27 +46,34 @@ void LayerBlockManagerUI::setMiniMode(bool value)
 	for (auto& i : itemsUI) i->setInterceptsMouseClicks(!miniMode, !miniMode);
 }
 
-LayerBlockUI * LayerBlockManagerUI::createUIForItem(LayerBlock * block)
+LayerBlockUI* LayerBlockManagerUI::createUIForItem(LayerBlock* block)
 {
-	LayerBlockUI * b =  new LayerBlockUI(block);
+	LayerBlockUI* b = new LayerBlockUI(block);
 	b->setInterceptsMouseClicks(!miniMode, !miniMode);
 	return b;
 }
 
-void LayerBlockManagerUI::placeBlockUI(LayerBlockUI * cui)
+void LayerBlockManagerUI::placeBlockUI(LayerBlockUI* cui)
 {
-	int tx = timeline->getXForTime(cui->item->time->floatValue());
-	int tx2 = timeline->getXForTime(cui->item->time->floatValue() + cui->item->getTotalLength());
+	float itemStart = cui->item->time->floatValue();
+	float itemEnd = cui->item->getEndTime();
 
-	cui->setViewRange(timeline->item->sequence->viewStartTime->floatValue() - cui->item->time->floatValue(), timeline->item->sequence->viewEndTime->floatValue() - cui->item->time->floatValue());
-	cui->setBounds(tx, 0, tx2 - tx, getHeight());
+	int xStart = jmax(0, timeline->getXForTime(itemStart));
+	int xEnd = jmin(getWidth(), timeline->getXForTime(itemEnd));
+	
+	float itemViewStart = timeline->getTimeForX(xStart) - cui->item->time->floatValue();
+	float itemViewEnd = timeline->getTimeForX(xEnd) - cui->item->time->floatValue();
+
+	cui->setViewRange(itemViewStart, itemViewEnd);
+
+	cui->setBounds(xStart, 0, xEnd - xStart, getHeight());
 
 	updateItemVisibility(cui);
 }
 
-void LayerBlockManagerUI::mouseDoubleClick(const MouseEvent & e)
+void LayerBlockManagerUI::mouseDoubleClick(const MouseEvent& e)
 {
-	if(!e.mods.isCommandDown() && !e.mods.isShiftDown() && manager->userCanAddItemsManually && !miniMode) manager->addBlockAt(timeline->getTimeForX(getMouseXYRelative().x));
+	if (!e.mods.isCommandDown() && !e.mods.isShiftDown() && manager->userCanAddItemsManually && !miniMode) manager->addBlockAt(timeline->getTimeForX(getMouseXYRelative().x));
 }
 
 void LayerBlockManagerUI::addItemFromMenu(bool isFromAddButton, Point<int> mouseDownPos)
@@ -76,18 +83,18 @@ void LayerBlockManagerUI::addItemFromMenu(bool isFromAddButton, Point<int> mouse
 	manager->addBlockAt(timeline->getTimeForX(mouseDownPos.x));
 }
 
-void LayerBlockManagerUI::addItemUIInternal(LayerBlockUI * cui)
+void LayerBlockManagerUI::addItemUIInternal(LayerBlockUI* cui)
 {
 	cui->addBlockUIListener(this);
 	placeBlockUI(cui);
 }
 
-void LayerBlockManagerUI::removeItemUIInternal(LayerBlockUI * cui)
+void LayerBlockManagerUI::removeItemUIInternal(LayerBlockUI* cui)
 {
 	cui->removeBlockUIListener(this);
 }
 
-void LayerBlockManagerUI::blockUITimeChanged(LayerBlockUI * cui)
+void LayerBlockManagerUI::blockUITimeChanged(LayerBlockUI* cui)
 {
 	placeBlockUI(cui);
 }
@@ -98,7 +105,7 @@ void LayerBlockManagerUI::blockUIMouseDown(LayerBlockUI* cui, const MouseEvent& 
 	timeline->item->sequence->getSnapTimes(&snapTimes);
 }
 
-void LayerBlockManagerUI::blockUIDragged(LayerBlockUI * cui, const MouseEvent& e)
+void LayerBlockManagerUI::blockUIDragged(LayerBlockUI* cui, const MouseEvent& e)
 {
 	if (miniMode) return;
 
@@ -129,26 +136,28 @@ void LayerBlockManagerUI::blockUIDragged(LayerBlockUI * cui, const MouseEvent& e
 			}
 		}
 
-		targetOffsetTime = targetTime - cui->item->movePositionReference.x;
+		float snapTargetOffsetTime = targetTime - cui->item->movePositionReference.x;
+		if (fabsf(snapTargetOffsetTime - targetOffsetTime) < 1) targetOffsetTime = snapTargetOffsetTime;
 	}
 
 	cui->item->movePosition(Point<float>(targetOffsetTime, 0), true);
 
-	
+
 	cui->setViewRange(timeline->item->sequence->viewStartTime->floatValue() - cui->item->time->floatValue(), timeline->item->sequence->viewEndTime->floatValue() - cui->item->time->floatValue());
 	cui->resized(); //force resize because changing time will not resize it, just move it
 }
 
-void LayerBlockManagerUI::blockUIStartDragged(LayerBlockUI * cui, const MouseEvent & e)
+void LayerBlockManagerUI::blockUIStartDragged(LayerBlockUI* cui, const MouseEvent& e)
 {
 	if (miniMode) return;
-	
+
 	float timeDiff = timeline->getTimeForX(e.getOffsetFromDragStart().x, false);
-	float targetTime = cui->item->movePositionReference.x +timeDiff;
+	float targetTime = cui->item->movePositionReference.x + timeDiff;
 
 	if (timeline->item->sequence->autoSnap->boolValue())
 	{
-		targetTime = timeline->item->sequence->getClosestSnapTimeFor(snapTimes, targetTime);
+		float snapTargetTime = timeline->item->sequence->getClosestSnapTimeFor(snapTimes, targetTime);
+		if (fabsf(snapTargetTime - targetTime) < 1) targetTime = snapTargetTime;
 	}
 
 
@@ -161,14 +170,14 @@ void LayerBlockManagerUI::blockUIStartDragged(LayerBlockUI * cui, const MouseEve
 	float realTimeDiff = cui->item->time->floatValue() - cui->item->movePositionReference.x;
 	float targetCoreLength = cui->coreLengthAtMouseDown - realTimeDiff;
 
-	cui->item->setCoreLength(targetCoreLength,e.mods.isShiftDown(), !e.mods.isAltDown());
+	cui->item->setCoreLength(targetCoreLength, e.mods.isShiftDown(), !e.mods.isAltDown());
 	cui->setViewRange(timeline->item->sequence->viewStartTime->floatValue() - cui->item->time->floatValue(), timeline->item->sequence->viewEndTime->floatValue() - cui->item->time->floatValue());
 }
 
-void LayerBlockManagerUI::blockUICoreDragged(LayerBlockUI * cui, const MouseEvent & e)
+void LayerBlockManagerUI::blockUICoreDragged(LayerBlockUI* cui, const MouseEvent& e)
 {
 	if (miniMode) return;
-	
+
 	if (e.mods.isCommandDown())
 	{
 		blockUILoopDragged(cui, e);
@@ -181,7 +190,9 @@ void LayerBlockManagerUI::blockUICoreDragged(LayerBlockUI * cui, const MouseEven
 	{
 		float targetTime = cui->item->time->floatValue() + targetCoreLength;
 		targetTime = timeline->item->sequence->getClosestSnapTimeFor(snapTimes, targetTime);
-		targetCoreLength = targetTime - cui->item->time->floatValue();
+		float snapTargetCoreLength = targetTime - cui->item->time->floatValue();
+		if (fabsf(snapTargetCoreLength - targetCoreLength) < 1) targetCoreLength = snapTargetCoreLength;
+
 	}
 
 
@@ -199,10 +210,10 @@ void LayerBlockManagerUI::blockUICoreDragged(LayerBlockUI * cui, const MouseEven
 	cui->setViewRange(timeline->item->sequence->viewStartTime->floatValue() - cui->item->time->floatValue(), timeline->item->sequence->viewEndTime->floatValue() - cui->item->time->floatValue());
 }
 
-void LayerBlockManagerUI::blockUILoopDragged(LayerBlockUI * cui, const MouseEvent & e)
+void LayerBlockManagerUI::blockUILoopDragged(LayerBlockUI* cui, const MouseEvent& e)
 {
 	float targetLoopLength = cui->loopLengthAtMouseDown + timeline->getTimeForX(e.getOffsetFromDragStart().x, false);
-	
+
 	if (!manager->blocksCanOverlap)
 	{
 		int itemIndex = manager->items.indexOf(cui->item);
@@ -212,14 +223,15 @@ void LayerBlockManagerUI::blockUILoopDragged(LayerBlockUI * cui, const MouseEven
 			targetLoopLength = jmin<float>(maxLoopLength, targetLoopLength);
 		}
 	}
-	
+
 	if (e.mods.isShiftDown() || timeline->item->sequence->autoSnap->boolValue())
 	{
 		float targetTime = cui->item->getCoreEndTime() + targetLoopLength;
 		targetTime = timeline->item->sequence->getClosestSnapTimeFor(snapTimes, targetTime);
-		targetLoopLength = targetTime - cui->item->getCoreEndTime();
+		float snapTargetLoopLength = targetTime - cui->item->getCoreEndTime();
+		if(fabsf(targetLoopLength - cui->loopLengthAtMouseDown) < 1) targetLoopLength = snapTargetLoopLength;
 	}
-	
+
 	cui->item->setLoopLength(targetLoopLength);
 	cui->setViewRange(timeline->item->sequence->viewStartTime->floatValue() - cui->item->time->floatValue(), timeline->item->sequence->viewEndTime->floatValue() - cui->item->time->floatValue());
 }

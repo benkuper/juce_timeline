@@ -45,6 +45,11 @@ void TimeTriggerManager::addItemInternal(TimeTrigger* t, var data)
 	t->time->setRange(0, sequence->totalTime->floatValue());
 }
 
+void TimeTriggerManager::addItemsInternal(Array<TimeTrigger*> items, var data)
+{
+	for (auto& t : items) t->time->setRange(0, sequence->totalTime->floatValue());
+}
+
 Array<TimeTrigger*> TimeTriggerManager::addItemsFromClipboard(bool showWarning)
 {
 	Array<TimeTrigger*> triggers = BaseManager::addItemsFromClipboard(showWarning);
@@ -158,18 +163,15 @@ void TimeTriggerManager::sequenceCurrentTimeChanged(Sequence* /*_sequence*/, flo
 
 	if (normallyPlaying)
 	{
-		if (evaluateSkippedData || ModifierKeys::getCurrentModifiers().isCtrlDown())
+		if ((sequence->isPlaying->boolValue() && !sequence->isSeeking) || evaluateSkippedData || ModifierKeys::getCurrentModifiers().isCtrlDown())
 		{
-			if (!sequence->isSeeking || !sequence->isPlaying->boolValue() || layer->triggerWhenSeeking->boolValue())
-			{
-				float minTime = jmin(prevTime, curTime);
-				float maxTime = jmax(prevTime, curTime);
+			float minTime = jmin(prevTime, curTime);
+			float maxTime = jmax(prevTime, curTime);
 
-				Array<TimeTrigger*> spanTriggers = getTriggersInTimespan(minTime, maxTime);
-				for (auto& tt : spanTriggers)
-				{
-					tt->trigger();
-				}
+			Array<TimeTrigger*> spanTriggers = getTriggersInTimespan(minTime, maxTime);
+			for (auto& tt : spanTriggers)
+			{
+				tt->trigger();
 			}
 		}
 	}

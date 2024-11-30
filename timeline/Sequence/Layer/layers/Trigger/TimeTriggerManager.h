@@ -1,9 +1,9 @@
 /*
   ==============================================================================
 
-    TimeTriggerManager.h
-    Created: 10 Dec 2016 12:22:48pm
-    Author:  Ben
+	TimeTriggerManager.h
+	Created: 10 Dec 2016 12:22:48pm
+	Author:  Ben
 
   ==============================================================================
 */
@@ -18,34 +18,35 @@ class TimeTriggerManager :
 	public Sequence::SequenceListener
 {
 public:
-	TimeTriggerManager(TriggerLayer * layer, Sequence * sequence);
+	TimeTriggerManager(TriggerLayer* layer, Sequence* sequence);
 	virtual ~TimeTriggerManager();
-	
-	TriggerLayer * layer;
-	Sequence * sequence;
 
-	virtual void addTriggerAt(float time,float flagYPos);
+	TriggerLayer* layer;
+	Sequence* sequence;
 
-	void addItemInternal(TimeTrigger * t, var data) override;
-	
-	Array<TimeTrigger *> addItemsFromClipboard(bool showWarning = true) override;
-	bool canAddItemOfType(const String & typeToCheck) override;
+	virtual void addTriggerAt(float time, float flagYPos);
+
+	void addItemInternal(TimeTrigger* t, var data) override;
+	void addItemsInternal(Array<TimeTrigger*> items, var data) override;
+
+	Array<TimeTrigger*> addItemsFromClipboard(bool showWarning = true) override;
+	bool canAddItemOfType(const String& typeToCheck) override;
 
 	TimeTrigger* getPrevTrigger(float time, bool includeCurrentTime = false);
 	TimeTrigger* getNextTrigger(float time, bool includeCurrentTime = false);
-	Array<TimeTrigger *> getTriggersInTimespan(float startTime, float endTime, bool includeAlreadyTriggered = false);
+	Array<TimeTrigger*> getTriggersInTimespan(float startTime, float endTime, bool includeAlreadyTriggered = false);
 
 	Array<UndoableAction*> getMoveKeysBy(float start, float offset);
 	Array<UndoableAction*> getRemoveTimespan(float start, float end);
 
-	void onControllableFeedbackUpdate(ControllableContainer * cc, Controllable * c) override;
+	void onControllableFeedbackUpdate(ControllableContainer* cc, Controllable* c) override;
 
-	void sequenceCurrentTimeChanged(Sequence * _sequence, float prevTime, bool evaluateSkippedData) override;
+	void sequenceCurrentTimeChanged(Sequence* _sequence, float prevTime, bool evaluateSkippedData) override;
 	void sequenceTotalTimeChanged(Sequence*) override;
-	void sequencePlayDirectionChanged(Sequence *) override;
-	void sequenceLooped(Sequence *) override;
+	void sequencePlayDirectionChanged(Sequence*) override;
+	void sequenceLooped(Sequence*) override;
 
-	static int compareTime(TimeTrigger * t1, TimeTrigger * t2);
+	static int compareTime(TimeTrigger* t1, TimeTrigger* t2);
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TimeTriggerManager)
 };

@@ -35,7 +35,9 @@ public:
 	BoolParameter * loopParam;
 	IntParameter * fps;
 	BoolParameter* autoSnap;
-	BoolParameter* evaluateOnSeekAndPlay;
+
+	enum EvaluateMode { NEVER, ONLY_PLAYING, ONLY_NOT_PLAYING, ALWAYS };
+	EnumParameter* evaluateOnSeek;
 
 	FloatParameter* bpmPreview;
 	IntParameter * beatsPerBar;
@@ -76,6 +78,8 @@ public:
 	float followViewRange;
 	bool isBeingEdited;
 
+	CriticalSection sequenceTimeLock;
+
 	virtual void clearItem() override;
 
 	void setCurrentTime(float time, bool forceOverPlaying = true, bool seekMode = false);
@@ -100,7 +104,7 @@ public:
 	virtual bool paste() override;
 
 	void setAudioDeviceManager(AudioDeviceManager * am);
-	void updateSampleRate();
+	virtual void updateSampleRate();
 
 	// Inherited via AudioIODeviceCallback
 	virtual void audioDeviceIOCallbackWithContext(const float* const* inputChannelData,
@@ -120,10 +124,14 @@ public:
 	virtual void onControllableStateChanged(Controllable* c) override;
 
 	virtual void parameterControlModeChanged(Parameter* p) override;
+
+	virtual bool handleRemoteControlData(Controllable* c, const juce::OSCMessage& m, const juce::String& cliendId) override;
+
+	virtual String getPanelName() const;
 	
 	virtual void run() override;
 
-	virtual void endLoadFile() override;
+	virtual void fileLoaded() override;
 	virtual void handleStartAtLoad();
 
 	virtual var getJSONData() override;
@@ -146,26 +154,8 @@ public:
 		virtual void sequenceEditingStateChanged(Sequence *) {}
 	};
 
-	ListenerList<SequenceListener> sequenceListeners;
-	void addSequenceListener(SequenceListener* newListener) { sequenceListeners.add(newListener); }
-	void removeSequenceListener(SequenceListener* listener) { sequenceListeners.remove(listener); }
-
-
-	class SequenceEvent {
-	public:
-		enum Type { EDITING_STATE_CHANGED, PLAY_STATE_CHANGED };
-		SequenceEvent(Type type, Sequence * s) : type(type), sequence(s) {}
-		Type type;
-		Sequence * sequence;
-	};
-
-	QueuedNotifier<SequenceEvent> sequenceNotifier;
-	typedef QueuedNotifier<SequenceEvent>::Listener AsyncListener;
-
-	void addAsyncSequenceListener(AsyncListener* newListener) { sequenceNotifier.addListener(newListener); }
-	void addAsyncCoalescedSequenceListener(AsyncListener* newListener) { sequenceNotifier.addAsyncCoalescedListener(newListener); }
-	void removeAsyncSequenceListener(AsyncListener* listener) { sequenceNotifier.removeListener(listener); }
-
+	DECLARE_INSPECTACLE_CRITICAL_LISTENER(Sequence, sequence);
+	DECLARE_ASYNC_EVENT(Sequence, Sequence, sequence, ENUM_LIST(EDITING_STATE_CHANGED, PLAY_STATE_CHANGED), EVENT_ITEM_CHECK);
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Sequence)
 

@@ -20,6 +20,7 @@ AudioLayer::AudioLayer(Sequence* _sequence, var params) :
 	currentProcessor(nullptr),
 	channelsCC("Channels"),
 	enveloppe(nullptr),
+	numActiveInputs(0),
 	numActiveOutputs(0),
 	graphID(0), //was -1 but since 5.2.1, generated warning. Should do otherwise ?
 	audioOutputGraphID(2),
@@ -28,7 +29,8 @@ AudioLayer::AudioLayer(Sequence* _sequence, var params) :
 	stopAtVolumeInterpolationFinish(false),
 	clipIsStopping(false),
 	metronomeCC("Metronome Channels"),
-	prevMetronomeBeat(0)
+	prevMetronomeBeat(0),
+	settingAudioGraph(false)
 {
 
 	helpID = "AudioLayer";
@@ -77,6 +79,8 @@ void AudioLayer::clearItem()
 
 void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph* graph, AudioProcessorGraph::NodeID outputGraphID)
 {
+	settingAudioGraph = true;
+
 	if (currentGraph != nullptr)
 	{
 		currentGraph->removeNode(graphID);
@@ -97,8 +101,8 @@ void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph* graph, AudioProcess
 		auto proc = std::unique_ptr<AudioLayerProcessor>(createAudioLayerProcessor());
 		currentProcessor = proc.get();
 
-		graphIDIncrement++;
-		graphID = AudioProcessorGraph::NodeID(graphIDIncrement);
+		int graphIDInc = getNodeGraphIDIncrement();
+		graphID = AudioProcessorGraph::NodeID(graphIDInc);
 		currentGraph->addNode(std::move(proc), graphID);
 
 		int numChannels = currentGraph->getMainBusNumOutputChannels();
@@ -121,6 +125,9 @@ void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph* graph, AudioProcess
 	audioOutputGraphID = outputGraphID;
 
 	updateSelectedOutChannels();
+
+	settingAudioGraph = false;
+
 }
 
 AudioLayerProcessor* AudioLayer::createAudioLayerProcessor()
@@ -160,7 +167,7 @@ void AudioLayer::updateCurrentClip()
 		currentClip->transportSource.setPosition(pos);
 
 		if (sequence->isPlaying->boolValue()) currentClip->start();
-		updateSelectedOutChannels();
+		//updateSelectedOutChannels();
 	}
 
 }
@@ -174,9 +181,32 @@ void AudioLayer::itemAdded(LayerBlock* item)
 	updateSelectedOutChannels();
 }
 
+void AudioLayer::itemsAdded(Array<LayerBlock*> clips)
+{
+	for (auto& clip : clips)
+	{
+		((AudioLayerClip*)clip)->addClipListener(this);
+
+		if (isCurrentlyLoadingData || Engine::mainEngine->isLoadingFile) continue;
+		updateClipConfig((AudioLayerClip*)clip, true);
+	}
+
+	updateSelectedOutChannels();
+}
+
 void AudioLayer::itemRemoved(LayerBlock* item)
 {
 	((AudioLayerClip*)item)->removeClipListener(this);
+
+	updateCurrentClip();
+}
+
+void AudioLayer::itemsRemoved(Array<LayerBlock*> clips)
+{
+	for (auto& clip : clips)
+	{
+		((AudioLayerClip*)clip)->removeClipListener(this);
+	}
 
 	updateCurrentClip();
 }
@@ -216,12 +246,13 @@ void AudioLayer::updateSelectedOutChannels()
 
 		if (metronome != nullptr)
 		{
-			if (((BoolParameter*)metronomeCC.controllables[i])->boolValue())
-			{
-				metronomeOutChannels.add(i);
-				metronomeLocalChannels.add(numChannelsUsed);
-				chUsed = true;
-			}
+			if (metronomeCC.controllables[i])
+				if (((BoolParameter*)metronomeCC.controllables[i])->boolValue())
+				{
+					metronomeOutChannels.add(i);
+					metronomeLocalChannels.add(numChannelsUsed);
+					chUsed = true;
+				}
 		}
 
 		if (chUsed) numChannelsUsed++;
@@ -231,8 +262,9 @@ void AudioLayer::updateSelectedOutChannels()
 
 	currentGraph->disconnectNode(graphID);
 
-	currentProcessor->setPlayConfigDetails(0, numActiveOutputs, currentGraph->getSampleRate(), currentGraph->getBlockSize());
-	currentProcessor->prepareToPlay(currentGraph->getSampleRate(), currentGraph->getBlockSize());
+	updateSelectedOutChannelsInternal();
+
+	updatePlayConfigDetails();
 
 	for (auto& c : clipManager.items)
 	{
@@ -273,6 +305,15 @@ void AudioLayer::updateSelectedOutChannels()
 			}
 		}
 	}
+}
+
+void AudioLayer::updatePlayConfigDetails()
+{
+	if (currentProcessor == nullptr) return;
+	if (currentGraph == nullptr) return;
+
+	currentProcessor->setPlayConfigDetails(numActiveInputs, numActiveOutputs, currentGraph->getSampleRate(), currentGraph->getBlockSize());
+	currentProcessor->prepareToPlay(currentGraph->getSampleRate(), currentGraph->getBlockSize());
 }
 
 void AudioLayer::updateClipConfig(AudioLayerClip* clip, bool updateOutputChannelRemapping)
@@ -353,7 +394,7 @@ void AudioLayer::onControllableFeedbackUpdateInternal(ControllableContainer* cc,
 	}
 	else if (cc == &channelsCC || cc == &metronomeCC)
 	{
-		if (!isCurrentlyLoadingData) updateSelectedOutChannels();
+		if (!isCurrentlyLoadingData && !settingAudioGraph) updateSelectedOutChannels();
 	}
 	else if (currentClip != nullptr)
 	{
@@ -590,7 +631,7 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 	if (layer != nullptr)
 	{
 		if (!layer->enabled->boolValue()
-			|| !layer->sequence->enabled->boolValue()
+			|| (layer->sequence->enabled != nullptr && !layer->sequence->enabled->boolValue())
 			|| !layer->sequence->isPlaying->boolValue()
 			|| layer->sequence->playSpeed->doubleValue() < 0) noProcess = true;
 

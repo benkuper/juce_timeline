@@ -9,6 +9,7 @@
 */
 
 #include "JuceHeader.h"
+#include "Sequence.h"
 
 Sequence::Sequence() :
 	BaseItem("Sequence", true),
@@ -63,7 +64,8 @@ Sequence::Sequence() :
 
 	autoSnap = addBoolParameter("Auto Snap", "If checked, this will automatically snap when moving items", false);
 
-	evaluateOnSeekAndPlay = addBoolParameter("Evaluate on Seek", "If checked, this will evaluate data (like triggering time triggers) when seeking manually while the sequence is playing. If unchecked, seeking manually will disable temporarily evaluation.", true);
+	evaluateOnSeek = addEnumParameter("Evaluate on Seek", "This decides when it should evaluate data (like triggering time triggers) when seeking manually.");
+	evaluateOnSeek->addOption("When Playing Only", ONLY_PLAYING)->addOption("When Not Playing", ONLY_NOT_PLAYING)->addOption("Always", ALWAYS)->addOption("Never", NEVER);
 
 	currentTime->unitSteps = fps->intValue();
 	totalTime->unitSteps = fps->intValue();
@@ -117,6 +119,8 @@ void Sequence::setCurrentTime(float time, bool forceOverPlaying, bool seekMode)
 
 	if (isPlaying->boolValue() && !forceOverPlaying) return;
 
+	GenericScopedLock lock(sequenceTimeLock);
+
 	isSeeking = seekMode;
 
 	millisAtSetTime = Time::getMillisecondCounterHiRes();
@@ -126,7 +130,7 @@ void Sequence::setCurrentTime(float time, bool forceOverPlaying, bool seekMode)
 	if (timeIsDrivenByAudio())
 	{
 		hiResAudioTime = time;
-		if (!isPlaying->boolValue() || isSeeking) currentTime->setValue(time);
+		if (!isPlaying->boolValue() || isSeeking || forceOverPlaying) currentTime->setValue(time, false, true);
 	}
 	else
 	{
@@ -150,10 +154,10 @@ void Sequence::handleCueAction(TimeCue* cue, TimeCue* originCue)
 	{
 		pauseTrigger->trigger();
 		prevTime = currentTime->floatValue();
-		currentTime->setValue(cue->time->floatValue());
+		setCurrentTime(cue->time->floatValue());
 		return;
-    default:
-        break;
+	default:
+		break;
 	}
 	break;
 
@@ -354,7 +358,9 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 			//timeAtSetTime = timeIsDrivenByAudio() ? hiResAudioTime : currentTime->floatValue();
 		}
 
-		sequenceListeners.call(&SequenceListener::sequenceCurrentTimeChanged, this, (float)prevTime, isPlaying->boolValue() && (!isSeeking || evaluateOnSeekAndPlay->boolValue()));
+		EvaluateMode e = evaluateOnSeek->getValueDataAsEnum<EvaluateMode>();
+		bool shouldEvaluate = e == ALWAYS || (e == ONLY_PLAYING && isPlaying->boolValue()) || (e == ONLY_NOT_PLAYING && !isPlaying->boolValue());
+		sequenceListeners.call(&SequenceListener::sequenceCurrentTimeChanged, this, (float)prevTime, shouldEvaluate);
 		prevTime = currentTime->floatValue();
 	}
 	else if (p == totalTime)
@@ -380,7 +386,7 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 			if (currentTime->floatValue() >= totalTime->floatValue())
 			{
 				hiResAudioTime = 0;
-				currentTime->setValue(0); //if reached the end when hit play, go to 0
+				setCurrentTime(0, true, true); //if reached the end when hit play, go to 0
 			}
 
 			prevTime = currentTime->floatValue();
@@ -415,11 +421,11 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 		float steps = fps->floatValue() / (playSpeed->floatValue() != 0 ? playSpeed->floatValue() : 1.0f);
 		currentTime->unitSteps = steps;
 		totalTime->unitSteps = steps;
-		totalTime->setValue(totalTime->floatValue()); //force update
-		currentTime->setValue(currentTime->floatValue()); //force update
-	}
-	
 
+		//right now this makes crash because of cross listener call during threads
+		totalTime->setValue(totalTime->floatValue()); //force update
+		setCurrentTime(currentTime->floatValue()); //force update
+	}
 }
 
 void Sequence::onContainerTriggerTriggered(Trigger* t)
@@ -477,6 +483,21 @@ void Sequence::parameterControlModeChanged(Parameter* p)
 	}
 }
 
+bool Sequence::handleRemoteControlData(Controllable* c, const juce::OSCMessage& m, const juce::String& cliendId)
+{
+	if (c == currentTime)
+	{
+		if (m.size() >= 1) setCurrentTime(OSCHelpers::getFloatArg(m[0]), true, true);
+		return true;
+	}
+	return false;
+}
+
+String Sequence::getPanelName() const
+{
+	return niceName;
+}
+
 void Sequence::run()
 {
 	millisAtSetTime = Time::getMillisecondCounterHiRes();
@@ -508,7 +529,7 @@ void Sequence::run()
 
 		//DBG(deltaMillis << " : " << (targetTime - currentTime->floatValue()));
 
-		currentTime->setValue(targetTime);
+		if (!isSeeking) setCurrentTime(targetTime);
 
 		if (viewFollowTime->boolValue())
 		{
@@ -546,7 +567,7 @@ void Sequence::run()
 	}
 }
 
-void Sequence::endLoadFile()
+void Sequence::fileLoaded()
 {
 	Engine::mainEngine->removeEngineListener(this);
 	if (isBeingEdited) selectThis();
