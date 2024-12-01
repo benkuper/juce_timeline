@@ -275,7 +275,7 @@ void SequenceManager::showMenuAndGetTrigger(ControllableContainer* startFromCC, 
 void SequenceManager::importMultipleAudioFiles()
 {
 	fileChooser = std::make_unique<FileChooser>("Import audio files", File::getCurrentWorkingDirectory(), "*.wav;*.mp3;*.ogg;*.aiff");
-	auto fileChooserFlags = FileBrowserComponent::canSelectMultipleItems;
+	auto fileChooserFlags = FileBrowserComponent::canSelectMultipleItems | FileBrowserComponent::FileChooserFlags::openMode | FileBrowserComponent::FileChooserFlags::canSelectFiles; 
 	fileChooser->launchAsync(fileChooserFlags, [this](const FileChooser& chooser)
 		{
 			auto results = chooser.getResults();
