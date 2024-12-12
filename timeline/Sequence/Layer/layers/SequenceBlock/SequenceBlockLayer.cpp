@@ -147,9 +147,9 @@ void SequenceBlockLayer::selectAll(bool addToSelection)
 	setSelected(false);
 }
 
-var SequenceBlockLayer::getJSONData()
+var SequenceBlockLayer::getJSONData(bool includeNonOverriden)
 {
-	var data = SequenceLayer::getJSONData();
+	var data = SequenceLayer::getJSONData(includeNonOverriden);
 	data.getDynamicObject()->setProperty(blockManager.shortName, blockManager.getJSONData());
 
 	return data;

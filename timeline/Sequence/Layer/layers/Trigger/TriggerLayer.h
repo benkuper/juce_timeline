@@ -38,7 +38,7 @@ public :
 	virtual void getSnapTimes(Array<float>* arrayToFill) override;
 	virtual void getSequenceSnapTimesForManager(Array<float>* arrayToFill);
 
-	var getJSONData() override;
+	var getJSONData(bool includeNonOverriden = false) override;
 	void loadJSONDataInternal(var data) override;
 
 	static TriggerLayer * create(Sequence * sequence, var params) { return new TriggerLayer(sequence, "Trigger", params); }

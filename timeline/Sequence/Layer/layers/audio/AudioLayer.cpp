@@ -428,9 +428,9 @@ void AudioLayer::selectAll(bool addToSelection)
 	setSelected(false);
 }
 
-var AudioLayer::getJSONData()
+var AudioLayer::getJSONData(bool includeNonOverriden)
 {
-	var data = SequenceLayer::getJSONData();
+	var data = SequenceLayer::getJSONData(includeNonOverriden);
 	data.getDynamicObject()->setProperty(clipManager.shortName, clipManager.getJSONData());
 	if (currentGraph != nullptr)
 	{

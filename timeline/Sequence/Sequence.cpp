@@ -309,9 +309,9 @@ bool Sequence::timeIsDrivenByAudio()
 	return currentManager != nullptr;
 }
 
-var Sequence::getJSONData()
+var Sequence::getJSONData(bool includeNonOverriden)
 {
-	var data = BaseItem::getJSONData();
+	var data = BaseItem::getJSONData(includeNonOverriden);
 	var layerData = layerManager->getJSONData();
 	if (!layerData.isVoid()) data.getDynamicObject()->setProperty(layerManager->shortName, layerData);
 	var cueData = cueManager->getJSONData();
