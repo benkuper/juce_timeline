@@ -93,9 +93,9 @@ void TriggerLayer::getSequenceSnapTimesForManager(Array<float>* arrayToFill)
 	sequence->getSnapTimes(arrayToFill);
 }
 
-var TriggerLayer::getJSONData()
+var TriggerLayer::getJSONData(bool includeNonOverriden)
 {
-	var data = SequenceLayer::getJSONData();
+	var data = SequenceLayer::getJSONData(includeNonOverriden);
 	if (ttm != nullptr) data.getDynamicObject()->setProperty(ttm->shortName, ttm->getJSONData());
 	return data;
 }

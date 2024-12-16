@@ -99,5 +99,5 @@ void TimeMachineView::newMessage(const InspectableSelectionManager::SelectionEve
 
 void TimeMachineView::inspectableDestroyed(Inspectable* i)
 {
-	if (i == editor->sequence) setSequence(nullptr);
+	if (editor != nullptr && i == editor->sequence) setSequence(nullptr);
 }

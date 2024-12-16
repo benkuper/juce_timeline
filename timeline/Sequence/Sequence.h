@@ -134,7 +134,7 @@ public:
 	virtual void fileLoaded() override;
 	virtual void handleStartAtLoad();
 
-	virtual var getJSONData() override;
+	virtual var getJSONData(bool includeNonOverriden = false) override;
 	virtual void loadJSONDataInternal(var data) override;
 
 	DECLARE_TYPE("Sequence");
