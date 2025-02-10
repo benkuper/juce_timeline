@@ -51,9 +51,8 @@ void AudioLayerClipUI::paint(Graphics& g)
 		float volume = clip->volume->controlMode == Parameter::ControlMode::MANUAL ? clip->volume->floatValue() : 1;
 		float stretch = clip->stretchFactor->floatValue();
 		float startOffset = clip->clipStartOffset->floatValue();
-		float viewRange = viewCoreEnd - viewStart;
 
-		thumbnail.drawChannels(g, getCoreBounds(), startOffset + viewStart, startOffset + viewStart + viewRange / stretch, volume);
+		thumbnail.drawChannels(g, getCoreBounds(), startOffset + viewStart, startOffset + viewStart + viewCoreLength / stretch, volume);
 	}
 
 	if (clip->fadeIn->floatValue() > 0)

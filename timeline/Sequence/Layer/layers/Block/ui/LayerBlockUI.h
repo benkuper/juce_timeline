@@ -10,6 +10,7 @@
 
 #pragma once
 
+class LayerBlockManagerUI;
 
 class LayerBlockUI :
 	public BaseItemMinimalUI<LayerBlock>,
@@ -18,6 +19,8 @@ class LayerBlockUI :
 public:
 	LayerBlockUI(LayerBlock * block);
 	~LayerBlockUI();
+
+	LayerBlockManagerUI* blockManagerUI;
 
 	//interaction
 	float coreLengthAtMouseDown;
@@ -28,7 +31,7 @@ public:
 
 	float viewStart;
 	float viewEnd;
-	float viewCoreEnd;
+	float viewCoreLength;
 
 	bool canBeGrabbed;
 
@@ -48,19 +51,20 @@ public:
 	virtual void resized() override;
 	virtual void resizedBlockInternal() {};
 
+	virtual void updateGrabbers();
+
 	virtual void mouseEnter(const MouseEvent &e) override;
 	virtual void mouseExit(const MouseEvent &e) override;
 	virtual void mouseDown(const MouseEvent &e) override;
 	virtual void mouseDrag(const MouseEvent &e) override;
 	virtual void mouseUp(const MouseEvent &e) override;
 
-	virtual Rectangle<int> getDragBounds();
-	virtual Rectangle<int> getGrabberBounds();
-
 	virtual void controllableFeedbackUpdateInternal(Controllable *) override;
 
 	Rectangle<int> getCoreBounds();
 	int getCoreWidth();
+
+	Rectangle<int> getLoopBounds();
 
 	void setViewRange(float relativeStart, float relativeEnd);
 	virtual void setViewRangeInternal() {}

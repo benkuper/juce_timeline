@@ -85,6 +85,7 @@ void LayerBlockManagerUI::addItemFromMenu(bool isFromAddButton, Point<int> mouse
 
 void LayerBlockManagerUI::addItemUIInternal(LayerBlockUI* cui)
 {
+	cui->blockManagerUI = this;
 	cui->addBlockUIListener(this);
 	placeBlockUI(cui);
 }

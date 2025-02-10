@@ -9,13 +9,15 @@
 */
 
 #include "JuceHeader.h"
+#include "LayerBlockUI.h"
 
-LayerBlockUI::LayerBlockUI(LayerBlock * block) :
+LayerBlockUI::LayerBlockUI(LayerBlock* block) :
 	BaseItemMinimalUI(block),
 	UITimerTarget(ORGANICUI_SLOW_TIMER),
+	blockManagerUI(nullptr),
 	viewStart(0),
 	viewEnd(block->getTotalLength()),
-	viewCoreEnd(block->coreLength->floatValue()),
+	viewCoreLength(block->coreLength->floatValue()),
 	canBeGrabbed(true),
 	baseColor(BG_COLOR.brighter(.1f)),
 	highlightColor(BG_COLOR.brighter(.05f)),
@@ -40,7 +42,7 @@ LayerBlockUI::~LayerBlockUI()
 }
 
 
-void LayerBlockUI::paint(Graphics & g)
+void LayerBlockUI::paint(Graphics& g)
 {
 	if (inspectable.wasObjectDeleted()) return;
 
@@ -67,60 +69,70 @@ void LayerBlockUI::handlePaintTimerInternal()
 
 void LayerBlockUI::resized()
 {
-	if (canBeGrabbed)
-	{
-		Rectangle<int> r = getGrabberBounds();
-
-		const int grabberSize = 9;
-
-		grabber.setBounds(r.removeFromLeft(grabberSize));
-
-		loopGrabber.setVisible(item->loopLength->floatValue() > 0);
-		if (loopGrabber.isVisible())	loopGrabber.setBounds(r.removeFromRight(grabberSize));
-
-		r.setRight(getCoreWidth());
-		coreGrabber.setBounds(r.removeFromRight(grabberSize));
-	}
-
+	if (blockManagerUI == nullptr) return;
+	updateGrabbers();
 	resizedBlockInternal();
 }
 
-void LayerBlockUI::mouseEnter(const MouseEvent & e)
+void LayerBlockUI::updateGrabbers()
 {
-	BaseItemMinimalUI::mouseEnter(e);
-
 	if (inspectable.wasObjectDeleted()) return;
 
-
-	if (canBeGrabbed && !item->isUILocked->boolValue() && getWidth() > 24)
+	if (!canBeGrabbed || !isMouseOverOrDragging() || getWidth() < 20 || item->isUILocked->boolValue())
 	{
-		grabber.setVisible(true);
-		coreGrabber.setVisible(true);
-		loopGrabber.setVisible(true && item->loopLength->floatValue() > 0);
+		grabber.setVisible(false);
+		coreGrabber.setVisible(false);
+		loopGrabber.setVisible(false);
+		return;
 	}
+
+	int unclippedStart = blockManagerUI->timeline->getXForTime(item->time->floatValue());
+	int unclippedCoreEnd = blockManagerUI->timeline->getXForTime(item->getCoreEndTime());
+	int unclippedEnd = blockManagerUI->timeline->getXForTime(item->getEndTime());
+	Rectangle<int> unclippedCoreBounds = Rectangle<int>(
+		unclippedStart,
+		0,
+		unclippedCoreEnd - unclippedStart,
+		getHeight());
+
+	const int grabberSize = 9;
+
+	Rectangle<int> grabberBounds = unclippedCoreBounds.removeFromLeft(grabberSize);
+	Rectangle<int> coreGrabberBounds = unclippedCoreBounds.removeFromRight(grabberSize);
+
+	grabber.setVisible(grabberBounds.getRight() > 0 && grabberBounds.getX() < getRight());
+
+	if (grabber.isVisible()) grabber.setBounds(grabberBounds.translated(-getX(), 0));
+
+	coreGrabber.setVisible(coreGrabberBounds.getRight() > 0 && coreGrabberBounds.getX() < getRight());
+	if (coreGrabber.isVisible()) coreGrabber.setBounds(coreGrabberBounds.translated(-getX(), 0));
+
+
+	Rectangle<int> unclippedLoopBounds = Rectangle<int>(
+		unclippedCoreEnd,
+		0,
+		unclippedEnd - unclippedCoreEnd,
+		getHeight());
+	Rectangle<int> loopGrabberBounds = unclippedLoopBounds.removeFromRight(grabberSize);
+
+	loopGrabber.setVisible(loopGrabberBounds.getRight() > 0 && loopGrabberBounds.getX() < getRight());
+	if (loopGrabber.isVisible()) loopGrabber.setBounds(loopGrabberBounds.translated(-getX(), 0));
 }
 
-void LayerBlockUI::mouseExit(const MouseEvent & e)
+void LayerBlockUI::mouseEnter(const MouseEvent& e)
+{
+	BaseItemMinimalUI::mouseEnter(e);
+	updateGrabbers();
+}
+
+void LayerBlockUI::mouseExit(const MouseEvent& e)
 {
 	BaseItemMinimalUI::mouseExit(e);
-	
-	if (canBeGrabbed)
-	{
-		grabber.setVisible(isMouseOverOrDragging());
-		coreGrabber.setVisible(isMouseOverOrDragging());
-		loopGrabber.setVisible(isMouseOverOrDragging() && item->loopLength->floatValue() > 0);
-
-		if (isMouseOverOrDragging())
-		{
-			grabber.toFront(false);
-			coreGrabber.toFront(false);
-			loopGrabber.toFront(false);
-		}
-	}
+	updateGrabbers();
 }
 
 
-void LayerBlockUI::mouseDown(const MouseEvent & e)
+void LayerBlockUI::mouseDown(const MouseEvent& e)
 {
 	BaseItemMinimalUI::mouseDown(e);
 
@@ -130,14 +142,14 @@ void LayerBlockUI::mouseDown(const MouseEvent & e)
 		coreLengthAtMouseDown = item->coreLength->floatValue();
 		loopLengthAtMouseDown = item->loopLength->floatValue();
 
-		isDragging = e.eventComponent == this && getDragBounds().contains(e.getPosition()) && !e.mods.isCommandDown() && !e.mods.isShiftDown();
+		isDragging = e.eventComponent == this && !e.mods.isCommandDown() && !e.mods.isShiftDown();
 		posAtMouseDown = getX();
 
 		blockUIListeners.call(&BlockUIListener::blockUIMouseDown, this, e);
 	}
 }
 
-void LayerBlockUI::mouseDrag(const MouseEvent & e)
+void LayerBlockUI::mouseDrag(const MouseEvent& e)
 {
 	if (canBeGrabbed && !item->isUILocked->boolValue())
 	{
@@ -162,7 +174,7 @@ void LayerBlockUI::mouseDrag(const MouseEvent & e)
 
 }
 
-void LayerBlockUI::mouseUp(const MouseEvent & e)
+void LayerBlockUI::mouseUp(const MouseEvent& e)
 {
 
 	if (canBeGrabbed && !item->isUILocked->boolValue())
@@ -189,27 +201,15 @@ void LayerBlockUI::mouseUp(const MouseEvent & e)
 
 		isDragging = false;
 
-		grabber.setVisible(isMouseOverOrDragging());
-		coreGrabber.setVisible(isMouseOverOrDragging());
-		loopGrabber.setVisible(isMouseOverOrDragging());
+		updateGrabbers();
 	}
 
 	BaseItemMinimalUI::mouseUp(e);
 }
 
-Rectangle<int> LayerBlockUI::getDragBounds()
-{
-
-	return getLocalBounds();
-}
-
-Rectangle<int> LayerBlockUI::getGrabberBounds()
-{
-	return getLocalBounds().reduced(0, 8);
-}
 
 
-void LayerBlockUI::controllableFeedbackUpdateInternal(Controllable * c)
+void LayerBlockUI::controllableFeedbackUpdateInternal(Controllable* c)
 {
 	if (c == item->time || c == item->coreLength || c == item->loopLength)
 	{
@@ -217,7 +217,7 @@ void LayerBlockUI::controllableFeedbackUpdateInternal(Controllable * c)
 	}
 	else if (c == item->isActive)
 	{
-		bgColor = item->isActive->boolValue() ? baseColor : highlightColor; 
+		bgColor = item->isActive->boolValue() ? baseColor : highlightColor;
 	}
 	else if (c == item->isUILocked)
 	{
@@ -227,14 +227,23 @@ void LayerBlockUI::controllableFeedbackUpdateInternal(Controllable * c)
 
 Rectangle<int> LayerBlockUI::getCoreBounds()
 {
-	return getLocalBounds().withWidth(getCoreWidth());
+	if (blockManagerUI == nullptr) return Rectangle<int>();
+	return Rectangle<int>(0, 0, getCoreWidth(), getHeight());
 }
 
 int LayerBlockUI::getCoreWidth()
 {
-	return (item->coreLength->floatValue() / item->getTotalLength()) * getMainBounds().getWidth();
+	if (blockManagerUI == nullptr) return 0;
+	int startInView = blockManagerUI->timeline->getXForTime(viewStart);
+	int coreEndInView = blockManagerUI->timeline->getXForTime(viewStart + viewCoreLength);
+	return coreEndInView - startInView;
 }
 
+Rectangle<int> LayerBlockUI::getLoopBounds()
+{
+	return getLocalBounds().withLeft(getCoreWidth());
+	
+}
 void LayerBlockUI::setViewRange(float relativeStart, float relativeEnd)
 {
 	relativeStart = jmax<float>(relativeStart, 0);
@@ -246,8 +255,10 @@ void LayerBlockUI::setViewRange(float relativeStart, float relativeEnd)
 	viewStart = relativeStart;
 	viewEnd = relativeEnd;
 
-	viewCoreEnd = jmin(viewEnd, item->coreLength->floatValue());
+	viewCoreLength = jmax(0.f, item->coreLength->floatValue() - viewStart);
+	
 	setViewRangeInternal();
-
+	
+	resized();
 	shouldRepaint = true;
 }
