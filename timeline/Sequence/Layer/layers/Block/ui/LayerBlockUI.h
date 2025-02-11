@@ -66,6 +66,8 @@ public:
 
 	Rectangle<int> getLoopBounds();
 
+	int getRealXForTime(float time);
+
 	void setViewRange(float relativeStart, float relativeEnd);
 	virtual void setViewRangeInternal() {}
 

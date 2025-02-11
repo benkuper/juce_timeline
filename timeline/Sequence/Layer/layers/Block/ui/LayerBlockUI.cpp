@@ -242,8 +242,14 @@ int LayerBlockUI::getCoreWidth()
 Rectangle<int> LayerBlockUI::getLoopBounds()
 {
 	return getLocalBounds().withLeft(getCoreWidth());
-	
+
 }
+int LayerBlockUI::getRealXForTime(float time)
+{
+	if (blockManagerUI == nullptr || inspectable.wasObjectDeleted()) return 0;
+	return blockManagerUI->timeline->getXForTime(item->time->floatValue() + time) - getX();
+}
+
 void LayerBlockUI::setViewRange(float relativeStart, float relativeEnd)
 {
 	relativeStart = jmax<float>(relativeStart, 0);
@@ -255,10 +261,10 @@ void LayerBlockUI::setViewRange(float relativeStart, float relativeEnd)
 	viewStart = relativeStart;
 	viewEnd = relativeEnd;
 
-	viewCoreLength = jmax(0.f, item->coreLength->floatValue() - viewStart);
-	
+	viewCoreLength = jmax(0.f, jmin(viewEnd, item->coreLength->floatValue()) - viewStart);
+
 	setViewRangeInternal();
-	
+
 	resized();
 	shouldRepaint = true;
 }
