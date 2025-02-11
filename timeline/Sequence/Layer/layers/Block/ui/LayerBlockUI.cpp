@@ -78,7 +78,7 @@ void LayerBlockUI::updateGrabbers()
 {
 	if (inspectable.wasObjectDeleted()) return;
 
-	if (!canBeGrabbed || !isMouseOverOrDragging() || getWidth() < 20 || item->isUILocked->boolValue())
+	if (!canBeGrabbed || !isMouseOverOrDragging(true) || getWidth() < 20 || item->isUILocked->boolValue())
 	{
 		grabber.setVisible(false);
 		coreGrabber.setVisible(false);
