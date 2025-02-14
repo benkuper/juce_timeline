@@ -112,7 +112,7 @@ void SequenceBlockLayer::updateCurrentSequenceTime()
 
 	if (Sequence* s = currentBlock->getTargetSequence())
 	{
-		float t = currentBlock->getRelativeTime(sequence->currentTime->floatValue(), true);
+		float t = currentBlock->getRelativeTime(sequence->currentTime->floatValue(), true) + currentBlock->sequenceStartOffset->floatValue();
 
 		if (sequence->isPlaying->boolValue())
 		{

@@ -20,6 +20,7 @@ public:
 	virtual ~SequenceBlock();
 
 	TargetParameter * target;
+	FloatParameter* sequenceStartOffset;
 
 	Sequence* targetSequence;
 	WeakReference<Inspectable> sequenceRef;
