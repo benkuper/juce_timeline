@@ -116,7 +116,7 @@ void SequenceBlockLayer::updateCurrentSequenceTime()
 
 		if (sequence->isPlaying->boolValue())
 		{
-			if (sequence->isSeeking || t < s->currentTime->floatValue())
+			if (sequence->isSeeking || t < s->currentTime->floatValue() || !s->isPlaying->boolValue())
 			{
 				s->setCurrentTime(t, true, true);
 				s->playTrigger->trigger();
@@ -126,6 +126,29 @@ void SequenceBlockLayer::updateCurrentSequenceTime()
 		{
 			s->setCurrentTime(t, true, true);
 		}
+	}
+}
+
+void SequenceBlockLayer::onContainerParameterChangedInternal(Parameter* p)
+{
+	SequenceLayer::onContainerParameterChangedInternal(p);
+
+	if (p == enabled)
+	{
+		if (!enabled->boolValue())
+		{
+			ScopedLock lock(blockLock);
+			if (!currentBlockRef.wasObjectDeleted() && currentBlock != nullptr)
+			{
+				if (Sequence* s = currentBlock->getTargetSequence()) s->pauseTrigger->trigger();
+			}
+		}
+		else
+		{
+			updateCurrentBlock();
+			updateCurrentSequenceTime();
+		}
+
 	}
 }
 
