@@ -49,17 +49,18 @@ void SequenceBlockLayer::itemsAdded(Array<LayerBlock*> items)
 
 void SequenceBlockLayer::itemRemoved(LayerBlock* item)
 {
-	if (isClearing) return;
 	updateCurrentBlock();
 }
 void SequenceBlockLayer::itemsRemoved(Array<LayerBlock*> items)
 {
-	if (isClearing) return;
 	updateCurrentBlock();
 }
 
 void SequenceBlockLayer::updateCurrentBlock()
 {
+	if (isClearing) return;
+	if (!enabled->boolValue() || !sequence->enabled->boolValue()) return;
+
 	SequenceBlock* b = (SequenceBlock*)blockManager.getBlockAtTime(sequence->currentTime->floatValue(), false, false);
 
 	ScopedLock lock(blockLock);
@@ -102,6 +103,9 @@ void SequenceBlockLayer::updateCurrentBlock()
 }
 void SequenceBlockLayer::updateCurrentSequenceTime()
 {
+	if (isClearing) return;
+	if (!enabled->boolValue() || !sequence->enabled->boolValue()) return;
+	
 	ScopedLock lock(blockLock);
 
 	if (currentBlock == nullptr) return;
@@ -179,6 +183,9 @@ void SequenceBlockLayer::sequenceCurrentTimeChanged(Sequence*, float, bool)
 
 void SequenceBlockLayer::sequencePlayStateChanged(Sequence*)
 {
+	if (isClearing) return;
+	if (!enabled->boolValue() || !sequence->enabled->boolValue()) return;
+
 	if (!sequence->isPlaying->boolValue())
 	{
 		ScopedLock lock(blockLock);
