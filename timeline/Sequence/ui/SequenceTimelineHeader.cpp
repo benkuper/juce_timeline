@@ -9,6 +9,7 @@
 */
 
 SequenceTimelineHeader::SequenceTimelineHeader(Sequence* _sequence, TimeCueManagerUI* cueManagerUI, TimeNeedleUI* needleUI) :
+	UITimerTarget(ORGANICUI_SLOW_TIMER, "SequenceTimelineHeader"),
 	sequence(_sequence),
 	needle(needleUI),
 	cueManagerUI(cueManagerUI),
@@ -25,7 +26,6 @@ SequenceTimelineHeader::SequenceTimelineHeader(Sequence* _sequence, TimeCueManag
 	needle->setInterceptsMouseClicks(false, false);
 
 	setSize(100, 20);
-	startTimerHz(20);
 }
 
 SequenceTimelineHeader::~SequenceTimelineHeader()
@@ -412,7 +412,7 @@ void SequenceTimelineHeader::newMessage(const ContainerAsyncEvent& e)
 		}
 		else if (e.targetControllable == sequence->currentTime)
 		{
-			shouldUpdateNeedle = true;
+			shouldRepaint = true;
 		}
 		else if (e.targetControllable == sequence->totalTime)
 		{
@@ -430,13 +430,14 @@ void SequenceTimelineHeader::newMessage(const ContainerAsyncEvent& e)
 	}
 }
 
-void SequenceTimelineHeader::timerCallback()
+void SequenceTimelineHeader::handlePaintTimerInternal()
 {
-	if (shouldUpdateNeedle)
-	{
-		shouldUpdateNeedle = false;
-		updateNeedlePosition();
-	}
+	updateNeedlePosition();
+}
+
+void SequenceTimelineHeader::paintOverChildren(Graphics& g)
+{
+	validatePaint();
 }
 
 

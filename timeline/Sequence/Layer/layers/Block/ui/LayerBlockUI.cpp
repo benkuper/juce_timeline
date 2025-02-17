@@ -12,7 +12,7 @@
 
 LayerBlockUI::LayerBlockUI(LayerBlock * block) :
 	BaseItemMinimalUI(block),
-	UITimerTarget(ORGANICUI_SLOW_TIMER),
+	UITimerTarget(ORGANICUI_SLOW_TIMER, "LayerBlockUI"),
 	viewStart(0),
 	viewEnd(block->getTotalLength()),
 	viewCoreEnd(block->coreLength->floatValue()),
@@ -58,6 +58,8 @@ void LayerBlockUI::paintOverChildren(Graphics& g)
 		g.setTiledImageFill(ImageCache::getFromMemory(TimelineBinaryData::stripe_png, TimelineBinaryData::stripe_pngSize), 0, 0, .1f);
 		g.fillAll();
 	}
+
+	validatePaint();
 }
 
 void LayerBlockUI::handlePaintTimerInternal()
