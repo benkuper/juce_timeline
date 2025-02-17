@@ -10,6 +10,7 @@
 
 SequenceLayerTimeline::SequenceLayerTimeline(SequenceLayer * layer) :
 	BaseItemMinimalUI<SequenceLayer>(layer),
+	UITimerTarget(ORGANICUI_DEFAULT_TIMER, "SequenceLayerTimeline"),
 	seekManipulationMode(false)
 {
 	bgColor = item->itemColor->getColor();
@@ -25,8 +26,6 @@ SequenceLayerTimeline::SequenceLayerTimeline(SequenceLayer * layer) :
 	autoDrawContourWhenSelected = false;
 
     addAndMakeVisible(&needle);
-    
-	startTimerHz(30);
 }
 
 SequenceLayerTimeline::~SequenceLayerTimeline()
@@ -97,12 +96,12 @@ void SequenceLayerTimeline::controllableFeedbackUpdateInternal(Controllable * c)
 		if (isVisible())
 		{
 			updateContent();
-			shouldUpdateNeedle = true;
+			shouldRepaint = true;
 		}
 	}
 	else if (c == item->sequence->currentTime)
 	{
-		shouldUpdateNeedle = true;
+		shouldRepaint = true;
 	}
 	else if (c == item->miniMode)
 	{
@@ -110,13 +109,14 @@ void SequenceLayerTimeline::controllableFeedbackUpdateInternal(Controllable * c)
 	}
 }
 
-void SequenceLayerTimeline::timerCallback()
+void SequenceLayerTimeline::handlePaintTimerInternal()
 {
-	if (shouldUpdateNeedle)
-	{
-        updateNeedlePosition();
-		shouldUpdateNeedle = false;
-	}
+	updateNeedlePosition();
+}
+
+void SequenceLayerTimeline::paintOverChildren(Graphics& g)
+{
+	validatePaint();
 }
 
 void SequenceLayerTimeline::visibilityChanged()
