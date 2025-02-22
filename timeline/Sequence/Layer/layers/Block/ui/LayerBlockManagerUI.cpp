@@ -22,6 +22,7 @@ LayerBlockManagerUI::LayerBlockManagerUI(SequenceLayerTimeline* timeline, LayerB
 	bringToFrontOnSelect = false;
 
 	addItemBT->setVisible(false);
+	setBufferedToImage(true);
 }
 
 LayerBlockManagerUI::~LayerBlockManagerUI()
