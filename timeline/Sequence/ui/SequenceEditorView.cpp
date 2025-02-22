@@ -205,3 +205,11 @@ void SequenceEditorView::grabberGrabUpdate(GapGrabber*, int relativeDist)
 	panelWidth += relativeDist;
 	resized();
 }
+
+void SequenceEditorView::grabberGrabEvent(GapGrabber*, bool isGrabbing)
+{
+	for (auto& layerUI : timelineManagerUI.itemsUI)
+	{
+		layerUI->setSeekManipulationMode(isGrabbing);
+	}
+}

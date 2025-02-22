@@ -56,6 +56,7 @@ public:
 
 	// Inherited via Listener
 	virtual void grabberGrabUpdate(GapGrabber *, int relativeDist) override;
+	virtual void grabberGrabEvent(GapGrabber *, bool isGrabbing) override;
 
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceEditorView)
