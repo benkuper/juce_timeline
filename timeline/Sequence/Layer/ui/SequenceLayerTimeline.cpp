@@ -121,7 +121,15 @@ void SequenceLayerTimeline::paintOverChildren(Graphics& g)
 
 void SequenceLayerTimeline::visibilityChanged()
 {
-	if (isVisible()) updateContent();
+	if (!isVisible()) return;
+
+	updateContent();
+	shouldRepaint = true;
+}
+
+void SequenceLayerTimeline::parentSizeChanged()
+{
+	shouldRepaint = true;
 }
 
 SequenceLayerTimeline::TimelineNeedle::TimelineNeedle() :

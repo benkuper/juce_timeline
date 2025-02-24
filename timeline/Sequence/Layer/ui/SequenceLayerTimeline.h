@@ -40,6 +40,7 @@ public:
     void paintOverChildren(juce::Graphics& g) override;
 
 	virtual void visibilityChanged() override;
+    virtual void parentSizeChanged() override;
     
     class TimelineNeedle :
         public Component
