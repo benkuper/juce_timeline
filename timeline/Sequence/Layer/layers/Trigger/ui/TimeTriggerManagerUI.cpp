@@ -59,27 +59,45 @@ void TimeTriggerManagerUI::updateContent()
 void TimeTriggerManagerUI::placeTimeTriggerUI(TimeTriggerUI * ttui)
 {
 	int tx = timeline->getXForTime(ttui->item->time->floatValue());
-	
-	float ttuiWidthTime = timeline->getTimeForX(ttui->getWidth(),false);
-
-	float viewEnd = timeline->item->sequence->viewEndTime->floatValue();
 	float totalTime = timeline->item->sequence->totalTime->floatValue();
-	
-	float ttuiTime = totalTime - ttuiWidthTime;
 
-	if (viewEnd >= ttuiTime && ttuiTime < totalTime)
+	float maxX = timeline->getXForTime(totalTime);
+
+	int triggerWidth = 0;
+	float length = ttui->item->length->floatValue();
+	if(length > 0.f)
 	{
-		float rel = jmap<float>(viewEnd, ttuiTime, totalTime, 0, 1);
-		int minTx = getWidth() - ttui->getWidth() * rel;
-		int safeTx = jmin(tx, minTx); 
-		ttui->flagXOffset = tx - safeTx;
-		tx = safeTx;
-	} else
-	{
-		ttui->flagXOffset = 0;
+		triggerWidth = timeline->getXForTime(ttui->item->time->floatValue() + length) - tx;
 	}
 
-	ttui->setBounds(tx, 0, ttui->getWidth(), getHeight());
+	int endX = tx + ttui->labelWidth + triggerWidth;
+
+	if (endX > maxX && tx <= maxX)
+	{
+		if(triggerWidth > ttui->labelWidth)
+		{
+			ttui->startXOffset = 0;
+			ttui->flagXOffset = triggerWidth - ttui->labelWidth + 1;
+		}
+		else
+		{
+			// Old behaviour of making the label as stuck on the right as possible 
+			// int diff = endX - maxX;
+			int diff = ttui->labelWidth - 1;
+
+			tx -= diff;
+			ttui->startXOffset = diff;
+			ttui->flagXOffset = 0;
+		}
+	}
+	else
+	{
+		ttui->startXOffset = 0;
+		ttui->flagXOffset = triggerWidth;
+	}
+	ttui->triggerWidth = triggerWidth;
+
+	ttui->setBounds(tx, 0, ttui->labelWidth + triggerWidth + 1, getHeight());
 }
 
 void TimeTriggerManagerUI::mouseDown(const MouseEvent & e)
@@ -150,22 +168,58 @@ void TimeTriggerManagerUI::timeTriggerDragged(TimeTriggerUI * ttui, const MouseE
 	float diffTime = timeline->getTimeForX(e.getOffsetFromDragStart().x, false);
 	//if (e.mods.isShiftDown()) diffTime = timeline->item->sequence->cueManager->getNearestCueForTime(ttui->timeAtMouseDown + diffTime) - ttui->timeAtMouseDown;
 
-	if (e.mods.isAltDown())
+	float length = ttui->lengthAtMouseDown;
+	Point<float> offset(0.f, 0.f);
+
+	if (e.mods.isAltDown() && manager->selectionManager->currentInspectables.size() >= 2)
 	{
 		ttui->item->scalePosition(Point<float>(diffTime, 0), true);
+		return;
+	}
+	else if(ttui->draggingLength)
+	{
+		if (e.mods.isShiftDown() || timeline->item->sequence->autoSnap->boolValue())
+		{
+			float targetTime = timeline->item->sequence->getClosestSnapTimeFor(snapTimes, ttui->item->movePositionReference.x + length + diffTime) - ttui->item->movePositionReference.x;
+			if(e.mods.isCtrlDown())
+			{
+				offset.x = targetTime - length;
+			}
+			else
+			{
+				length = targetTime;
+			}
+		}
+		else if(e.mods.isCtrlDown())
+		{
+			offset.x = diffTime;
+		}
+		else
+		{
+			length += diffTime;
+		}
 	}
 	else
 	{
-		Point<float> offset(diffTime, e.mods.isShiftDown()?0:e.getDistanceFromDragStartY()*1.0f / (getHeight() -20)); //-20 is for subtracting flag height
+		offset.y = (e.mods.isAltDown() || e.mods.isCtrlDown())?0:e.getDistanceFromDragStartY()*1.0f / (getHeight() -20); //-20 is for subtracting flag height
 
 		if (e.mods.isShiftDown() || timeline->item->sequence->autoSnap->boolValue())
 		{
-			float targetTime = timeline->item->sequence->getClosestSnapTimeFor(snapTimes, ttui->item->movePositionReference.x + offset.x);
-			offset.x = targetTime - ttui->item->movePositionReference.x;
+			offset.x = timeline->item->sequence->getClosestSnapTimeFor(snapTimes, ttui->item->movePositionReference.x + diffTime) - ttui->item->movePositionReference.x;
+		}
+		else
+		{
+			offset.x = diffTime;
 		}
 
-		ttui->item->movePosition(offset, true);
+		if(e.mods.isCtrlDown())
+		{
+			length -= offset.x;
+		}
 	}
+
+	ttui->item->movePosition(offset, true);
+	ttui->item->length->setValue(length);
 }
 
 void TimeTriggerManagerUI::timeTriggerTimeChanged(TimeTriggerUI * ttui)

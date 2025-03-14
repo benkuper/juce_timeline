@@ -20,15 +20,20 @@ public:
 	//layout
 	Rectangle<int> flagRect;
 	Rectangle<int> lineRect;
+	Rectangle<int> lengthRect;
 
 	std::unique_ptr<BoolToggleUI> lockUI;
 
 	//interaction
 	float timeAtMouseDown;
-	int posAtMouseDown;
+	float lengthAtMouseDown;
 	float flagYAtMouseDown;
+	bool draggingLength;
 
+	int startXOffset;
 	int flagXOffset; //to avoid end of layer overflow
+	int labelWidth;
+	int triggerWidth;
 
 	void paint(Graphics &g) override;
 	void resized() override;
@@ -40,6 +45,7 @@ public:
 	void mouseDown(const MouseEvent &e) override;
 	void mouseDrag(const MouseEvent &e) override;
 	void mouseUp(const MouseEvent &e) override;
+	void mouseMove(const MouseEvent &e) override;
 
 	void containerChildAddressChangedAsync(ControllableContainer *) override;
 	void controllableFeedbackUpdateInternal(Controllable *) override;

@@ -19,6 +19,7 @@ public:
 
 	FloatParameter * time;
 	BoolParameter * isTriggered;
+	FloatParameter * length;
 
 	//ui
 	FloatParameter * flagY;
@@ -31,6 +32,11 @@ public:
 
 	virtual void trigger();
 	virtual void triggerInternal() {}
+
+	virtual void unTrigger();
+	virtual void unTriggerInternal() {}
+
+	void setTriggerState(bool state);
 
 	DECLARE_TYPE("TimeTrigger");
 };
