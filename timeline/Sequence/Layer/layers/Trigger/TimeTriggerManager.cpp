@@ -127,6 +127,25 @@ Array<UndoableAction*> TimeTriggerManager::getRemoveTimespan(float start, float 
 	return actions;
 }
 
+void TimeTriggerManager::reorderActionsMap()
+{
+	actionsMap.clear();
+
+	auto endIt = actionsMap.end();
+
+	for (auto& tt : items)
+	{
+		float triggerStart = tt->time->floatValue();
+
+		actionsMap.emplace_hint(endIt, triggerStart, std::make_pair(tt, true)); // automatically sorted
+
+		if(tt->length->floatValue() <= 0.f) continue;
+
+		float triggerEnd = triggerStart + tt->length->floatValue();
+		actionsMap.emplace_hint(endIt, triggerEnd, std::make_pair(tt, false));
+	}
+}
+
 void TimeTriggerManager::onControllableFeedbackUpdate(ControllableContainer* cc, Controllable* c)
 {
 	TimeTrigger* t = static_cast<TimeTrigger*>(cc);
@@ -145,8 +164,40 @@ void TimeTriggerManager::onControllableFeedbackUpdate(ControllableContainer* cc,
 				items.swap(index, index + 1);
 				baseManagerListeners.call(&ManagerListener::itemsReordered);
 			}
+
+			reorderActionsMap();
 		}
 
+	}
+}
+
+void TimeTriggerManager::reorderItems()
+{
+	BaseManager<TimeTrigger>::reorderItems();
+	reorderActionsMap();
+}
+
+void TimeTriggerManager::executeTriggersTimespan(float startTime, float endTime, bool forward, bool onlyUntrigger)
+{
+	if(forward)
+	{
+		for (auto item = actionsMap.begin(); item != actionsMap.end() ; item++)
+		{
+			if(item->first > endTime) break;
+			if(item->first < startTime) continue;
+
+			item->second.first->setTriggerState(item->second.second && !onlyUntrigger);
+		}
+	}
+	else
+	{
+		for (auto item = actionsMap.rbegin(); item != actionsMap.rend() ; item++)
+		{
+			if(item->first < startTime) break;
+			if(item->first > endTime) continue;
+
+			item->second.first->setTriggerState(!(item->second.second) && !onlyUntrigger);
+		}
 	}
 }
 
@@ -161,30 +212,39 @@ void TimeTriggerManager::sequenceCurrentTimeChanged(Sequence* /*_sequence*/, flo
 	bool diffIsForward = curTime >= prevTime;
 	bool normallyPlaying = playingForward == diffIsForward;
 
+	float minTime = jmin(prevTime, curTime);
+	float maxTime = jmax(prevTime, curTime);
+
 	if (normallyPlaying)
 	{
 		if ((sequence->isPlaying->boolValue() && !sequence->isSeeking) || evaluateSkippedData || ModifierKeys::getCurrentModifiers().isCtrlDown())
 		{
-			float minTime = jmin(prevTime, curTime);
-			float maxTime = jmax(prevTime, curTime);
-
-			Array<TimeTrigger*> spanTriggers = getTriggersInTimespan(minTime, maxTime);
-			for (auto& tt : spanTriggers)
-			{
-				tt->trigger();
-			}
+			executeTriggersTimespan(minTime, maxTime, playingForward);
 		}
 	}
 	else //loop or manual, untrigger
 	{
+		executeTriggersTimespan(minTime, maxTime, !playingForward, !evaluateSkippedData);
+	}
+}
 
-		float minTime = playingForward ? curTime : 0;
-		float maxTime = playingForward ? sequence->totalTime->floatValue() : curTime;
+void TimeTriggerManager::sequencePlayStateChanged(Sequence*)
+{
+	if(sequence->isPlaying->boolValue())
+	{
+		float curTime = sequence->currentTime->floatValue();
 
-		Array<TimeTrigger*> spanTriggers = getTriggersInTimespan(minTime, maxTime, true);
-		for (auto& tt : spanTriggers)
+		for (auto& tt : items)
 		{
-			tt->isTriggered->setValue(false);
+			if(tt->length->floatValue() <= 0.f) continue;
+
+			float triggerStart = tt->time->floatValue();
+			float triggerEnd = triggerStart + tt->length->floatValue();
+
+			if(curTime >= triggerStart && curTime <= triggerEnd)
+			{
+				tt->setTriggerState(true);
+			}
 		}
 	}
 }
