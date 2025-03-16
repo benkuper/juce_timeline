@@ -102,10 +102,16 @@ void AudioLayerClipUI::mouseDown(const MouseEvent& e)
 	LayerBlockUI::mouseDown(e);
 	if (e.mods.isRightButtonDown() && (e.eventComponent == this || e.eventComponent == automationUI.get()))
 	{
+		PopupMenu::dismissAllActiveMenus();
 		PopupMenu p;
 		p.addItem(1, "Clear automation editor", automationUI != nullptr);
 		p.addItem(2, "Edit enveloppe automation", automationUI == nullptr);
 		p.addItem(3, "Remove enveloppe automation", clip->volume->controlMode != Parameter::ControlMode::MANUAL);
+		if(automationUI != nullptr)
+		{
+			p.addSeparator();
+			automationUI->keysUI.addMenuExtraItems(p, 4);
+		}
 
 		p.showMenuAsync(PopupMenu::Options(), [this](int result)
 			{
@@ -143,6 +149,11 @@ void AudioLayerClipUI::mouseDown(const MouseEvent& e)
 				case 3:
 					this->setTargetAutomation(nullptr);
 					clip->volume->setControlMode(Parameter::ControlMode::MANUAL);
+					break;
+
+				default:
+					if(result>3)
+						automationUI->keysUI.handleMenuExtraItemsResult(result, 4);
 					break;
 				}
 			}
@@ -191,7 +202,7 @@ void AudioLayerClipUI::setTargetAutomation(ParameterAutomation* a)
 		coreGrabber.setVisible(false);
 		grabber.setVisible(false);
 		loopGrabber.setVisible(false);
-		automationUI->addMouseListener(this, true);
+		automationUI->addMouseListener(this, false);
 		addAndMakeVisible(automationUI.get());
 		resized();
 	}
