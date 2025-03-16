@@ -188,12 +188,12 @@ void TimeTriggerUI::mouseUp(const MouseEvent & e)
 
 	if(lengthAtMouseDown != item->length->floatValue())
 	{
-		actions.addArray(item->length->setUndoableValue(lengthAtMouseDown, item->length->floatValue(), true, false));
+		actions.addArray(item->length->setUndoableValue(item->length->floatValue(), true, false));
 	}
 
 	if (flagYAtMouseDown != item->flagY->floatValue())
 	{
-		actions.addArray(item->flagY->setUndoableValue(flagYAtMouseDown, item->flagY->floatValue(), true, false));
+		actions.addArray(item->flagY->setUndoableValue(item->flagY->floatValue(), true, false));
 	}
 	
 	if(timeAtMouseDown != item->time->floatValue())
@@ -204,7 +204,7 @@ void TimeTriggerUI::mouseUp(const MouseEvent & e)
 		}
 		else
 		{
-			if (!item->isUILocked->boolValue()) actions.addArray(item->time->setUndoableValue(timeAtMouseDown, item->time->floatValue(), true, false));
+			if (!item->isUILocked->boolValue()) actions.addArray(item->time->setUndoableValue(item->time->floatValue(), true, false));
 		}
 	}
 

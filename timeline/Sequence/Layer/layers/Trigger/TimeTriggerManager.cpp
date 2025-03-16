@@ -36,7 +36,9 @@ void TimeTriggerManager::addTriggerAt(float time, float flagY)
 {
 	TimeTrigger* t = createItem();
 	t->time->setValue(time);
+	t->time->resetLastUndoValue();
 	t->flagY->setValue(flagY);
+	t->flagY->resetLastUndoValue();
 	BaseManager::addItem(t);
 }
 
