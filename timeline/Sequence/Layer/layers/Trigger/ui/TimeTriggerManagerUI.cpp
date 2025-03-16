@@ -70,30 +70,20 @@ void TimeTriggerManagerUI::placeTimeTriggerUI(TimeTriggerUI * ttui)
 		triggerWidth = timeline->getXForTime(ttui->item->time->floatValue() + length) - tx;
 	}
 
-	int endX = tx + ttui->labelWidth + triggerWidth;
+	int endX = tx + ttui->labelWidth;
 
 	if (endX > maxX && tx <= maxX)
 	{
-		if(triggerWidth > ttui->labelWidth)
-		{
-			ttui->startXOffset = 0;
-			ttui->flagXOffset = triggerWidth - ttui->labelWidth + 1;
-		}
-		else
-		{
-			// Old behaviour of making the label as stuck on the right as possible 
-			// int diff = endX - maxX;
-			int diff = ttui->labelWidth - 1;
+		int diff = ttui->labelWidth - 1;
 
-			tx -= diff;
-			ttui->startXOffset = diff;
-			ttui->flagXOffset = 0;
-		}
+		tx -= diff;
+		ttui->startXOffset = diff;
+		ttui->flagXOffset = 0;
 	}
 	else
 	{
 		ttui->startXOffset = 0;
-		ttui->flagXOffset = triggerWidth;
+		ttui->flagXOffset = 0;
 	}
 	ttui->triggerWidth = triggerWidth;
 
