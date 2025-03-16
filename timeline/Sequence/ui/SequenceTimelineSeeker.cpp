@@ -11,8 +11,13 @@
 #include "JuceHeader.h"
 
 SequenceTimelineSeeker::SequenceTimelineSeeker(Sequence * _sequence) :
+	UITimerTarget(ORGANICUI_SLOW_TIMER, "SequenceTimelineSeeker"),
 	sequence(_sequence)
 {
+	setBufferedToImage(true);
+	handle.setBufferedToImage(true);
+
+	addAndMakeVisible(&needle);
 	addAndMakeVisible(&handle);
 	sequence->addAsyncContainerListener(this);
 	handle.addMouseListener(this,false);
@@ -31,9 +36,6 @@ void SequenceTimelineSeeker::paint(Graphics & g)
 	g.fillRoundedRectangle(getLocalBounds().toFloat(),2);
 	g.setColour(BG_COLOR.darker());
 	g.drawRoundedRectangle(getLocalBounds().toFloat(), 2, 2);
-	g.setColour(HIGHLIGHT_COLOR);
-	float tx = getXForTime(sequence->currentTime->floatValue());
-	g.drawLine(tx, 0, tx, getHeight(), 2);
 
 	if (!selectionSpan.isOrigin())
 	{
@@ -50,10 +52,23 @@ void SequenceTimelineSeeker::paint(Graphics & g)
 
 void SequenceTimelineSeeker::resized()
 {
+	shouldRepaint = true;
+}
+
+void SequenceTimelineSeeker::handlePaintTimerInternal()
+{
+	float tx = getXForTime(sequence->currentTime->floatValue());
+	needle.setBounds(tx, 0, 2, getHeight());
+
 	Rectangle<int> r = getLocalBounds();
 	r.setLeft(getXForTime(sequence->viewStartTime->floatValue()));
 	r.setRight(getXForTime(sequence->viewEndTime->floatValue()));
 	handle.setBounds(r);
+}
+
+void SequenceTimelineSeeker::paintOverChildren(Graphics& g)
+{
+	validatePaint();
 }
 
 void SequenceTimelineSeeker::mouseDown(const MouseEvent & e)
@@ -193,17 +208,16 @@ void SequenceTimelineSeeker::newMessage(const ContainerAsyncEvent & e)
 		if (e.targetControllable.wasObjectDeleted()) return;
 		if (e.targetControllable == sequence->viewStartTime || e.targetControllable == sequence->viewEndTime)
 		{
-			resized();
+			shouldRepaint = true;
 		}
 		else if (e.targetControllable == sequence->currentTime)
 		{
-			repaint();
-			resized();
+			shouldRepaint = true;
 		}
 		else if (e.targetControllable == sequence->totalTime)
 		{
 			repaint();
-			resized();
+			shouldRepaint = true;
 		}
 		break;
 
@@ -222,8 +236,10 @@ void SeekHandle::paint(Graphics & g)
 	g.drawRoundedRectangle(getLocalBounds().toFloat(), 2, 2);
 }
 
-void SeekHandle::resized()
+void SeekNeedle::paint(Graphics & g)
 {
+	g.setColour(HIGHLIGHT_COLOR);
+	g.drawLine(0, 0, 0, getHeight(), 2);
 }
 
 #pragma warning (pop)
