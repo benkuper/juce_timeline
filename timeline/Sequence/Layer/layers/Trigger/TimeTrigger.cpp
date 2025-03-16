@@ -27,6 +27,12 @@ TimeTrigger::TimeTrigger(StringRef name) :
 	
 	isTriggered->setEnabled(false);
 	isTriggered->isSavable = false;
+
+	canTrigger = addBoolParameter("Can trigger", "If false the trigger is blocked and cannot trigger", true);
+	canTrigger->hideInEditor = true;
+	canTrigger->isSavable = false;
+
+	triggerAtAnyTime = false;
 }
 
 TimeTrigger::~TimeTrigger()
@@ -61,26 +67,37 @@ void TimeTrigger::addUndoableMoveAction(Array<UndoableAction*>& actions)
 void TimeTrigger::trigger()
 {
 	if (!enabled->boolValue()) return;
+	if (isTriggered->boolValue()) return;
 	isTriggered->setValue(true);
 	triggerInternal();
 }
 
 void TimeTrigger::unTrigger()
 {
+	if (!isTriggered->boolValue()) return;
 	isTriggered->setValue(false);
 	if (!enabled->boolValue()) return;
 	unTriggerInternal();
 }
 
-void TimeTrigger::setTriggerState(bool state)
+void TimeTrigger::setTriggerState(bool state, bool rewind)
 {
-	if(state == isTriggered->boolValue()) return;
+	collisionState = state;
 	if(state)
 	{
-		trigger();
+		if (canTrigger->boolValue()) trigger();
 	}
 	else
 	{
-		unTrigger();
+		exitedInternal(rewind);
 	}
+}
+
+void TimeTrigger::updateTriggerState()
+{
+	if ((triggerAtAnyTime || !collisionState) && canTrigger->boolValue())
+	{
+		trigger();
+	}
+	collisionState = true;
 }

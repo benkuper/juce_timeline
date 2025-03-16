@@ -169,6 +169,10 @@ void TimeTriggerManager::onControllableFeedbackUpdate(ControllableContainer* cc,
 
 			reorderActionsMap();
 		}
+		else if (c == t->canTrigger || c == enabled)
+		{
+			sequencePlayStateChanged(nullptr);
+		}
 
 	}
 }
@@ -188,7 +192,8 @@ void TimeTriggerManager::executeTriggersTimespan(float startTime, float endTime,
 			if(item->first > endTime) break;
 			if(item->first < startTime) continue;
 
-			item->second.first->setTriggerState(item->second.second && !onlyUntrigger);
+			if (!onlyUntrigger || !item->second.second)
+				item->second.first->setTriggerState(item->second.second, onlyUntrigger);
 		}
 	}
 	else
@@ -198,7 +203,8 @@ void TimeTriggerManager::executeTriggersTimespan(float startTime, float endTime,
 			if(item->first < startTime) break;
 			if(item->first > endTime) continue;
 
-			item->second.first->setTriggerState(!(item->second.second) && !onlyUntrigger);
+			if (!onlyUntrigger || item->second.second)
+				item->second.first->setTriggerState(!item->second.second, onlyUntrigger);
 		}
 	}
 }
@@ -226,7 +232,8 @@ void TimeTriggerManager::sequenceCurrentTimeChanged(Sequence* /*_sequence*/, flo
 	}
 	else //loop or manual, untrigger
 	{
-		executeTriggersTimespan(minTime, maxTime, !playingForward, !evaluateSkippedData);
+		executeTriggersTimespan(minTime, maxTime, !playingForward, true);
+		sequencePlayDirectionChanged(nullptr);
 	}
 }
 
@@ -245,7 +252,7 @@ void TimeTriggerManager::sequencePlayStateChanged(Sequence*)
 
 			if(curTime >= triggerStart && curTime <= triggerEnd)
 			{
-				tt->setTriggerState(true);
+				tt->updateTriggerState();
 			}
 		}
 	}
