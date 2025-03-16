@@ -23,7 +23,7 @@ public:
 class SequenceTimelineHeader :
 	public Component,
 	public ContainerAsyncListener,
-    public Timer
+    public UITimerTarget
 {
 public:
 	SequenceTimelineHeader(Sequence * _sequence, TimeCueManagerUI * curManagerUI = nullptr, TimeNeedleUI * needleUI = nullptr);
@@ -33,8 +33,6 @@ public:
 
 	std::unique_ptr<TimeNeedleUI> needle;
 	std::unique_ptr<TimeCueManagerUI> cueManagerUI;
-
-    bool shouldUpdateNeedle;
 
 	bool selectionZoomMode;
 	Point<float> selectionSpan;
@@ -62,7 +60,6 @@ public:
 
 	void newMessage(const ContainerAsyncEvent &e) override;
 
-    void timerCallback() override;
-	
-	
+	void handlePaintTimerInternal() override;
+    void paintOverChildren(juce::Graphics& g) override;
 };

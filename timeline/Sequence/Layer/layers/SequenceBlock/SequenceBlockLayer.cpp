@@ -49,17 +49,18 @@ void SequenceBlockLayer::itemsAdded(Array<LayerBlock*> items)
 
 void SequenceBlockLayer::itemRemoved(LayerBlock* item)
 {
-	if (isClearing) return;
 	updateCurrentBlock();
 }
 void SequenceBlockLayer::itemsRemoved(Array<LayerBlock*> items)
 {
-	if (isClearing) return;
 	updateCurrentBlock();
 }
 
 void SequenceBlockLayer::updateCurrentBlock()
 {
+	if (isClearing) return;
+	if (!enabled->boolValue() || !sequence->enabled->boolValue()) return;
+
 	SequenceBlock* b = (SequenceBlock*)blockManager.getBlockAtTime(sequence->currentTime->floatValue(), false, false);
 
 	ScopedLock lock(blockLock);
@@ -102,17 +103,20 @@ void SequenceBlockLayer::updateCurrentBlock()
 }
 void SequenceBlockLayer::updateCurrentSequenceTime()
 {
+	if (isClearing) return;
+	if (!enabled->boolValue() || !sequence->enabled->boolValue()) return;
+	
 	ScopedLock lock(blockLock);
 
 	if (currentBlock == nullptr) return;
 
 	if (Sequence* s = currentBlock->getTargetSequence())
 	{
-		float t = currentBlock->getRelativeTime(sequence->currentTime->floatValue(), true);
+		float t = currentBlock->getRelativeTime(sequence->currentTime->floatValue(), true) + currentBlock->sequenceStartOffset->floatValue();
 
 		if (sequence->isPlaying->boolValue())
 		{
-			if (sequence->isSeeking || t < s->currentTime->floatValue())
+			if (sequence->isSeeking || t < s->currentTime->floatValue() || !s->isPlaying->boolValue())
 			{
 				s->setCurrentTime(t, true, true);
 				s->playTrigger->trigger();
@@ -122,6 +126,29 @@ void SequenceBlockLayer::updateCurrentSequenceTime()
 		{
 			s->setCurrentTime(t, true, true);
 		}
+	}
+}
+
+void SequenceBlockLayer::onContainerParameterChangedInternal(Parameter* p)
+{
+	SequenceLayer::onContainerParameterChangedInternal(p);
+
+	if (p == enabled)
+	{
+		if (!enabled->boolValue())
+		{
+			ScopedLock lock(blockLock);
+			if (!currentBlockRef.wasObjectDeleted() && currentBlock != nullptr)
+			{
+				if (Sequence* s = currentBlock->getTargetSequence()) s->pauseTrigger->trigger();
+			}
+		}
+		else
+		{
+			updateCurrentBlock();
+			updateCurrentSequenceTime();
+		}
+
 	}
 }
 
@@ -179,6 +206,9 @@ void SequenceBlockLayer::sequenceCurrentTimeChanged(Sequence*, float, bool)
 
 void SequenceBlockLayer::sequencePlayStateChanged(Sequence*)
 {
+	if (isClearing) return;
+	if (!enabled->boolValue() || !sequence->enabled->boolValue()) return;
+
 	if (!sequence->isPlaying->boolValue())
 	{
 		ScopedLock lock(blockLock);
