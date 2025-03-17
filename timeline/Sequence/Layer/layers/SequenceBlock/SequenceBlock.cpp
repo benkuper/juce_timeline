@@ -18,6 +18,9 @@ SequenceBlock::SequenceBlock(SequenceManager* manager) :
 	target = addTargetParameter("Sequence", "The target Sequence to control", manager);
 	target->targetType = TargetParameter::CONTAINER;
 	target->maxDefaultSearchLevel = 0;
+
+	sequenceStartOffset = addFloatParameter("Sequence Start Offset", "Offset at which the sequence will start", 0, 0);
+	sequenceStartOffset->defaultUI = FloatParameter::TIME;
 }
 
 SequenceBlock::~SequenceBlock()

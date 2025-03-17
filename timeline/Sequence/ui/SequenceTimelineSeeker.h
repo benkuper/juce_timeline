@@ -19,11 +19,21 @@ public:
 	~SeekHandle() {}
 
 	void paint(Graphics &g) override;
-	void resized() override;
+};
+
+class SeekNeedle :
+	public Component
+{
+public:
+	SeekNeedle() {}
+	~SeekNeedle() {}
+
+	void paint(Graphics &g) override;
 };
 
 class SequenceTimelineSeeker :
 	public Component,
+	public UITimerTarget,
 	public ContainerAsyncListener
 {
 public:
@@ -32,6 +42,7 @@ public:
 
 	Sequence * sequence;
 	SeekHandle handle;
+	SeekNeedle needle;
 
 	//interaction
 	Point<float> screenMousePosOnDown; 
@@ -48,6 +59,8 @@ public:
 
 	void paint(Graphics &g) override;
 	void resized() override;
+	void handlePaintTimerInternal() override;
+    void paintOverChildren(juce::Graphics& g) override;
 
 	void mouseDown(const MouseEvent &e) override;
 	void mouseDrag(const MouseEvent &e) override;

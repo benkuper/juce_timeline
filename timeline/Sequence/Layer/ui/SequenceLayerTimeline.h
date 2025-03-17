@@ -12,13 +12,12 @@
 
 class SequenceLayerTimeline :
 	public BaseItemMinimalUI<SequenceLayer>,
-	public Timer
+	public UITimerTarget
 {
 public:
 	SequenceLayerTimeline(SequenceLayer *);
 	virtual ~SequenceLayerTimeline();
 
-	bool shouldUpdateNeedle;
     bool seekManipulationMode;
 	
 	int getXForTime(float time);
@@ -37,9 +36,11 @@ public:
 	void controllableFeedbackUpdateInternal(Controllable * c) override;
 
 
-	void timerCallback() override;
+	void handlePaintTimerInternal() override;
+    void paintOverChildren(juce::Graphics& g) override;
 
 	virtual void visibilityChanged() override;
+    virtual void parentSizeChanged() override;
     
     class TimelineNeedle :
         public Component

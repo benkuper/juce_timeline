@@ -10,6 +10,9 @@
 
 TimeTriggerUI::TimeTriggerUI(TimeTrigger * _tt) :
 	BaseItemUI<TimeTrigger>(_tt, Direction::NONE),
+	labelWidth(0),
+	triggerWidth(0),
+	startXOffset(0),
 	flagXOffset(0)
 {
 	dragAndDropEnabled = false; //avoid default behavior
@@ -49,11 +52,29 @@ void TimeTriggerUI::paint(Graphics & g)
 		g.fillRect(flagRect);
 	}
 
-	if (item->isTriggered->boolValue()) c = GREEN_COLOR.darker();
+	if(item->isSelected)
+	{
+		c = HIGHLIGHT_COLOR;
+	}
+	else if(item->isPreselected)
+	{
+		c = PRESELECT_COLOR;
+	}
+	else if (item->isTriggered->boolValue())
+	{
+		c = GREEN_COLOR.darker();
+	}
 
-	g.setColour(item->isSelected?HIGHLIGHT_COLOR:item->isPreselected?PRESELECT_COLOR:c.brighter());
+	g.setColour(c.brighter());
 	g.drawRect(flagRect);
-	g.drawVerticalLine(flagXOffset, 0, (float)getHeight());
+	g.drawVerticalLine(startXOffset, 0, (float)getHeight());
+
+	if(triggerWidth > 0)
+	{
+		g.drawVerticalLine(startXOffset + triggerWidth, 0, (float)getHeight());
+		g.setColour(c.interpolatedWith(item->itemColor->getColor(), 0.7f).withAlpha(.4f));
+		g.fillRect(startXOffset + 1, 0, triggerWidth - 1, getHeight());
+	}
 
 }
 
@@ -63,8 +84,10 @@ void TimeTriggerUI::resized()
 
 	int ty = (int)(item->flagY->floatValue()*(getHeight() - 20));
 
-	flagRect = r.translated(0, ty).withHeight(20);
-	lineRect = r.withWidth(6);
+	flagRect = r.translated(flagXOffset, ty).withSize(labelWidth, 20);
+	lineRect = r.translated(startXOffset, 0).withWidth(6);
+	if(labelWidth > 0)
+		lengthRect = r.translated(startXOffset + triggerWidth - 6, 0).withWidth(6);
 
 	Rectangle<int> p = flagRect.reduced(2, 2);
 	if (item->isSelected)
@@ -85,6 +108,7 @@ bool TimeTriggerUI::hitTest(int x, int y)
 {
 	if (flagRect.contains(x, y)) return true;
 	if (lineRect.contains(x, y)) return true;
+	if (labelWidth > 0 && lengthRect.contains(x, y)) return true;
 	return false;
 }
 
@@ -95,7 +119,7 @@ void TimeTriggerUI::updateSizeFromName()
 	{
 		newWidth += 60; //for all the buttons
 	}
-	setSize(newWidth, getHeight());
+	labelWidth = newWidth;
 }
 
 void TimeTriggerUI::mouseDown(const MouseEvent& e)
@@ -106,10 +130,21 @@ void TimeTriggerUI::mouseDown(const MouseEvent& e)
 
 	if (item->isUILocked->boolValue()) return;
 
-	item->setMovePositionReference(true);
-	timeAtMouseDown = item->time->floatValue();
-	posAtMouseDown = getX();
+	float lengthDragPos = startXOffset + triggerWidth;
+	float xCursorPos = e.getPosition().getX();
 
+	if(labelWidth > 0 && lengthRect.contains(e.getPosition()))
+	{
+		draggingLength = true;
+	}
+	else
+	{
+		item->setMovePositionReference(true);
+		draggingLength = false;
+	}
+
+	lengthAtMouseDown = item->length->floatValue();
+	timeAtMouseDown = item->time->floatValue();
 	triggerUIListeners.call(&TimeTriggerUIListener::timeTriggerMouseDown, this, e);
 }
 
@@ -123,6 +158,17 @@ void TimeTriggerUI::mouseDrag(const MouseEvent & e)
 	
 	if (e.mods.isLeftButtonDown())
 	{
+		if(draggingLength != e.mods.isCtrlDown())
+		{
+			setMouseCursor(MouseCursor::LeftRightResizeCursor);
+		}
+		else
+		{
+			setMouseCursor(MouseCursor::UpDownLeftRightResizeCursor);
+		}
+	
+		updateMouseCursor();
+
 		triggerUIListeners.call(&TimeTriggerUIListener::timeTriggerDragged, this, e);
 	}
 
@@ -138,19 +184,50 @@ void TimeTriggerUI::mouseUp(const MouseEvent & e)
 {
 	BaseItemUI::mouseUp(e);
 
-	if (flagYAtMouseDown == item->flagY->floatValue() && timeAtMouseDown == item->time->floatValue()) return;
+	Array<UndoableAction*> actions;
 
-	if (item->selectionManager->currentInspectables.size() >= 2)
+	if(lengthAtMouseDown != item->length->floatValue())
 	{
-		item->addMoveToUndoManager(true);
+		actions.addArray(item->length->setUndoableValue(item->length->floatValue(), true, false));
+	}
+
+	if (flagYAtMouseDown != item->flagY->floatValue())
+	{
+		actions.addArray(item->flagY->setUndoableValue(item->flagY->floatValue(), true, false));
+	}
+	
+	if(timeAtMouseDown != item->time->floatValue())
+	{
+		if (item->selectionManager->currentInspectables.size() >= 2)
+		{
+			item->addMoveToUndoManager(true);
+		}
+		else
+		{
+			if (!item->isUILocked->boolValue()) actions.addArray(item->time->setUndoableValue(item->time->floatValue(), true, false));
+		}
+	}
+
+	if(!actions.isEmpty())
+		UndoMaster::getInstance()->performActions("Move Trigger \"" + item->niceName + "\"", actions);
+}
+
+void TimeTriggerUI::mouseMove(const MouseEvent & e)
+{
+	if(item->isUILocked->boolValue())
+	{
+		setMouseCursor(MouseCursor::NormalCursor);
+	}
+	else if((labelWidth > 0 && lengthRect.contains(e.getPosition())) != e.mods.isCtrlDown())
+	{
+		setMouseCursor(MouseCursor::LeftRightResizeCursor);
 	}
 	else
 	{
-		Array<UndoableAction*> actions;
-		actions.addArray(item->flagY->setUndoableValue(item->flagY->floatValue(), true, false));
-		if (!item->isUILocked->boolValue()) actions.addArray(item->time->setUndoableValue(item->time->floatValue(), true, false));
-		UndoMaster::getInstance()->performActions("Move Trigger \"" + item->niceName + "\"", actions);
+		setMouseCursor(MouseCursor::UpDownLeftRightResizeCursor);
 	}
+
+	updateMouseCursor();
 }
 
 void TimeTriggerUI::containerChildAddressChangedAsync(ControllableContainer * cc)
@@ -161,7 +238,7 @@ void TimeTriggerUI::containerChildAddressChangedAsync(ControllableContainer * cc
 
 void TimeTriggerUI::controllableFeedbackUpdateInternal(Controllable * c)
 {
-	if (c == item->time)
+	if (c == item->time || c == item->length)
 	{
 		triggerUIListeners.call(&TimeTriggerUIListener::timeTriggerTimeChanged, this);
 	} else if (c == item->flagY)

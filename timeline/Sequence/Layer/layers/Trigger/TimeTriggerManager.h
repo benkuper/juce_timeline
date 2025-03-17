@@ -24,6 +24,8 @@ public:
 	TriggerLayer* layer;
 	Sequence* sequence;
 
+	std::multimap<float, std::pair<TimeTrigger*, bool>> actionsMap;
+
 	virtual void addTriggerAt(float time, float flagYPos);
 
 	void addItemInternal(TimeTrigger* t, var data) override;
@@ -41,7 +43,12 @@ public:
 
 	void onControllableFeedbackUpdate(ControllableContainer* cc, Controllable* c) override;
 
+	void reorderActionsMap();
+	void reorderItems() override;
+
+	void executeTriggersTimespan(float startTime, float endTime, bool forward, bool onlyUntrigger = false);
 	void sequenceCurrentTimeChanged(Sequence* _sequence, float prevTime, bool evaluateSkippedData) override;
+	void sequencePlayStateChanged(Sequence *) override;
 	void sequenceTotalTimeChanged(Sequence*) override;
 	void sequencePlayDirectionChanged(Sequence*) override;
 	void sequenceLooped(Sequence*) override;

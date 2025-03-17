@@ -39,6 +39,7 @@ public:
 
 	void updateCurrentSequenceTime();
 
+	void onContainerParameterChangedInternal(Parameter* p) override;
 	void onControllableFeedbackUpdateInternal(ControllableContainer *cc, Controllable * c) override;
 
 	void selectAll(bool addToSelection = false) override;

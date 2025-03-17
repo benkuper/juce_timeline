@@ -59,6 +59,7 @@ void LayerBlockManager::addBlockAt(LayerBlock* b, float time)
 	BaseManager::addItem(b);
 
 	placeBlockAt(b, time);
+	b->time->resetLastUndoValue();
 
 	int nextIndex = items.indexOf(b) + 1;
 	if (nextIndex < items.size())
