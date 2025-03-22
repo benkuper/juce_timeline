@@ -130,8 +130,8 @@ void TimeTriggerUI::mouseDown(const MouseEvent& e)
 
 	if (item->isUILocked->boolValue()) return;
 
-	float lengthDragPos = startXOffset + triggerWidth;
-	float xCursorPos = e.getPosition().getX();
+	//float lengthDragPos = startXOffset + triggerWidth;
+	//float xCursorPos = e.getPosition().getX();
 
 	if(labelWidth > 0 && lengthRect.contains(e.getPosition()))
 	{
