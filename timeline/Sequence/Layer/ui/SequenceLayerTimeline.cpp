@@ -114,11 +114,6 @@ void SequenceLayerTimeline::handlePaintTimerInternal()
 	updateNeedlePosition();
 }
 
-void SequenceLayerTimeline::paintOverChildren(Graphics& g)
-{
-	validatePaint();
-}
-
 void SequenceLayerTimeline::visibilityChanged()
 {
 	if (!isVisible()) return;

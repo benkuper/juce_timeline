@@ -435,11 +435,6 @@ void SequenceTimelineHeader::handlePaintTimerInternal()
 	updateNeedlePosition();
 }
 
-void SequenceTimelineHeader::paintOverChildren(Graphics& g)
-{
-	validatePaint();
-}
-
 
 #pragma warning(push)
 #pragma warning(disable:4244)

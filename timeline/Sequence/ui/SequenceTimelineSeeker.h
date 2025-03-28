@@ -60,7 +60,6 @@ public:
 	void paint(Graphics &g) override;
 	void resized() override;
 	void handlePaintTimerInternal() override;
-    void paintOverChildren(juce::Graphics& g) override;
 
 	void mouseDown(const MouseEvent &e) override;
 	void mouseDrag(const MouseEvent &e) override;

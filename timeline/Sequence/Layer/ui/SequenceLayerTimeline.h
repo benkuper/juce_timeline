@@ -37,7 +37,6 @@ public:
 
 
 	void handlePaintTimerInternal() override;
-    void paintOverChildren(juce::Graphics& g) override;
 
 	virtual void visibilityChanged() override;
     virtual void parentSizeChanged() override;
