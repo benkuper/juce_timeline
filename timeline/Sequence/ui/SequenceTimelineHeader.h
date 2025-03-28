@@ -61,5 +61,4 @@ public:
 	void newMessage(const ContainerAsyncEvent &e) override;
 
 	void handlePaintTimerInternal() override;
-    void paintOverChildren(juce::Graphics& g) override;
 };

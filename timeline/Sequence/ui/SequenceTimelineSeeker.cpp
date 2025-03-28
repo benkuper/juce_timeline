@@ -66,10 +66,6 @@ void SequenceTimelineSeeker::handlePaintTimerInternal()
 	handle.setBounds(r);
 }
 
-void SequenceTimelineSeeker::paintOverChildren(Graphics& g)
-{
-	validatePaint();
-}
 
 void SequenceTimelineSeeker::mouseDown(const MouseEvent & e)
 {
