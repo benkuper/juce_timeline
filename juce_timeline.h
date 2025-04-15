@@ -61,16 +61,16 @@
 //Somehow, we need to include specifically the templace class headers
 #include <juce_organicui/undo/UndoMaster.h>
 #include <juce_organicui/manager/BaseItemListener.h>
-#include <juce_organicui/manager/BaseManagerListener.h>
+#include <juce_organicui/manager/ManagerListener.h>
 #include <juce_organicui/manager/BaseItem.h>
 #include <juce_organicui/manager/ui/BaseItemEditor.h>
 #include <juce_organicui/manager/ui/GenericManagerEditor.h>
-#include <juce_organicui/manager/BaseManager.h>
+#include <juce_organicui/manager/Manager.h>
 #include <juce_organicui/manager/ui/BaseItemMinimalUI.h>
 #include <juce_organicui/manager/ui/BaseItemUI.h>
-#include <juce_organicui/manager/ui/BaseManagerUI.h>
-#include <juce_organicui/manager/ui/BaseManagerViewUI.h>
-#include <juce_organicui/manager/ui/BaseManagerShapeShifterUI.h>
+#include <juce_organicui/manager/ui/ManagerUI.h>
+#include <juce_organicui/manager/ui/ManagerViewUI.h>
+#include <juce_organicui/manager/ui/ManagerShapeShifterUI.h>
 #include <juce_organicui/ui/shapeshifter/GapGrabber.h>
 
 

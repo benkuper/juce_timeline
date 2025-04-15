@@ -11,7 +11,7 @@
 #include "JuceHeader.h"
 
 LayerBlockManager::LayerBlockManager(SequenceLayer* layer, StringRef name) :
-	BaseManager(name),
+	Manager(name),
 	layer(layer),
 	blocksCanOverlap(true)
 {
@@ -56,7 +56,7 @@ void LayerBlockManager::addBlockAt(LayerBlock* b, float time)
 {
 	b->time->setValue(time);
 
-	BaseManager::addItem(b);
+	Manager::addItem(b);
 
 	placeBlockAt(b, time);
 	b->time->resetLastUndoValue();
@@ -123,7 +123,7 @@ Array<LayerBlock*> LayerBlockManager::getBlocksInRange(float start, float end, b
 
 Array<LayerBlock*> LayerBlockManager::addItemsFromClipboard(bool showWarning)
 {
-	Array<LayerBlock*> blocks = BaseManager::addItemsFromClipboard(showWarning);
+	Array<LayerBlock*> blocks = Manager::addItemsFromClipboard(showWarning);
 	if (blocks.isEmpty()) return blocks;
 	if (blocks[0] == nullptr) return Array<LayerBlock*>();
 

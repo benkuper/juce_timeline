@@ -13,7 +13,7 @@
 class SequenceLayer;
 
 class LayerBlockManager :
-	public BaseManager<LayerBlock>,
+	public Manager<LayerBlock>,
 	public LayerBlock::BlockListener
 {
 public:

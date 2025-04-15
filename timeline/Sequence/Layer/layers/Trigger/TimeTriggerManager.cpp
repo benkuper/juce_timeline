@@ -11,7 +11,7 @@
 #include "JuceHeader.h"
 
 TimeTriggerManager::TimeTriggerManager(TriggerLayer* _layer, Sequence* _sequence) :
-	BaseManager("Triggers"),
+	Manager("Triggers"),
 	layer(_layer),
 	sequence(_sequence)
 {
@@ -39,7 +39,7 @@ void TimeTriggerManager::addTriggerAt(float time, float flagY)
 	t->time->resetLastUndoValue();
 	t->flagY->setValue(flagY);
 	t->flagY->resetLastUndoValue();
-	BaseManager::addItem(t);
+	Manager::addItem(t);
 }
 
 void TimeTriggerManager::addItemInternal(TimeTrigger* t, var data)
@@ -54,7 +54,7 @@ void TimeTriggerManager::addItemsInternal(Array<TimeTrigger*> items, var data)
 
 Array<TimeTrigger*> TimeTriggerManager::addItemsFromClipboard(bool showWarning)
 {
-	Array<TimeTrigger*> triggers = BaseManager::addItemsFromClipboard(showWarning);
+	Array<TimeTrigger*> triggers = Manager::addItemsFromClipboard(showWarning);
 	if (triggers.isEmpty()) return triggers;
 	if (triggers[0] == nullptr) return Array<TimeTrigger*>();
 
@@ -159,12 +159,12 @@ void TimeTriggerManager::onControllableFeedbackUpdate(ControllableContainer* cc,
 			if (index > 0 && t->time->floatValue() < items[index - 1]->time->floatValue())
 			{
 				items.swap(index, index - 1);
-				baseManagerListeners.call(&ManagerListener::itemsReordered);
+				managerListeners.call(&ManagerListener::itemsReordered);
 			}
 			else if (index < items.size() - 1 && t->time->floatValue() > items[index + 1]->time->floatValue())
 			{
 				items.swap(index, index + 1);
-				baseManagerListeners.call(&ManagerListener::itemsReordered);
+				managerListeners.call(&ManagerListener::itemsReordered);
 			}
 
 			reorderActionsMap();
@@ -179,7 +179,7 @@ void TimeTriggerManager::onControllableFeedbackUpdate(ControllableContainer* cc,
 
 void TimeTriggerManager::reorderItems()
 {
-	BaseManager<TimeTrigger>::reorderItems();
+	Manager<TimeTrigger>::reorderItems();
 	reorderActionsMap();
 }
 

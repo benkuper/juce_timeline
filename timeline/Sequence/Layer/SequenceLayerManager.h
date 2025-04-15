@@ -10,7 +10,7 @@
 #pragma once
 
 class SequenceLayerManager :
-	public BaseManager<SequenceLayer>
+	public Manager<SequenceLayer>
 {
 public:
 	SequenceLayerManager(Sequence * _sequence);

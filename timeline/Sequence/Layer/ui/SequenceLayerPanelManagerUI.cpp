@@ -9,7 +9,7 @@
 */
 
 SequenceLayerPanelManagerUI::SequenceLayerPanelManagerUI(SequenceLayerManager * _manager) :
-	BaseManagerUI<SequenceLayerManager, SequenceLayer, SequenceLayerPanel>("SequenceLayers", _manager)
+	ManagerUI<SequenceLayerManager, SequenceLayer, SequenceLayerPanel>("SequenceLayers", _manager)
 {
 	viewport.setScrollBarsShown(false, false, true, false);
 	animateItemOnAdd = false;
@@ -29,6 +29,6 @@ SequenceLayerPanel * SequenceLayerPanelManagerUI::createUIForItem(SequenceLayer 
 
 void SequenceLayerPanelManagerUI::addItemFromMenu(SequenceLayer* item, bool fromAddButton, Point<int> pos)
 {
-    BaseManagerUI::addItemFromMenu(item, fromAddButton, pos);
+    ManagerUI::addItemFromMenu(item, fromAddButton, pos);
     item->addDefaultContent();
 }

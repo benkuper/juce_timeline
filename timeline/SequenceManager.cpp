@@ -16,7 +16,7 @@ juce_ImplementSingleton(SequenceManager)
 #endif
 
 SequenceManager::SequenceManager() :
-	BaseManager("Sequences"),
+	Manager("Sequences"),
 	defaultLayerFactory(nullptr)
 {
 	itemDataType = "Sequence";
@@ -62,7 +62,7 @@ void SequenceManager::removeItemsInternal(Array<Sequence*> items)
 
 void SequenceManager::onContainerTriggerTriggered(Trigger* t)
 {
-	BaseManager::onContainerTriggerTriggered(t);
+	Manager::onContainerTriggerTriggered(t);
 	if (t == playAllTrigger)
 	{
 		for (auto& i : items) i->playTrigger->trigger();

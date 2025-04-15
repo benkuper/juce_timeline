@@ -11,7 +11,7 @@
 #pragma once
 
 class TimeTriggerManagerUI :
-	public BaseManagerUI<TimeTriggerManager, TimeTrigger, TimeTriggerUI>,
+	public ManagerUI<TimeTriggerManager, TimeTrigger, TimeTriggerUI>,
 	public TimeTriggerUI::TimeTriggerUIListener,
 	public InspectableSelectionManager::Listener,
 	public InspectableSelector::SelectorListener

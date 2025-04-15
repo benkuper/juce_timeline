@@ -11,7 +11,7 @@
 #pragma once
 
 class SequenceLayerPanelManagerUI :
-	public BaseManagerUI<SequenceLayerManager, SequenceLayer, SequenceLayerPanel>
+	public ManagerUI<SequenceLayerManager, SequenceLayer, SequenceLayerPanel>
 {
 public:
 

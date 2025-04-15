@@ -11,7 +11,7 @@
 #pragma once
 
 class SequenceLayerTimelineManagerUI :
-	public BaseManagerUI<SequenceLayerManager, SequenceLayer, SequenceLayerTimeline>,
+	public ManagerUI<SequenceLayerManager, SequenceLayer, SequenceLayerTimeline>,
 	public FileDragAndDropTarget
 {
 public:

@@ -14,7 +14,7 @@ class TriggerLayer;
 
 
 class TimeTriggerManager :
-	public BaseManager<TimeTrigger>,
+	public Manager<TimeTrigger>,
 	public Sequence::SequenceListener
 {
 public:

@@ -11,7 +11,7 @@
 #pragma once
 
 class TimeCueManager :
-	public BaseManager<TimeCue>
+	public Manager<TimeCue>
 {
 public:
 	TimeCueManager();

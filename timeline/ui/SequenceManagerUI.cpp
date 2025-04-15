@@ -10,7 +10,7 @@
 */
 
 SequenceManagerUI::SequenceManagerUI(const String &contentName, SequenceManager * _manager) :
-	BaseManagerShapeShifterUI<SequenceManager, Sequence, SequenceUI>(contentName, _manager)
+	ManagerShapeShifterUI<SequenceManager, Sequence, SequenceUI>(contentName, _manager)
 {
 	addItemText = "Add Sequence";
 	noItemText = "Add timed animation and control by creating a sequence";
@@ -30,14 +30,14 @@ SequenceManagerUI::~SequenceManagerUI()
 
 void SequenceManagerUI::resizedInternalHeader(Rectangle<int>& r)
 {
-	BaseManagerShapeShifterUI::resizedInternalHeader(r);
+	ManagerShapeShifterUI::resizedInternalHeader(r);
 	playAllUI->setBounds(r.removeFromLeft(r.getHeight()).reduced(2));
 	stopAllUI->setBounds(r.removeFromLeft(r.getHeight()).reduced(2));
 }
 
 void SequenceManagerUI::mouseDoubleClick(const MouseEvent & e)
 {
-	BaseManagerShapeShifterUI::mouseDoubleClick(e);
+	ManagerShapeShifterUI::mouseDoubleClick(e);
 	manager->addItem();
 }
 

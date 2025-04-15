@@ -16,7 +16,7 @@ class AudioLayer;
 class TimeTrigger;
 
 class SequenceManager :
-	public BaseManager<Sequence>,
+	public Manager<Sequence>,
 	public Sequence::SequenceListener
 {
 public:

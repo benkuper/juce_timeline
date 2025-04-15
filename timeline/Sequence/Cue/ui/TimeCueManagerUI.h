@@ -12,7 +12,7 @@
 class SequenceTimelineHeader;
 
 class TimeCueManagerUI :
-	public BaseManagerUI<TimeCueManager, TimeCue, TimeCueUI>,
+	public ManagerUI<TimeCueManager, TimeCue, TimeCueUI>,
 	public TimeCueUI::TimeCueUIListener
 {
 public:

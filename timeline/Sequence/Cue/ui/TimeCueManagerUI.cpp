@@ -9,7 +9,7 @@
 */
 
 TimeCueManagerUI::TimeCueManagerUI(SequenceTimelineHeader* _header, TimeCueManager* manager) :
-	BaseManagerUI("Cues", manager, false),
+	ManagerUI("Cues", manager, false),
 	header(_header)
 {
 	addItemText = "Add Cue";

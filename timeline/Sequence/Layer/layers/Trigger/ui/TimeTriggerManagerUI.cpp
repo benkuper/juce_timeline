@@ -9,7 +9,7 @@
 */
 
 TimeTriggerManagerUI::TimeTriggerManagerUI(TriggerLayerTimeline * _timeline, TimeTriggerManager * manager) :
-	BaseManagerUI("Triggers", manager, false),
+	ManagerUI("Triggers", manager, false),
 	timeline(_timeline),
 	miniMode(false)
 {
@@ -92,7 +92,7 @@ void TimeTriggerManagerUI::placeTimeTriggerUI(TimeTriggerUI * ttui)
 
 void TimeTriggerManagerUI::mouseDown(const MouseEvent & e)
 {
-	BaseManagerUI::mouseDown(e);
+	ManagerUI::mouseDown(e);
 
 	if (e.eventComponent == this)
 	{
