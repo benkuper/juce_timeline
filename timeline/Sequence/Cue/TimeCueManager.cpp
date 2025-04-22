@@ -11,7 +11,7 @@
 #include "JuceHeader.h"
 
 TimeCueManager::TimeCueManager() :
-	BaseManager("Cues")
+	Manager("Cues")
 {
 	comparator.compareFunc = &TimeCueManager::compareTime;
 }
@@ -33,13 +33,13 @@ void TimeCueManager::addCueAt(float time)
 	if (customCreateCueFunc != nullptr) t = customCreateCueFunc(time, this);
 	else t = new TimeCue(time, this);
 
-	BaseManager::addItem(t);
+	Manager::addItem(t);
 }
 
 void TimeCueManager::reorderItems()
 {
 	items.sort(TimeCueManager::comparator, true);
-	BaseManager::reorderItems();
+	Manager::reorderItems();
 }
 
 Array<float> TimeCueManager::getAllCueTimes(float minTime, float maxTime, bool includeDisabled)

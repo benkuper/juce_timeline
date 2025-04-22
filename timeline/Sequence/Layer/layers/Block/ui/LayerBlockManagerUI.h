@@ -13,7 +13,7 @@
 class LayerTimeline;
 
 class LayerBlockManagerUI :
-	public BaseManagerUI<LayerBlockManager, LayerBlock, LayerBlockUI>,
+	public ManagerUI<LayerBlockManager, LayerBlock, LayerBlockUI>,
 	public LayerBlockUI::BlockUIListener
 {
 public:

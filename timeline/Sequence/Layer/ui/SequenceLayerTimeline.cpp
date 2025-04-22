@@ -9,7 +9,7 @@
 */
 
 SequenceLayerTimeline::SequenceLayerTimeline(SequenceLayer * layer) :
-	BaseItemMinimalUI<SequenceLayer>(layer),
+	ItemMinimalUI<SequenceLayer>(layer),
 	UITimerTarget(ORGANICUI_DEFAULT_TIMER, "SequenceLayerTimeline"),
 	seekManipulationMode(false)
 {
@@ -64,7 +64,7 @@ void SequenceLayerTimeline::updateNeedlePosition()
 
 void SequenceLayerTimeline::mouseDown(const MouseEvent &e)
 {
-	BaseItemMinimalUI::mouseDown(e);
+	ItemMinimalUI::mouseDown(e);
 	/*
 	if (e.mods.isLeftButtonDown() && e.eventComponent->getParentComponent() == this)
 	{
@@ -85,7 +85,7 @@ void SequenceLayerTimeline::setSeekManipulationMode(bool isManipulating)
 
 void SequenceLayerTimeline::controllableFeedbackUpdateInternal(Controllable * c)
 {
-	BaseItemMinimalUI::controllableFeedbackUpdateInternal(c);
+	ItemMinimalUI::controllableFeedbackUpdateInternal(c);
 
 	if (c == item->uiHeight)
 	{

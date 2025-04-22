@@ -11,7 +11,7 @@
 #include "JuceHeader.h"
 
 SequenceLayerManager::SequenceLayerManager(Sequence* _sequence) :
-	BaseManager<SequenceLayer>("Layers"),
+	Manager<SequenceLayer>("Layers"),
 	sequence(_sequence)
 {
 	itemDataType = "SequenceLayer";

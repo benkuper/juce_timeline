@@ -57,7 +57,7 @@ AudioLayer::AudioLayer(Sequence* _sequence, var params) :
 	clipManager.hideInEditor = true;
 	addChildControllableContainer(&clipManager);
 
-	clipManager.addBaseManagerListener(this);
+	clipManager.addManagerListener(this);
 
 	if (!Engine::mainEngine->isLoadingFile) updateSelectedOutChannels();
 }

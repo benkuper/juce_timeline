@@ -11,7 +11,7 @@
 #include "JuceHeader.h"
 
 SequenceLayerTimelineManagerUI::SequenceLayerTimelineManagerUI(SequenceLayerManager * _manager) :
-	BaseManagerUI<SequenceLayerManager, SequenceLayer, SequenceLayerTimeline>("Layers", _manager)
+	ManagerUI<SequenceLayerManager, SequenceLayer, SequenceLayerTimeline>("Layers", _manager)
 {
 	addItemBT->setVisible(false);
 	animateItemOnAdd = false;
@@ -29,7 +29,7 @@ SequenceLayerTimeline * SequenceLayerTimelineManagerUI::createUIForItem(Sequence
 
 void SequenceLayerTimelineManagerUI::resized()
 {
-	BaseManagerUI::resized();
+	ManagerUI::resized();
 
 }
 

@@ -11,7 +11,7 @@
 #pragma once
 
 class SequenceManagerUI :
-	public BaseManagerShapeShifterUI<SequenceManager, Sequence, SequenceUI>
+	public ManagerShapeShifterUI<SequenceManager, Sequence, SequenceUI>
 {
 public:
 	SequenceManagerUI(const String &contentName, SequenceManager *_manager);

@@ -10,7 +10,7 @@
 
 
 TimeCueUI::TimeCueUI(TimeCue* timeCue) :
-	BaseItemMinimalUI(timeCue),
+	ItemMinimalUI(timeCue),
 	timeAtMouseDown(timeCue->time->floatValue()),
 	itemLabel("Label", timeCue->niceName)
 {
@@ -93,7 +93,7 @@ void TimeCueUI::resized()
 
 void TimeCueUI::mouseDoubleClick(const MouseEvent& e)
 {
-	BaseItemMinimalUI::mouseDoubleClick(e);
+	ItemMinimalUI::mouseDoubleClick(e);
 
 	if (e.mods.isRightButtonDown()) return;
 	if (e.mods.isCommandDown()) item->remove();
@@ -102,7 +102,7 @@ void TimeCueUI::mouseDoubleClick(const MouseEvent& e)
 void TimeCueUI::mouseDown(const MouseEvent& e)
 {
 	if (e.eventComponent == &itemLabel || e.eventComponent == itemLabel.getCurrentTextEditor()) return;
-	BaseItemMinimalUI::mouseDown(e);
+	ItemMinimalUI::mouseDown(e);
 
 	if (e.mods.isRightButtonDown()) return;
 	timeAtMouseDown = item->time->floatValue();
@@ -112,7 +112,7 @@ void TimeCueUI::mouseDown(const MouseEvent& e)
 void TimeCueUI::mouseDrag(const MouseEvent& e)
 {
 	if (e.eventComponent == &itemLabel || e.eventComponent == itemLabel.getCurrentTextEditor()) return;
-	BaseItemMinimalUI::mouseDrag(e);
+	ItemMinimalUI::mouseDrag(e);
 	if (e.mods.isRightButtonDown()) return;
 	if (!item->isUILocked->boolValue() && e.eventComponent != &itemLabel) cueUIListeners.call(&TimeCueUIListener::cueDragged, this, e);
 }
@@ -120,7 +120,7 @@ void TimeCueUI::mouseDrag(const MouseEvent& e)
 void TimeCueUI::mouseUp(const MouseEvent& e)
 {
 	if (e.eventComponent == &itemLabel || e.eventComponent == itemLabel.getCurrentTextEditor()) return;
-	BaseItemMinimalUI::mouseUp(e);
+	ItemMinimalUI::mouseUp(e);
 
 	if (e.mods.isRightButtonDown()) return;
 	if (!item->isUILocked->boolValue() && item->time->floatValue() != timeAtMouseDown) item->time->setUndoableValue(item->time->floatValue());
@@ -132,8 +132,8 @@ void TimeCueUI::labelTextChanged(Label* l)
 {
 	if (l == &itemLabel)
 	{
-		if (l->getText().isEmpty()) itemLabel.setText(this->baseItem->niceName, dontSendNotification); //avoid setting empty names
-		else this->baseItem->setUndoableNiceName(l->getText());
+		if (l->getText().isEmpty()) itemLabel.setText(this->item->niceName, dontSendNotification); //avoid setting empty names
+		else this->item->setUndoableNiceName(l->getText());
 		setSize(arrowSize + 12 + TextLayout::getStringWidth(itemLabel.getFont(), itemLabel.getText()), getHeight());
 	}
 }

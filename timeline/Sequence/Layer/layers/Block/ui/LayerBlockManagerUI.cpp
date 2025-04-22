@@ -10,7 +10,7 @@
 
 
 LayerBlockManagerUI::LayerBlockManagerUI(SequenceLayerTimeline* timeline, LayerBlockManager* manager) :
-	BaseManagerUI("Block Manager", manager, false),
+	ManagerUI("Block Manager", manager, false),
 	timeline(timeline),
 	miniMode(false)
 {

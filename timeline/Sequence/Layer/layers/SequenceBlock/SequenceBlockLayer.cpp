@@ -16,7 +16,7 @@ SequenceBlockLayer::SequenceBlockLayer(Sequence* _sequence, var params) :
 {
 
 	addChildControllableContainer(&blockManager);
-	blockManager.addBaseManagerListener(this);
+	blockManager.addManagerListener(this);
 }
 
 SequenceBlockLayer::~SequenceBlockLayer()
