@@ -1,17 +1,17 @@
 /*
   ==============================================================================
 
-    SequenceLayerPanel.cpp
-    Created: 17 Nov 2016 7:59:08pm
-    Author:  Ben Kuper
+	SequenceLayerPanel.cpp
+	Created: 17 Nov 2016 7:59:08pm
+	Author:  Ben Kuper
 
   ==============================================================================
 */
 
-SequenceLayerPanel::SequenceLayerPanel(SequenceLayer * layer) :
-	BaseItemUI<SequenceLayer>(layer,Direction::VERTICAL)
+SequenceLayerPanel::SequenceLayerPanel(SequenceLayer* layer) :
+	ItemUI<SequenceLayer>(layer, Direction::VERTICAL)
 {
-	setWantsKeyboardFocus(false); 
+	setWantsKeyboardFocus(false);
 	setMouseClickGrabsKeyboardFocus(false);
 	bringToFrontOnSelect = false;
 
@@ -31,30 +31,30 @@ SequenceLayerPanel::~SequenceLayerPanel()
 
 }
 
-void SequenceLayerPanel::paintOverChildren(Graphics & g)
+void SequenceLayerPanel::paintOverChildren(Graphics& g)
 {
 	g.setColour(item->itemColor->getColor());
 	g.drawRoundedRectangle(getLocalBounds().reduced(1).toFloat(), 2, 2);
-	BaseItemUI::paintOverChildren(g);
+	ItemUI::paintOverChildren(g);
 }
 
 void SequenceLayerPanel::resized()
 {
-	BaseItemUI::resized();
+	ItemUI::resized();
 	item->uiHeight->setValue(getHeight());
 }
 
 void SequenceLayerPanel::resizedInternalHeader(Rectangle<int>& r)
 {
-	BaseItemUI::resizedInternalHeader(r);
+	ItemUI::resizedInternalHeader(r);
 	miniModeUI->setBounds(r.removeFromRight(r.getHeight()));
 	r.removeFromRight(2);
 	lockUI->setBounds(r.removeFromRight(r.getHeight()).reduced(2));
 }
 
-void SequenceLayerPanel::controllableFeedbackUpdateInternal(Controllable * c)
+void SequenceLayerPanel::controllableFeedbackUpdateInternal(Controllable* c)
 {
-	BaseItemUI::controllableFeedbackUpdateInternal(c);
+	ItemUI::controllableFeedbackUpdateInternal(c);
 
 	if (c == item->uiHeight)
 	{

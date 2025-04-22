@@ -11,7 +11,7 @@
 #pragma once
 
 class TimeTriggerUI :
-	public BaseItemUI<TimeTrigger>
+	public ItemUI<TimeTrigger>
 {
 public:
 	TimeTriggerUI(TimeTrigger * tt);
