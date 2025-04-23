@@ -275,7 +275,7 @@ float Sequence::getClosestSnapTimeFor(Array<float> snapTimes, float time)
 
 bool Sequence::paste()
 {
-	Array<SequenceLayer*> p = layerManager->addItemsFromClipboard(false);
+	Array<BaseItem*> p = layerManager->addItemsFromClipboard(false);
 	if (p.isEmpty()) return BaseItem::paste();
 	return true;
 }

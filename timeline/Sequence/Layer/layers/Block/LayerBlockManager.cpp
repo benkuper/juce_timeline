@@ -121,11 +121,13 @@ Array<LayerBlock*> LayerBlockManager::getBlocksInRange(float start, float end, b
 	return result;
 }
 
-Array<LayerBlock*> LayerBlockManager::addItemsFromClipboard(bool showWarning)
+Array<BaseItem*> LayerBlockManager::addItemsFromClipboard(bool showWarning)
 {
-	Array<LayerBlock*> blocks = Manager::addItemsFromClipboard(showWarning);
-	if (blocks.isEmpty()) return blocks;
-	if (blocks[0] == nullptr) return Array<LayerBlock*>();
+	Array<BaseItem*> bItems = Manager::addItemsFromClipboard(showWarning);
+	Array<LayerBlock*> blocks = getArrayAsItems(bItems);
+
+	if (blocks.isEmpty()) return bItems;
+	if (blocks[0] == nullptr) return Array<BaseItem*>();
 
 	float minTime = blocks[0]->time->floatValue();
 	for (auto& b : blocks)
@@ -141,7 +143,7 @@ Array<LayerBlock*> LayerBlockManager::addItemsFromClipboard(bool showWarning)
 
 	reorderItems();
 
-	return blocks;
+	return bItems;
 }
 
 void LayerBlockManager::getSnapTimes(Array<float>* arrayToFill, bool includeStart, bool includeEnd, bool includeCoreEnd)

@@ -32,7 +32,7 @@ public:
 	Array<LayerBlock*> getBlocksAtTime(float time, bool includeDisabled = true);
 	Array<LayerBlock*> getBlocksInRange(float start, float end, bool includeDisabled = true);
 
-	Array<LayerBlock*> addItemsFromClipboard(bool showWarning = true) override;
+	Array<BaseItem*> addItemsFromClipboard(bool showWarning = true) override;
 
 	virtual void getSnapTimes(Array<float>* arrayToFill, bool includeStart = true, bool includeEnd = true, bool includeCoreEnd = false);
 

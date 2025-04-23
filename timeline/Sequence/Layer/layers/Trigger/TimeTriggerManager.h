@@ -31,7 +31,7 @@ public:
 	void addItemInternal(TimeTrigger* t, var data) override;
 	void addItemsInternal(Array<TimeTrigger*> items, var data) override;
 
-	Array<TimeTrigger*> addItemsFromClipboard(bool showWarning = true) override;
+	Array<BaseItem*> addItemsFromClipboard(bool showWarning = true) override;
 	bool canAddItemOfType(const String& typeToCheck) override;
 
 	TimeTrigger* getPrevTrigger(float time, bool includeCurrentTime = false);
