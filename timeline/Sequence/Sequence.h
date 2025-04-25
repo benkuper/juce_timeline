@@ -21,7 +21,7 @@ class Sequence :
 	public EngineListener
 {
 public:
-	Sequence();
+	Sequence(SequenceLayerManager* layerManager = nullptr);
 	virtual ~Sequence();
 
 	std::unique_ptr<TimeCueManager> cueManager;

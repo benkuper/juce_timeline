@@ -14,7 +14,7 @@ class SequenceLayerPanel :
 	public ItemUI<SequenceLayer>
 {
 public:
-	SequenceLayerPanel(SequenceLayer *);
+	SequenceLayerPanel(SequenceLayer *, Direction direction = VERTICAL);
 	virtual ~SequenceLayerPanel();
 
 	std::unique_ptr<BoolToggleUI> lockUI;
@@ -27,4 +27,16 @@ public:
 	void controllableFeedbackUpdateInternal(Controllable *) override;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceLayerPanel)
+};
+
+class SequenceLayerGroupPanel :
+	public ItemGroupUI<SequenceLayer>
+{
+public:
+	SequenceLayerGroupPanel(ItemBaseGroup<SequenceLayer>*);
+	virtual ~SequenceLayerGroupPanel();
+	
+	BaseManagerUI* createGroupManagerUIInternal() override;
+
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceLayerGroupPanel)
 };

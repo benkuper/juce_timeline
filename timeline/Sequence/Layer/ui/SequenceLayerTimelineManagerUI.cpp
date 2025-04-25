@@ -37,6 +37,8 @@ void SequenceLayerTimelineManagerUI::addSelectableComponentsAndInspectables(Arra
 {
 	for (auto& i : itemsUI)
 	{
+		if (i->isGroupUI()) continue;
+
 		if (i->isVisible() && !i->item->isUILocked->boolValue())
 		{
 			i->addSelectableComponentsAndInspectables(selectables, inspectables);

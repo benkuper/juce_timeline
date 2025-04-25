@@ -1,3 +1,4 @@
+#include "SequenceLayerTimeline.h"
 /*
   ==============================================================================
 
@@ -141,4 +142,25 @@ SequenceLayerTimeline::TimelineNeedle::~TimelineNeedle()
 void SequenceLayerTimeline::TimelineNeedle::paint(juce::Graphics &g)
 {
     g.fillAll(timeBarColor);
+}
+
+SequenceLayerGroupTimelineUI::SequenceLayerGroupTimelineUI(ItemBaseGroup<SequenceLayer>* group) :
+	ItemGroupUI<SequenceLayer>(group, NONE)
+{
+	setShowGroupManager(true);
+}
+
+SequenceLayerGroupTimelineUI::~SequenceLayerGroupTimelineUI()
+{
+}
+
+BaseManagerUI* SequenceLayerGroupTimelineUI::createGroupManagerUIInternal()
+{
+	return new SequenceLayerTimelineManagerUI((SequenceLayerManager*)this->group->manager);
+}
+
+void SequenceLayerGroupTimelineUI::controllableFeedbackUpdateInternal(Controllable* c)
+{
+	ItemGroupUI<SequenceLayer>::controllableFeedbackUpdateInternal(c);
+	
 }

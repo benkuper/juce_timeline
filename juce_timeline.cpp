@@ -42,6 +42,7 @@
 #include "timeline/Sequence/Layer/layers/SequenceBlock/SequenceBlockLayer.cpp"
 
 #include "timeline/Sequence/Layer/SequenceLayer.cpp"
+#include "timeline/Sequence/Layer/SequenceLayerGroup.cpp"
 #include "timeline/Sequence/Layer/SequenceLayerManager.cpp"
 
 #include "timeline/Sequence/Cue/TimeCue.cpp"

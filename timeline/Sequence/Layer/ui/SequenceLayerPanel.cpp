@@ -8,8 +8,10 @@
   ==============================================================================
 */
 
-SequenceLayerPanel::SequenceLayerPanel(SequenceLayer* layer) :
-	ItemUI<SequenceLayer>(layer, Direction::VERTICAL)
+#include "JuceHeader.h"
+
+SequenceLayerPanel::SequenceLayerPanel(SequenceLayer* layer, Direction direction) :
+	ItemUI<SequenceLayer>(layer, direction)
 {
 	setWantsKeyboardFocus(false);
 	setMouseClickGrabsKeyboardFocus(false);
@@ -25,6 +27,7 @@ SequenceLayerPanel::SequenceLayerPanel(SequenceLayer* layer) :
 
 	setSize(100, item->uiHeight->intValue());
 }
+
 
 SequenceLayerPanel::~SequenceLayerPanel()
 {
@@ -60,4 +63,20 @@ void SequenceLayerPanel::controllableFeedbackUpdateInternal(Controllable* c)
 	{
 		if (!item->isCurrentlyLoadingData) setSize(getWidth(), item->uiHeight->intValue());
 	}
+}
+
+SequenceLayerGroupPanel::SequenceLayerGroupPanel(ItemBaseGroup<SequenceLayer>* group) :
+	ItemGroupUI<SequenceLayer>(group, NONE)
+{
+	setShowGroupManager(true);
+	setSize(100, 100);
+}
+
+SequenceLayerGroupPanel::~SequenceLayerGroupPanel()
+{
+}
+
+BaseManagerUI* SequenceLayerGroupPanel::createGroupManagerUIInternal()
+{
+	return new SequenceLayerPanelManagerUI((SequenceLayerManager*)this->group->manager, false);
 }

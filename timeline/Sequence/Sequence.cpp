@@ -9,9 +9,9 @@
 */
 
 #include "JuceHeader.h"
-#include "Sequence.h"
 
-Sequence::Sequence() :
+
+Sequence::Sequence(SequenceLayerManager* _layerManager) :
 	BaseItem("Sequence", true),
 	Thread("Sequence"),
 	currentManager(nullptr),
@@ -85,7 +85,9 @@ Sequence::Sequence() :
 	setHasCustomColor(true);
 	itemColor->setDefaultValue(BG_COLOR.brighter(.1f));
 
-	layerManager.reset(new SequenceLayerManager(this));
+	if (_layerManager == nullptr) _layerManager = new SequenceLayerManager(this);
+	layerManager.reset(_layerManager);
+
 	addChildControllableContainer(layerManager.get());
 
 	cueManager.reset(new TimeCueManager());
@@ -95,6 +97,7 @@ Sequence::Sequence() :
 	listUISize->setValue(30);
 	listUISize->isSavable = false;
 }
+
 
 Sequence::~Sequence()
 {

@@ -9,9 +9,10 @@
 */
 
 #include "JuceHeader.h"
+#include "SequenceLayerManager.h"
 
 SequenceLayerManager::SequenceLayerManager(Sequence* _sequence) :
-	Manager<SequenceLayer>("Layers"),
+	Manager<SequenceLayer>("Layers", true),
 	sequence(_sequence)
 {
 	itemDataType = "SequenceLayer";
@@ -34,6 +35,11 @@ void SequenceLayerManager::fileDropped(String file)
 SequenceLayer* SequenceLayerManager::createItem()
 {
 	return new SequenceLayer(sequence);
+}
+
+ItemBaseGroup<SequenceLayer>* SequenceLayerManager::createGroup()
+{
+	return new SequenceLayerGroup(sequence);
 }
 
 void SequenceLayerManager::createAudioLayerForFile(File f)

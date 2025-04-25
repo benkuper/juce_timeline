@@ -11,6 +11,7 @@
 #pragma once
 
 class SequenceLayer;
+class SequenceLayerGroup;
 class TimeCue;
 class AudioLayer;
 class TimeTrigger;
@@ -32,7 +33,7 @@ public:
 	BoolParameter* onlyOneSequencePlaying;
 	BoolParameter* isOneSequencePlaying;
 
-	Factory<SequenceLayer>* defaultLayerFactory;
+	Factory<SequenceLayer, ItemBaseGroup<SequenceLayer>>* defaultLayerFactory;
 
 	virtual void addItemInternal(Sequence* item, var data) override;
 	virtual void addItemsInternal(Array<Sequence*> item, var data) override;

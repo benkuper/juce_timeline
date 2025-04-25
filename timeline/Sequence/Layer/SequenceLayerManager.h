@@ -1,9 +1,9 @@
 /*
   ==============================================================================
 
-    SequenceLayerManager.h
-    Created: 28 Oct 2016 8:15:28pm
-    Author:  bkupe
+	SequenceLayerManager.h
+	Created: 28 Oct 2016 8:15:28pm
+	Author:  bkupe
 
   ==============================================================================
 */
@@ -13,19 +13,19 @@ class SequenceLayerManager :
 	public Manager<SequenceLayer>
 {
 public:
-	SequenceLayerManager(Sequence * _sequence);
+	SequenceLayerManager(Sequence* _sequence);
 	~SequenceLayerManager();
 
-	Sequence * sequence;
+	Sequence* sequence;
 	Factory<SequenceLayer> factory;
-	
+
 	virtual void fileDropped(String file);
 
-	class LayerDefinition : 
-		public FactoryParametricDefinition<SequenceLayer, std::function<SequenceLayer *(Sequence *, var)>>
+	class LayerDefinition :
+		public FactoryParametricDefinition<SequenceLayer, std::function<SequenceLayer* (Sequence*, var)>>
 	{
 	public:
-		LayerDefinition(StringRef menu, StringRef type, std::function<SequenceLayer *(Sequence*, var)> func, Sequence* s, bool isAudio = false) :
+		LayerDefinition(StringRef menu, StringRef type, std::function<SequenceLayer* (Sequence*, var)> func, Sequence* s, bool isAudio = false) :
 			FactoryParametricDefinition(menu, type, func),
 			sequence(s),
 			isAudio(isAudio)
@@ -51,12 +51,13 @@ public:
 		}
 
 		template<class S>
-		static SequenceLayer * createTemplated(Sequence * s, var params = new DynamicObject()) { return new S(s, params); }
+		static SequenceLayer* createTemplated(Sequence* s, var params = new DynamicObject()) { return new S(s, params); }
 
 	};
 
 
-	SequenceLayer * createItem() override;
+	SequenceLayer* createItem() override;
+	ItemBaseGroup<SequenceLayer>* createGroup() override;
 	virtual void createAudioLayerForFile(File f);
 
 #if TIMELINE_UNIQUE_LAYER_FACTORY
@@ -64,7 +65,7 @@ public:
 	Array<SequenceLayer*> addItemsFromData(var data, bool addToUndo = false) override;
 #endif
 
-	
+
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceLayerManager)
 
 };
