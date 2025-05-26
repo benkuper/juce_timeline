@@ -23,6 +23,7 @@ LayerBlockManagerUI::LayerBlockManagerUI(SequenceLayerTimeline* timeline, LayerB
 
 	addItemBT->setVisible(false);
 	setBufferedToImage(true);
+
 }
 
 LayerBlockManagerUI::~LayerBlockManagerUI()

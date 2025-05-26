@@ -20,7 +20,7 @@ AudioLayerTimeline::AudioLayerTimeline(AudioLayer * layer) :
 	updateMiniModeUI();
 
 	needle.toFront(false);
-	updateContent();
+
 }
 
 AudioLayerTimeline::~AudioLayerTimeline()

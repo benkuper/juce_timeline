@@ -14,7 +14,6 @@ AudioLayerClipManagerUI::AudioLayerClipManagerUI(AudioLayerTimeline * _timeline,
 	fileDropMode(false)
 {
 	addExistingItems();
-
 }
 
 AudioLayerClipManagerUI::~AudioLayerClipManagerUI()
