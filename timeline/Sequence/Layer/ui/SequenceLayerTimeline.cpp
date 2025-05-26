@@ -30,6 +30,7 @@ SequenceLayerTimeline::SequenceLayerTimeline(SequenceLayer * layer) :
 
 SequenceLayerTimeline::~SequenceLayerTimeline()
 {
+	if (inspectable.wasObjectDeleted()) return;
 	item->sequence->removeAsyncContainerListener(this);
 }
 
