@@ -246,10 +246,20 @@ Rectangle<int> LayerBlockUI::getLoopBounds()
 	return getLocalBounds().withLeft(getCoreWidth());
 
 }
-int LayerBlockUI::getRealXForTime(float time)
+int LayerBlockUI::getRealXForTime(float time, bool relative)
 {
 	if (blockManagerUI == nullptr || inspectable.wasObjectDeleted()) return 0;
-	return blockManagerUI->timeline->getXForTime(item->time->floatValue() + time) - getX();
+	float t = time;
+	if (relative) t += item->time->floatValue();
+	return blockManagerUI->timeline->getXForTime(t) - getX();
+}
+
+float LayerBlockUI::getTimeForX(int x, bool relative)
+{
+	if (blockManagerUI == nullptr || inspectable.wasObjectDeleted()) return 0;
+	float mapStart = relative ? viewStart : 0;
+	float mapEnd = relative ? viewEnd : item->getTotalLength();
+	return jmap<float>((float)x, 0, (float)getWidth(), mapStart, mapEnd);
 }
 
 void LayerBlockUI::setViewRange(float relativeStart, float relativeEnd)
