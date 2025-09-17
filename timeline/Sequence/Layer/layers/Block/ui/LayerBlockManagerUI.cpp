@@ -85,14 +85,14 @@ void LayerBlockManagerUI::addItemFromMenu(bool isFromAddButton, Point<int> mouse
 	manager->addBlockAt(timeline->getTimeForX(mouseDownPos.x));
 }
 
-void LayerBlockManagerUI::addBaseItemUIInternal(LayerBlockUI* cui)
+void LayerBlockManagerUI::addItemUIInternal(LayerBlockUI* cui)
 {
 	cui->blockManagerUI = this;
 	cui->addBlockUIListener(this);
 	placeBlockUI(cui);
 }
 
-void LayerBlockManagerUI::removeBaseItemUIInternal(LayerBlockUI* cui)
+void LayerBlockManagerUI::removeItemUIInternal(LayerBlockUI* cui)
 {
 	cui->removeBlockUIListener(this);
 }

@@ -9,7 +9,7 @@
 */
 
 class TimeCueUI :
-	public BaseItemMinimalUI<TimeCue>,
+	public ItemMinimalUI<TimeCue>,
 	public SettableTooltipClient,
 	public Label::Listener
 {

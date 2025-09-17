@@ -11,7 +11,7 @@
 #pragma once
 
 class SequenceLayerTimeline :
-	public BaseItemMinimalUI<SequenceLayer>,
+	public ItemMinimalUI<SequenceLayer>,
 	public UITimerTarget
 {
 public:

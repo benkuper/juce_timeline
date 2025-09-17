@@ -34,8 +34,8 @@ public:
 	void addCueAtPos(int x);
 
 	void addItemFromMenu(bool, Point<int> mouseDownPos) override;
-	void addBaseItemUIInternal(TimeCueUI * ttui) override;
-	void removeBaseItemUIInternal(TimeCueUI * ttui) override;
+	void addItemUIInternal(TimeCueUI * ttui) override;
+	void removeItemUIInternal(TimeCueUI * ttui) override;
 
 	void cueMouseDown(TimeCueUI* ttui, const MouseEvent& e) override;
 	void cueMouseUp(TimeCueUI* ttui, const MouseEvent& e) override;

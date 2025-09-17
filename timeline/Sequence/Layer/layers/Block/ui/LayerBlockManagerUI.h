@@ -36,8 +36,8 @@ public:
 	virtual void mouseDoubleClick(const MouseEvent &e) override;
 
 	virtual void addItemFromMenu(bool, Point<int> mouseDownPos) override;
-	virtual void addBaseItemUIInternal(LayerBlockUI * cui) override;
-	virtual void removeBaseItemUIInternal(LayerBlockUI * cui) override;
+	virtual void addItemUIInternal(LayerBlockUI * cui) override;
+	virtual void removeItemUIInternal(LayerBlockUI * cui) override;
 
 	virtual void blockUITimeChanged(LayerBlockUI * cui) override;
 	virtual void blockUIMouseDown(LayerBlockUI* cui, const MouseEvent&) override;

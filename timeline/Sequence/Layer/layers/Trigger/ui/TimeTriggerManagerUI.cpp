@@ -135,12 +135,12 @@ void TimeTriggerManagerUI::addItemFromMenu(TimeTrigger* t, bool, Point<int> mous
 	manager->addItem(t);
 }
 
-void TimeTriggerManagerUI::addBaseItemUIInternal(TimeTriggerUI * ttui)
+void TimeTriggerManagerUI::addItemUIInternal(TimeTriggerUI * ttui)
 {
 	ttui->addTriggerUIListener(this);
 }
 
-void TimeTriggerManagerUI::removeBaseItemUIInternal(TimeTriggerUI * ttui)
+void TimeTriggerManagerUI::removeItemUIInternal(TimeTriggerUI * ttui)
 {
 	ttui->removeTriggerUIListener(this);
 }

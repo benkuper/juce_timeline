@@ -11,7 +11,7 @@
 #pragma once
 
 class SequenceLayerPanel :
-	public BaseItemUI<SequenceLayer>
+	public ItemUI<SequenceLayer>
 {
 public:
 	SequenceLayerPanel(SequenceLayer *, Direction direction = VERTICAL);

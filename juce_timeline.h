@@ -66,11 +66,11 @@
 #include <juce_organicui/manager/ui/BaseItemEditor.h>
 #include <juce_organicui/manager/ui/GenericManagerEditor.h>
 #include <juce_organicui/manager/Manager.h>
-#include <juce_organicui/manager/ui/BaseItemMinimalUI.h>
-#include <juce_organicui/manager/ui/BaseItemUI.h>
+#include <juce_organicui/manager/ui/ItemMinimalUI.h>
+#include <juce_organicui/manager/ui/ItemUI.h>
 #include <juce_organicui/manager/ui/ManagerUI.h>
 #include <juce_organicui/manager/ui/ManagerViewUI.h>
-#include <juce_organicui/manager/ui/ManagerShapeShifterUI.h>
+#include <juce_organicui/manager/ui/ManagerShapeShifterUI.h>		
 #include <juce_organicui/ui/shapeshifter/GapGrabber.h>
 
 

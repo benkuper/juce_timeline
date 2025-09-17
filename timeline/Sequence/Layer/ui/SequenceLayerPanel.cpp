@@ -11,7 +11,7 @@
 #include "JuceHeader.h"
 
 SequenceLayerPanel::SequenceLayerPanel(SequenceLayer* layer, Direction direction) :
-	BaseItemUI<SequenceLayer>(layer, direction)
+	ItemUI<SequenceLayer>(layer, direction)
 {
 	setWantsKeyboardFocus(false);
 	setMouseClickGrabsKeyboardFocus(false);
@@ -38,18 +38,18 @@ void SequenceLayerPanel::paintOverChildren(Graphics& g)
 {
 	g.setColour(item->itemColor->getColor());
 	g.drawRoundedRectangle(getLocalBounds().reduced(1).toFloat(), 2, 2);
-	BaseItemUI::paintOverChildren(g);
+	ItemUI::paintOverChildren(g);
 }
 
 void SequenceLayerPanel::resized()
 {
-	BaseItemUI::resized();
+	ItemUI::resized();
 	item->uiHeight->setValue(getHeight());
 }
 
 void SequenceLayerPanel::resizedInternalHeader(Rectangle<int>& r)
 {
-	BaseItemUI::resizedInternalHeader(r);
+	ItemUI::resizedInternalHeader(r);
 	miniModeUI->setBounds(r.removeFromRight(r.getHeight()));
 	r.removeFromRight(2);
 	lockUI->setBounds(r.removeFromRight(r.getHeight()).reduced(2));
@@ -57,7 +57,7 @@ void SequenceLayerPanel::resizedInternalHeader(Rectangle<int>& r)
 
 void SequenceLayerPanel::controllableFeedbackUpdateInternal(Controllable* c)
 {
-	BaseItemUI::controllableFeedbackUpdateInternal(c);
+	ItemUI::controllableFeedbackUpdateInternal(c);
 
 	if (c == item->uiHeight)
 	{

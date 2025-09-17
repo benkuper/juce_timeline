@@ -13,7 +13,7 @@
 class LayerBlockManagerUI;
 
 class LayerBlockUI :
-	public BaseItemMinimalUI<LayerBlock>,
+	public ItemMinimalUI<LayerBlock>,
 	public UITimerTarget
 {
 public:
