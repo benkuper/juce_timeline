@@ -33,7 +33,7 @@ public:
 	BoolParameter* onlyOneSequencePlaying;
 	BoolParameter* isOneSequencePlaying;
 
-	Factory<SequenceLayer, ItemBaseGroup<SequenceLayer>>* defaultLayerFactory;
+	Factory<SequenceLayer>* defaultLayerFactory;
 
 	virtual void addItemInternal(Sequence* item, var data) override;
 	virtual void addItemsInternal(Array<Sequence*> item, var data) override;

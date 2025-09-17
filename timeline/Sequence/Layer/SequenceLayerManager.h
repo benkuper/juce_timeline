@@ -57,7 +57,6 @@ public:
 
 
 	SequenceLayer* createItem() override;
-	ItemBaseGroup<SequenceLayer>* createGroup() override;
 	virtual void createAudioLayerForFile(File f);
 
 #if TIMELINE_UNIQUE_LAYER_FACTORY

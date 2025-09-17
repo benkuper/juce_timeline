@@ -9,7 +9,7 @@
 */
 
 SequenceLayerPanelManagerUI::SequenceLayerPanelManagerUI(SequenceLayerManager* _manager, bool useViewport) :
-	ManagerUI<SequenceLayerManager, SequenceLayer, SequenceLayerPanel, ItemBaseGroup<SequenceLayer>, SequenceLayerGroupPanel>("SequenceLayers", _manager, useViewport)
+	ManagerUI<SequenceLayerManager, SequenceLayer, SequenceLayerPanel>("SequenceLayers", _manager, useViewport)
 {
 	viewport.setScrollBarsShown(false, false, true, false);
 	animateItemOnAdd = false;

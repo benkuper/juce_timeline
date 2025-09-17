@@ -9,9 +9,9 @@
 */
 
 SequenceUI::SequenceUI(Sequence* sequence) :
-	ItemUI<Sequence>(sequence)
+	BaseItemUI<Sequence>(sequence)
 {
-	minContentHeight = 20; //To fix : need to pass in constructor of ItemUI
+	minContentHeight = 20; //To fix : need to pass in constructor of BaseItemUI
 
 	togglePlayUI.reset(item->togglePlayTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::play_png, TimelineBinaryData::play_pngSize)));
 	stopUI.reset(item->stopTrigger->createImageUI(ImageCache::getFromMemory(TimelineBinaryData::stop_png, TimelineBinaryData::stop_pngSize)));
@@ -48,7 +48,7 @@ void SequenceUI::resizedInternalHeader(Rectangle<int>& r)
 	r.removeFromRight(2);
 
 
-	ItemUI::resizedInternalHeader(r);
+	BaseItemUI::resizedInternalHeader(r);
 
 }
 

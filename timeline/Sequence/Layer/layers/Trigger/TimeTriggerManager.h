@@ -31,7 +31,7 @@ public:
 	void addItemInternal(TimeTrigger* t, var data) override;
 	void addItemsInternal(Array<TimeTrigger*> items, var data) override;
 
-	Array<BaseItem*> addItemsFromClipboard(bool showWarning = true) override;
+	Array<TimeTrigger*> addItemsFromClipboard(bool showWarning = true) override;
 	bool canAddItemOfType(const String& typeToCheck) override;
 
 	TimeTrigger* getPrevTrigger(float time, bool includeCurrentTime = false);
@@ -48,7 +48,7 @@ public:
 
 	void executeTriggersTimespan(float startTime, float endTime, bool forward, bool onlyUntrigger = false);
 	void sequenceCurrentTimeChanged(Sequence* _sequence, float prevTime, bool evaluateSkippedData) override;
-	void sequencePlayStateChanged(Sequence *) override;
+	void sequencePlayStateChanged(Sequence*) override;
 	void sequenceTotalTimeChanged(Sequence*) override;
 	void sequencePlayDirectionChanged(Sequence*) override;
 	void sequenceLooped(Sequence*) override;

@@ -11,7 +11,7 @@
 #pragma once
 
 class SequenceUI :
-	public ItemUI<Sequence>,
+	public BaseItemUI<Sequence>,
 	public Sequence::AsyncListener
 {
 public:

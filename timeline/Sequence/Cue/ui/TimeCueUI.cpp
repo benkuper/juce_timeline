@@ -10,7 +10,7 @@
 
 
 TimeCueUI::TimeCueUI(TimeCue* timeCue) :
-	ItemMinimalUI(timeCue),
+	BaseItemMinimalUI(timeCue),
 	timeAtMouseDown(timeCue->time->floatValue()),
 	itemLabel("Label", timeCue->niceName)
 {
@@ -93,7 +93,7 @@ void TimeCueUI::resized()
 
 void TimeCueUI::mouseDoubleClick(const MouseEvent& e)
 {
-	ItemMinimalUI::mouseDoubleClick(e);
+	BaseItemMinimalUI::mouseDoubleClick(e);
 
 	if (e.mods.isRightButtonDown()) return;
 	if (e.mods.isCommandDown()) item->remove();
@@ -102,7 +102,7 @@ void TimeCueUI::mouseDoubleClick(const MouseEvent& e)
 void TimeCueUI::mouseDown(const MouseEvent& e)
 {
 	if (e.eventComponent == &itemLabel || e.eventComponent == itemLabel.getCurrentTextEditor()) return;
-	ItemMinimalUI::mouseDown(e);
+	BaseItemMinimalUI::mouseDown(e);
 
 	if (e.mods.isRightButtonDown()) return;
 	timeAtMouseDown = item->time->floatValue();
@@ -112,7 +112,7 @@ void TimeCueUI::mouseDown(const MouseEvent& e)
 void TimeCueUI::mouseDrag(const MouseEvent& e)
 {
 	if (e.eventComponent == &itemLabel || e.eventComponent == itemLabel.getCurrentTextEditor()) return;
-	ItemMinimalUI::mouseDrag(e);
+	BaseItemMinimalUI::mouseDrag(e);
 	if (e.mods.isRightButtonDown()) return;
 	if (!item->isUILocked->boolValue() && e.eventComponent != &itemLabel) cueUIListeners.call(&TimeCueUIListener::cueDragged, this, e);
 }
@@ -120,7 +120,7 @@ void TimeCueUI::mouseDrag(const MouseEvent& e)
 void TimeCueUI::mouseUp(const MouseEvent& e)
 {
 	if (e.eventComponent == &itemLabel || e.eventComponent == itemLabel.getCurrentTextEditor()) return;
-	ItemMinimalUI::mouseUp(e);
+	BaseItemMinimalUI::mouseUp(e);
 
 	if (e.mods.isRightButtonDown()) return;
 	if (!item->isUILocked->boolValue() && item->time->floatValue() != timeAtMouseDown) item->time->setUndoableValue(item->time->floatValue());

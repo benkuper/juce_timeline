@@ -52,13 +52,11 @@ void TimeTriggerManager::addItemsInternal(Array<TimeTrigger*> items, var data)
 	for (auto& t : items) t->time->setRange(0, sequence->totalTime->floatValue());
 }
 
-Array<BaseItem*> TimeTriggerManager::addItemsFromClipboard(bool showWarning)
+Array<TimeTrigger*> TimeTriggerManager::addItemsFromClipboard(bool showWarning)
 {
-	Array<BaseItem*> bItems = Manager::addItemsFromClipboard(showWarning);
-	Array<TimeTrigger*> triggers = getArrayAsItems(bItems);
+	Array<TimeTrigger*> triggers = Manager::addItemsFromClipboard(showWarning);
 
-	if (triggers.isEmpty()) return bItems;
-	if (triggers[0] == nullptr) return Array<BaseItem*>();
+	if (triggers.isEmpty() || triggers.getFirst() == nullptr) return triggers;
 
 	float minTime = triggers[0]->time->floatValue();
 	for (auto& tt : triggers)
@@ -74,7 +72,7 @@ Array<BaseItem*> TimeTriggerManager::addItemsFromClipboard(bool showWarning)
 
 	reorderItems();
 
-	return bItems;
+	return triggers;
 }
 
 bool TimeTriggerManager::canAddItemOfType(const String& typeToCheck)

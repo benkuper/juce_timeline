@@ -9,7 +9,7 @@
 */
 
 SequenceLayerTimeline::SequenceLayerTimeline(SequenceLayer * layer) :
-	ItemMinimalUI<SequenceLayer>(layer),
+	BaseItemMinimalUI<SequenceLayer>(layer),
 	UITimerTarget(ORGANICUI_DEFAULT_TIMER, "SequenceLayerTimeline"),
 	seekManipulationMode(false)
 {
@@ -65,7 +65,7 @@ void SequenceLayerTimeline::updateNeedlePosition()
 
 void SequenceLayerTimeline::mouseDown(const MouseEvent &e)
 {
-	ItemMinimalUI::mouseDown(e);
+	BaseItemMinimalUI::mouseDown(e);
 	/*
 	if (e.mods.isLeftButtonDown() && e.eventComponent->getParentComponent() == this)
 	{
@@ -86,7 +86,7 @@ void SequenceLayerTimeline::setSeekManipulationMode(bool isManipulating)
 
 void SequenceLayerTimeline::controllableFeedbackUpdateInternal(Controllable * c)
 {
-	ItemMinimalUI::controllableFeedbackUpdateInternal(c);
+	BaseItemMinimalUI::controllableFeedbackUpdateInternal(c);
 
 	if (c == item->uiHeight)
 	{
@@ -142,25 +142,4 @@ SequenceLayerTimeline::TimelineNeedle::~TimelineNeedle()
 void SequenceLayerTimeline::TimelineNeedle::paint(juce::Graphics &g)
 {
     g.fillAll(timeBarColor);
-}
-
-SequenceLayerGroupTimelineUI::SequenceLayerGroupTimelineUI(ItemBaseGroup<SequenceLayer>* group) :
-	ItemGroupUI<SequenceLayer>(group, NONE)
-{
-	setShowGroupManager(true);
-}
-
-SequenceLayerGroupTimelineUI::~SequenceLayerGroupTimelineUI()
-{
-}
-
-BaseManagerUI* SequenceLayerGroupTimelineUI::createGroupManagerUIInternal()
-{
-	return new SequenceLayerTimelineManagerUI((SequenceLayerManager*)this->group->manager);
-}
-
-void SequenceLayerGroupTimelineUI::controllableFeedbackUpdateInternal(Controllable* c)
-{
-	ItemGroupUI<SequenceLayer>::controllableFeedbackUpdateInternal(c);
-	
 }

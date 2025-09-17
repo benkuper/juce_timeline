@@ -41,8 +41,8 @@ public:
 
 	void addItemFromMenu(bool, Point<int> mouseDownPos) override;
 	void addItemFromMenu(TimeTrigger* t, bool, Point<int> mouseDownPos) override;
-	void addItemUIInternal(TimeTriggerUI * ttui) override;
-	void removeItemUIInternal(TimeTriggerUI * ttui) override;
+	void addBaseItemUIInternal(TimeTriggerUI * ttui) override;
+	void removeBaseItemUIInternal(TimeTriggerUI * ttui) override;
 	
 	void timeTriggerMouseDown(TimeTriggerUI* ttui, const MouseEvent& e) override;
 	void timeTriggerDragged(TimeTriggerUI * ttui, const MouseEvent &e) override;

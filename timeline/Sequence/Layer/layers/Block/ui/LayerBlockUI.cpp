@@ -12,7 +12,7 @@
 #include "LayerBlockUI.h"
 
 LayerBlockUI::LayerBlockUI(LayerBlock* block) :
-	ItemMinimalUI(block),
+	BaseItemMinimalUI(block),
 	UITimerTarget(ORGANICUI_SLOW_TIMER, "LayerBlockUI"),
 	blockManagerUI(nullptr),
 	viewStart(0),
@@ -46,14 +46,14 @@ void LayerBlockUI::paint(Graphics& g)
 {
 	if (inspectable.wasObjectDeleted()) return;
 
-	ItemMinimalUI::paint(g);
+	BaseItemMinimalUI::paint(g);
 	g.fillCheckerBoard(getMainBounds().withLeft(getCoreWidth()).toFloat(), 16, 16, Colours::white.withAlpha(.05f), Colours::white.withAlpha(.1f));
 }
 
 void LayerBlockUI::paintOverChildren(Graphics& g)
 {
 	if (inspectable.wasObjectDeleted()) return;
-	ItemMinimalUI::paintOverChildren(g);
+	BaseItemMinimalUI::paintOverChildren(g);
 
 	if (item->isUILocked->boolValue())
 	{
@@ -123,20 +123,20 @@ void LayerBlockUI::updateGrabbers()
 
 void LayerBlockUI::mouseEnter(const MouseEvent& e)
 {
-	ItemMinimalUI::mouseEnter(e);
+	BaseItemMinimalUI::mouseEnter(e);
 	updateGrabbers();
 }
 
 void LayerBlockUI::mouseExit(const MouseEvent& e)
 {
-	ItemMinimalUI::mouseExit(e);
+	BaseItemMinimalUI::mouseExit(e);
 	updateGrabbers();
 }
 
 
 void LayerBlockUI::mouseDown(const MouseEvent& e)
 {
-	ItemMinimalUI::mouseDown(e);
+	BaseItemMinimalUI::mouseDown(e);
 
 	if (canBeGrabbed && !item->isUILocked->boolValue())
 	{
@@ -172,7 +172,7 @@ void LayerBlockUI::mouseDrag(const MouseEvent& e)
 			blockUIListeners.call(&BlockUIListener::blockUILoopDragged, this, e);
 		}
 	}
-	ItemMinimalUI::mouseDrag(e);
+	BaseItemMinimalUI::mouseDrag(e);
 
 }
 
@@ -206,7 +206,7 @@ void LayerBlockUI::mouseUp(const MouseEvent& e)
 		updateGrabbers();
 	}
 
-	ItemMinimalUI::mouseUp(e);
+	BaseItemMinimalUI::mouseUp(e);
 }
 
 

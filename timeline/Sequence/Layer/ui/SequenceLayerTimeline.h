@@ -11,7 +11,7 @@
 #pragma once
 
 class SequenceLayerTimeline :
-	public ItemMinimalUI<SequenceLayer>,
+	public BaseItemMinimalUI<SequenceLayer>,
 	public UITimerTarget
 {
 public:
@@ -60,15 +60,3 @@ public:
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceLayerTimeline)
 };
 
-class SequenceLayerGroupTimelineUI :
-    public ItemGroupUI<SequenceLayer>
-{
-public:
-	SequenceLayerGroupTimelineUI(ItemBaseGroup<SequenceLayer>* group);
-	virtual ~SequenceLayerGroupTimelineUI();
-	BaseManagerUI* createGroupManagerUIInternal() override;
-
-    void controllableFeedbackUpdateInternal(Controllable* c) override;
-
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceLayerGroupTimelineUI)
-};

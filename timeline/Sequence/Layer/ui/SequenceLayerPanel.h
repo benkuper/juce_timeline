@@ -11,7 +11,7 @@
 #pragma once
 
 class SequenceLayerPanel :
-	public ItemUI<SequenceLayer>
+	public BaseItemUI<SequenceLayer>
 {
 public:
 	SequenceLayerPanel(SequenceLayer *, Direction direction = VERTICAL);
@@ -29,14 +29,3 @@ public:
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceLayerPanel)
 };
 
-class SequenceLayerGroupPanel :
-	public ItemGroupUI<SequenceLayer>
-{
-public:
-	SequenceLayerGroupPanel(ItemBaseGroup<SequenceLayer>*);
-	virtual ~SequenceLayerGroupPanel();
-	
-	BaseManagerUI* createGroupManagerUIInternal() override;
-
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceLayerGroupPanel)
-};

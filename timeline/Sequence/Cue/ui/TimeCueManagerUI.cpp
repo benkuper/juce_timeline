@@ -96,13 +96,13 @@ void TimeCueManagerUI::addItemFromMenu(bool isFromAddButton, Point<int> mouseDow
 	manager->addCueAt(time);
 }
 
-void TimeCueManagerUI::addItemUIInternal(TimeCueUI* ttui)
+void TimeCueManagerUI::addBaseItemUIInternal(TimeCueUI* ttui)
 {
 	ttui->addCueUIListener(this);
 	placeTimeCueUI(ttui);
 }
 
-void TimeCueManagerUI::removeItemUIInternal(TimeCueUI* ttui)
+void TimeCueManagerUI::removeBaseItemUIInternal(TimeCueUI* ttui)
 {
 	ttui->removeCueUIListener(this);
 }

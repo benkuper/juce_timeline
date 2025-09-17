@@ -9,7 +9,7 @@
 */
 
 TimeTriggerUI::TimeTriggerUI(TimeTrigger * _tt) :
-	ItemUI<TimeTrigger>(_tt, Direction::NONE),
+	BaseItemUI<TimeTrigger>(_tt, Direction::NONE),
 	labelWidth(0),
 	triggerWidth(0),
 	startXOffset(0),
@@ -124,7 +124,7 @@ void TimeTriggerUI::updateSizeFromName()
 
 void TimeTriggerUI::mouseDown(const MouseEvent& e)
 {
-	ItemUI::mouseDown(e);
+	BaseItemUI::mouseDown(e);
 
 	flagYAtMouseDown = item->flagY->floatValue();
 
@@ -152,7 +152,7 @@ void TimeTriggerUI::mouseDrag(const MouseEvent & e)
 {
 	if (itemLabel.isBeingEdited()) return;
 
-	ItemUI::mouseDrag(e);
+	BaseItemUI::mouseDrag(e);
 	
 	if (item->isUILocked->boolValue()) return; //After that, nothing will changed if item is locked
 	
@@ -182,7 +182,7 @@ void TimeTriggerUI::mouseDrag(const MouseEvent & e)
 
 void TimeTriggerUI::mouseUp(const MouseEvent & e)
 {
-	ItemUI::mouseUp(e);
+	BaseItemUI::mouseUp(e);
 
 	Array<UndoableAction*> actions;
 
@@ -232,7 +232,7 @@ void TimeTriggerUI::mouseMove(const MouseEvent & e)
 
 void TimeTriggerUI::containerChildAddressChangedAsync(ControllableContainer * cc)
 {
-	ItemUI::containerChildAddressChangedAsync(cc);
+	BaseItemUI::containerChildAddressChangedAsync(cc);
 	updateSizeFromName();
 }
 
@@ -256,7 +256,7 @@ void TimeTriggerUI::controllableFeedbackUpdateInternal(Controllable * c)
 
 void TimeTriggerUI::inspectableSelectionChanged(Inspectable * i)
 {
-	ItemUI::inspectableSelectionChanged(i);
+	BaseItemUI::inspectableSelectionChanged(i);
 	removeBT->setVisible(item->isSelected);
 	enabledBT->setVisible(item->isSelected);
 	if(lockUI != nullptr) lockUI->setVisible(item->isSelected);
