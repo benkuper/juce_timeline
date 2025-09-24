@@ -149,7 +149,7 @@ public:
 
 	void clear();
 
-	// Hérité via AudioProcessor
+	// Hï¿½ritï¿½ via AudioProcessor
 	virtual const String getName() const override;
 	virtual void prepareToPlay(double sampleRate, int maximumExpectedSamplesPerBlock) override;
 	virtual void releaseResources() override;

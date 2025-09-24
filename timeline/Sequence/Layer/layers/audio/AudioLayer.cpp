@@ -60,6 +60,7 @@ AudioLayer::AudioLayer(Sequence* _sequence, var params) :
 	clipManager.addManagerListener(this);
 
 	if (!Engine::mainEngine->isLoadingFile) updateSelectedOutChannels();
+	else Engine::mainEngine->addEngineListener(this);
 }
 
 AudioLayer::~AudioLayer()
@@ -111,10 +112,10 @@ void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph* graph, AudioProcess
 		{
 			String channelName = AudioChannelSet::getChannelTypeName(channelSet.getTypeOfChannel(i));
 
-			BoolParameter* b = channelsCC.addBoolParameter("Channel Out : " + channelName, "If enabled, sends audio from this layer to this channel", false);
+			BoolParameter* b = channelsCC.addBoolParameter("Channel " + String(i+1) + " : " + channelName, "If enabled, sends audio from this layer to this channel", false);
 			b->setValue(i < 2, false);
 
-			BoolParameter* mb = metronomeCC.addBoolParameter("Channel Out : " + channelName, "If enabled, sends audio from this layer to this channel", false);
+			BoolParameter* mb = metronomeCC.addBoolParameter("Channel " + String(i+1) + " : " + channelName, "If enabled, sends audio from this layer to this channel", false);
 			mb->setValue(i < 2, false);
 		}
 	}
