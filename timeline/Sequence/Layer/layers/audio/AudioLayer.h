@@ -17,7 +17,8 @@ class AudioLayer :
 	public AudioLayerClip::ClipListener,
 	public AudioLayerClipManager::ManagerListener,
 	public Thread,
-	public Inspectable::InspectableListener
+	public Inspectable::InspectableListener,
+	public EngineListener
 {
 public:
 	AudioLayer(Sequence* sequence, var params);
@@ -38,6 +39,7 @@ public:
 	FloatParameter* volume;
 	FloatParameter* panning;
 	FloatParameter* enveloppe;
+	BoolParameter* routeMonoToAllChannels;
 
 	int numActiveInputs;
 	int numActiveOutputs;
@@ -100,6 +102,7 @@ public:
 
 	void resetMetronome();
 
+	void onContainerParameterChangedInternal(Parameter* p) override;
 	void onControllableFeedbackUpdateInternal(ControllableContainer* cc, Controllable* c) override;
 	void onControllableStateChanged(Controllable* c) override;
 
@@ -109,6 +112,7 @@ public:
 	virtual void loadJSONDataInternal(var data) override;
 
 	virtual void afterLoadJSONDataInternal() override;
+	virtual void fileLoaded() override;
 
 	virtual SequenceLayerPanel* getPanel() override;
 	virtual SequenceLayerTimeline* getTimelineUI() override;
@@ -149,7 +153,7 @@ public:
 
 	void clear();
 
-	// Hï¿½ritï¿½ via AudioProcessor
+	// Hérité via AudioProcessor
 	virtual const String getName() const override;
 	virtual void prepareToPlay(double sampleRate, int maximumExpectedSamplesPerBlock) override;
 	virtual void releaseResources() override;

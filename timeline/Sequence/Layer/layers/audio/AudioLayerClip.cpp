@@ -9,6 +9,7 @@
 */
 
 #include "JuceHeader.h"
+#include "AudioLayerClip.h"
 
 AudioLayerClip::AudioLayerClip() :
 	LayerBlock(getTypeString()),
@@ -181,6 +182,7 @@ void AudioLayerClip::setupFromSource()
 		readerSource.reset(newSource.release());
 		sampleRate = reader->sampleRate;
 		clipDuration = reader->lengthInSamples / sampleRate;
+		numChannels = reader->numChannels;
 
 		clipLength->setValue(clipDuration);
 		if (!coreLength->isOverriden)
