@@ -154,7 +154,7 @@ void Sequence::handleCueAction(TimeCue* cue, TimeCue* originCue)
 	{
 		pauseTrigger->trigger();
 		prevTime = currentTime->floatValue();
-		setCurrentTime(cue->time->floatValue());
+		setCurrentTime(getNextFrameTimeForTime(cue->time->floatValue()));
 		return;
 	default:
 		break;
