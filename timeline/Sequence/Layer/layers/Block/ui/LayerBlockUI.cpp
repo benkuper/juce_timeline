@@ -9,7 +9,6 @@
 */
 
 #include "JuceHeader.h"
-#include "LayerBlockUI.h"
 
 LayerBlockUI::LayerBlockUI(LayerBlock* block) :
 	ItemMinimalUI(block),
