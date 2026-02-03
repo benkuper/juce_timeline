@@ -62,6 +62,11 @@ public:
 	Rectangle<int> getCoreBounds();
 	int getCoreWidth();
 
+	Rectangle<int> getLoopBounds();
+
+	int getRealXForTime(float time, bool relative = true);
+	float getTimeForX(int x, bool relative = true);
+
 	void setViewRange(float relativeStart, float relativeEnd);
 	virtual void setViewRangeInternal() {}
 
