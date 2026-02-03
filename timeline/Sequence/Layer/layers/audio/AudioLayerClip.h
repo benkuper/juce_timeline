@@ -42,6 +42,7 @@ public:
 	double clipDuration;
 	double sampleRate;
 	int clipSamplePos;
+	int numChannels;
 
 	bool isLoading;
 	bool shouldStop;
@@ -57,6 +58,7 @@ public:
 	void setStartTime(float value, bool stretch, bool stickToCoreEnd = false) override;
 	
 	void setPlaySpeed(float value);
+
 
 	virtual void prepareToPlay(int blockSize, int sampleRate);
 

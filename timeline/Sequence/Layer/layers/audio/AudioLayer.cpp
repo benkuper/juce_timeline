@@ -43,6 +43,8 @@ AudioLayer::AudioLayer(Sequence* _sequence, var params) :
 
 	addChildControllableContainer(&channelsCC);
 
+	routeMonoToAllChannels = addBoolParameter("Route Mono to all channels", "If the audio is mono, route it to all selected output channels", true);
+
 	metronomeVolume = addFloatParameter("Metronome", "Enable and control metronome volume here", 1, 0, 5, false);
 	metronomeVolume->canBeDisabledByUser = true;
 
@@ -111,10 +113,10 @@ void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph* graph, AudioProcess
 		{
 			String channelName = AudioChannelSet::getChannelTypeName(channelSet.getTypeOfChannel(i));
 
-			BoolParameter* b = channelsCC.addBoolParameter("Channel Out : " + channelName, "If enabled, sends audio from this layer to this channel", false);
+			BoolParameter* b = channelsCC.addBoolParameter("Channel " + String(i + 1) + " : " + channelName, "If enabled, sends audio from this layer to this channel", false);
 			b->setValue(i < 2, false);
 
-			BoolParameter* mb = metronomeCC.addBoolParameter("Channel Out : " + channelName, "If enabled, sends audio from this layer to this channel", false);
+			BoolParameter* mb = metronomeCC.addBoolParameter("Channel " + String(i + 1) + " : " + channelName, "If enabled, sends audio from this layer to this channel", false);
 			mb->setValue(i < 2, false);
 		}
 	}
@@ -224,6 +226,8 @@ void AudioLayer::clipSourceLoaded(AudioLayerClip* clip)
 
 void AudioLayer::updateSelectedOutChannels()
 {
+	if (Engine::mainEngine->isLoadingFile || isCurrentlyLoadingData) return;
+
 	selectedOutChannels.clear();
 	metronomeOutChannels.clear();
 
@@ -384,15 +388,24 @@ void AudioLayer::resetMetronome()
 }
 
 
+void AudioLayer::onContainerParameterChangedInternal(Parameter* p)
+{
+	SequenceLayer::onContainerParameterChangedInternal(p);
+	if (p == metronomeVolume || p == bip1File || p == bip2File)
+	{
+		resetMetronome();
+	}
+	//else if (p == routeMonoToAll)
+	//{
+	//	if (!isCurrentlyLoadingData && !settingAudioGraph) updateSelectedOutChannels();
+	//}
+}
+
 void AudioLayer::onControllableFeedbackUpdateInternal(ControllableContainer* cc, Controllable* c)
 {
 	SequenceLayer::onControllableFeedbackUpdateInternal(cc, c);
 
-	if (c == bip1File || c == bip2File)
-	{
-		resetMetronome();
-	}
-	else if (cc == &channelsCC || cc == &metronomeCC)
+	if (cc == &channelsCC || cc == &metronomeCC)
 	{
 		if (!isCurrentlyLoadingData && !settingAudioGraph) updateSelectedOutChannels();
 	}
@@ -445,12 +458,18 @@ void AudioLayer::loadJSONDataInternal(var data)
 	channelsCC.loadJSONData(data.getProperty("channels", var()));
 	SequenceLayer::loadJSONDataInternal(data);
 	clipManager.loadJSONData(data.getProperty(clipManager.shortName, var()));
-	updateSelectedOutChannels();
 }
 
 void AudioLayer::afterLoadJSONDataInternal()
 {
 	resetMetronome();
+	updateSelectedOutChannels();
+}
+
+void AudioLayer::fileLoaded()
+{
+	Engine::mainEngine->removeEngineListener(this);
+	updateSelectedOutChannels();
 }
 
 SequenceLayerPanel* AudioLayer::getPanel()
@@ -664,6 +683,13 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 		if ((!noProcess || currentClip->transportSource.isPlaying() || layer->clipIsStopping))
 		{
 			currentClip->channelRemapAudioSource.getNextAudioBlock(bufferToFill);
+			if (currentClip->numChannels == 1 && layer->routeMonoToAllChannels->boolValue())
+			{
+				for (int i = 1; i < buffer.getNumChannels(); i++)
+				{
+					buffer.copyFrom(i, 0, buffer, 0, 0, buffer.getNumSamples());
+				}
+			}
 		}
 	}
 
