@@ -668,6 +668,12 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 	}
 
 	if (buffer.getNumChannels() == 0) noProcess = true;
+	if (layer != nullptr && (layer->currentGraph == nullptr
+		|| layer->currentGraph->getBlockSize() <= 0
+		|| layer->currentGraph->getSampleRate() <= 0))
+	{
+		noProcess = true;
+	}
 
 	//Do this before noProcess to avoid freeze of transportSource when stopping
 	AudioSourceChannelInfo bufferToFill;
@@ -680,7 +686,17 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 	{
 		bufferToFill.buffer = &buffer;
 		if (currentClip->shouldStop) currentClip->transportSource.stop();
-		if ((!noProcess || currentClip->transportSource.isPlaying() || layer->clipIsStopping))
+		bool canRenderClip = (!noProcess || currentClip->transportSource.isPlaying() || layer->clipIsStopping);
+		if (layer == nullptr || layer->currentGraph == nullptr
+			|| layer->currentGraph->getBlockSize() <= 0
+			|| layer->currentGraph->getSampleRate() <= 0
+			|| bufferToFill.numSamples <= 0
+			|| bufferToFill.buffer == nullptr
+			|| bufferToFill.buffer->getNumChannels() == 0)
+		{
+			canRenderClip = false;
+		}
+		if (canRenderClip)
 		{
 			currentClip->channelRemapAudioSource.getNextAudioBlock(bufferToFill);
 			if (currentClip->numChannels == 1 && layer->routeMonoToAllChannels->boolValue())
