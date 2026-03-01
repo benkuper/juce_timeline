@@ -545,18 +545,36 @@ void Sequence::run()
 			viewEndTime->setValue(viewEndTime->getLerpValueTo(targetEnd, .3f));
 		}
 
-		if (targetTime >= totalTime->floatValue())
+		if (playSpeed->floatValue() > 0)
 		{
-			if (loopParam->boolValue())
+			if (targetTime >= totalTime->floatValue())
 			{
-				float offset = targetTime - totalTime->floatValue();
-				sequenceListeners.call(&SequenceListener::sequenceLooped, this);
-				//setCurrentTime(0); //to change in trigger layer to avoid doing that
-				prevTime = 0;
-				setCurrentTime(offset, true, true);
+				if (loopParam->boolValue())
+				{
+					float offset = targetTime - totalTime->floatValue();
+					sequenceListeners.call(&SequenceListener::sequenceLooped, this);
+					//setCurrentTime(0); //to change in trigger layer to avoid doing that
+					prevTime = 0;
+					setCurrentTime(offset, true, true);
+				}
+				else finishTrigger->trigger();
 			}
-			else finishTrigger->trigger();
 		}
+		else
+		{
+			if (targetTime <= 0)
+			{
+				if (loopParam->boolValue())
+				{
+					float offset = totalTime->floatValue() + targetTime;
+					sequenceListeners.call(&SequenceListener::sequenceLooped, this);
+					prevTime = totalTime->floatValue();
+					setCurrentTime(offset, true, true);
+				}
+				else finishTrigger->trigger();
+			}
+		}
+
 
 		double millisPerCycle = 1000.0 / fps->floatValue();
 		double millisAfterProcess = Time::getMillisecondCounterHiRes();
