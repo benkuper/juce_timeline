@@ -12,11 +12,9 @@
 
 class AudioLayerClip :
 	public LayerBlock,
-	public ThreadPoolJob //async loading on a shared, bounded pool
+	public Thread //async loading
 {
 public:
-	using LayerBlock::isActive;
-
 	AudioLayerClip();
 	virtual ~AudioLayerClip();
 
@@ -46,14 +44,13 @@ public:
 	int clipSamplePos;
 	int numChannels;
 
-	std::atomic<bool> isLoading;
+	bool isLoading;
 	bool shouldStop;
 
 	void start();
 	void stop();
 
 	void updateAudioSourceFile();
-	void prioritizeAudioSourceLoad();
 	void onContainerTriggerTriggered(Trigger* t) override;
 	void onContainerParameterChangedInternal(Parameter *) override;
 
@@ -65,7 +62,7 @@ public:
 
 	virtual void prepareToPlay(int blockSize, int sampleRate);
 
-	ThreadPoolJob::JobStatus runJob() override;
+	void run() override;
 
 	virtual void setupFromSource();
 
@@ -103,3 +100,5 @@ private:
 	friend class WeakReference<AudioLayerClip>;
 
 };
+
+

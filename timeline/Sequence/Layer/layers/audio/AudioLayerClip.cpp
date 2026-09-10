@@ -11,21 +11,9 @@
 #include "JuceHeader.h"
 #include "AudioLayerClip.h"
 
-namespace
-{
-ThreadPool& getAudioClipLoadPool()
-{
-	// Opening a large project used to create one OS thread per audio clip. A
-	// small shared pool keeps file discovery asynchronous without flooding the
-	// scheduler and disk when a project contains hundreds of clips.
-	static ThreadPool pool(jlimit(1, 4, SystemStats::getNumCpus()));
-	return pool;
-}
-}
-
 AudioLayerClip::AudioLayerClip() :
 	LayerBlock(getTypeString()),
-	ThreadPoolJob("AudioClipReader"),
+	Thread("AudioClipReader"),
 	resamplingAudioSource(&channelRemapAudioSource, false),
     channelRemapAudioSource(&transportSource, false),
     clipDuration(0),
@@ -67,9 +55,7 @@ AudioLayerClip::AudioLayerClip() :
 
 AudioLayerClip::~AudioLayerClip()
 {
-	// Jobs are not owned by the pool, so they must be fully removed before the
-	// clip and its audio sources are destroyed.
-	getAudioClipLoadPool().removeJob(this, true, -1);
+	stopThread(3000);
 	masterReference.clear();
 	transportSource.releaseResources();
 }
@@ -93,22 +79,7 @@ void AudioLayerClip::updateAudioSourceFile()
 	if (filePath->stringValue().startsWithChar('/')) return;
 #endif
 
-	// Loading while the engine is constructing the project creates heavy thread
-	// and disk contention. AudioLayer queues all of its clips from fileLoaded(),
-	// once the main object graph is ready.
-	if (Engine::mainEngine != nullptr && Engine::mainEngine->isLoadingFile) return;
-
-	auto& pool = getAudioClipLoadPool();
-	if (pool.contains(this))
-		pool.removeJob(this, true, -1);
-
-	pool.addJob(this, false);
-}
-
-void AudioLayerClip::prioritizeAudioSourceLoad()
-{
-	auto& pool = getAudioClipLoadPool();
-	if (pool.contains(this)) pool.moveJobToFront(this);
+	startThread();
 }
 
 void AudioLayerClip::onContainerTriggerTriggered(Trigger* t)
@@ -183,9 +154,9 @@ void AudioLayerClip::prepareToPlay(int blockSize, int _sampleRate)
 	resamplingAudioSource.prepareToPlay(blockSize, _sampleRate);
 }
 
-ThreadPoolJob::JobStatus AudioLayerClip::runJob()
+void AudioLayerClip::run()
 {
-	if (filePath == nullptr || shouldExit()) return jobHasFinished;
+	if (filePath == nullptr) return;
 
 	isLoading = true;
 	audioClipAsyncNotifier.addMessage(new ClipEvent(ClipEvent::SOURCE_LOAD_START, this));
@@ -193,13 +164,11 @@ ThreadPoolJob::JobStatus AudioLayerClip::runJob()
 	transportSource.setSource(nullptr);
 	readerSource.reset(nullptr);
 
-	if (!shouldExit()) setupFromSource();
+	setupFromSource();
 
 	isLoading = false;
 	audioClipAsyncNotifier.addMessage(new ClipEvent(ClipEvent::SOURCE_LOAD_END, this));
 	clipListeners.call(&ClipListener::clipSourceLoaded, this);
-
-	return jobHasFinished;
 }
 
 void AudioLayerClip::setupFromSource()
