@@ -66,6 +66,7 @@ AudioLayer::AudioLayer(Sequence* _sequence, var params) :
 
 AudioLayer::~AudioLayer()
 {
+	if (Engine::mainEngine != nullptr) Engine::mainEngine->removeEngineListener(this);
 	clearItem();
 }
 
@@ -164,6 +165,7 @@ void AudioLayer::updateCurrentClip()
 
 	if (currentClip != nullptr && !currentClip.wasObjectDeleted())
 	{
+		currentClip->prioritizeAudioSourceLoad();
 		currentClip->isActive->setValue(true);
 		float pos = currentClip->clipStartOffset->doubleValue() + (sequence->hiResAudioTime - currentClip->time->doubleValue()) / currentClip->stretchFactor->doubleValue();
 		currentClip->transportSource.setPosition(pos);
@@ -216,6 +218,14 @@ void AudioLayer::itemsRemoved(Array<LayerBlock*> clips)
 void AudioLayer::clipSourceLoaded(AudioLayerClip* clip)
 {
 	if (isCurrentlyLoadingData || Engine::mainEngine->isLoadingFile) return;
+
+	if (clip == currentClip && sequence->isPlaying->boolValue())
+	{
+		float pos = clip->clipStartOffset->doubleValue() + (sequence->hiResAudioTime - clip->time->doubleValue()) / clip->stretchFactor->doubleValue();
+		clip->transportSource.setPosition(pos);
+		clip->start();
+	}
+
 	if (clipManager.items.size() == 1 && clip->getTotalLength() > sequence->totalTime->doubleValue())
 	{
 		clip->time->setValue(0);
@@ -458,6 +468,9 @@ void AudioLayer::loadJSONDataInternal(var data)
 	channelsCC.loadJSONData(data.getProperty("channels", var()));
 	SequenceLayer::loadJSONDataInternal(data);
 	clipManager.loadJSONData(data.getProperty(clipManager.shortName, var()));
+
+	if (Engine::mainEngine != nullptr && Engine::mainEngine->isLoadingFile)
+		Engine::mainEngine->addEngineListener(this);
 }
 
 void AudioLayer::afterLoadJSONDataInternal()
@@ -469,6 +482,11 @@ void AudioLayer::afterLoadJSONDataInternal()
 void AudioLayer::fileLoaded()
 {
 	Engine::mainEngine->removeEngineListener(this);
+
+	for (auto* clip : clipManager.items)
+		if (auto* audioClip = dynamic_cast<AudioLayerClip*>(clip))
+			audioClip->updateAudioSourceFile();
+
 	updateSelectedOutChannels();
 }
 
