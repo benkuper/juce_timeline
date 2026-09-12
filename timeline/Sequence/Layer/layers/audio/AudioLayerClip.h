@@ -45,7 +45,6 @@ public:
 	int numChannels;
 
 	bool isLoading;
-	bool shouldStop;
 
 	void start();
 	void stop();

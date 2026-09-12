@@ -529,7 +529,10 @@ void Sequence::run()
 
 		//DBG(deltaMillis << " : " << (targetTime - currentTime->floatValue()));
 
-		if (!isSeeking) setCurrentTime(targetTime);
+		// A looping sequence must not briefly deactivate blocks at the clamped end point.
+		if (!isSeeking && (!loopParam->boolValue()
+			|| (targetTime > 0 && targetTime < totalTime->floatValue())))
+			setCurrentTime(targetTime);
 
 		if (viewFollowTime->boolValue())
 		{
@@ -551,10 +554,10 @@ void Sequence::run()
 			{
 				if (loopParam->boolValue())
 				{
-					float offset = targetTime - totalTime->floatValue();
+					float offset = (float) fmod(targetTime, totalTime->floatValue());
 					sequenceListeners.call(&SequenceListener::sequenceLooped, this);
-					//setCurrentTime(0); //to change in trigger layer to avoid doing that
 					prevTime = 0;
+					targetTime = offset;
 					setCurrentTime(offset, true, true);
 				}
 				else finishTrigger->trigger();
@@ -566,9 +569,11 @@ void Sequence::run()
 			{
 				if (loopParam->boolValue())
 				{
-					float offset = totalTime->floatValue() + targetTime;
+					float offset = (float) fmod(targetTime, totalTime->floatValue());
+					if (offset <= 0) offset += totalTime->floatValue();
 					sequenceListeners.call(&SequenceListener::sequenceLooped, this);
 					prevTime = totalTime->floatValue();
+					targetTime = offset;
 					setCurrentTime(offset, true, true);
 				}
 				else finishTrigger->trigger();
