@@ -18,13 +18,20 @@ TimeTrigger::TimeTrigger(StringRef name) :
 	showWarningInUI = true;
 
 	time = addFloatParameter("Time", "Time at which the action is triggered", 0, 0);
-	
+
 	time->defaultUI = FloatParameter::TIME;
 	flagY = addFloatParameter("Flag Y", "Position of the trigger's flag", 0,0,1);
 	isTriggered = addBoolParameter("Is Triggered", "Is this Time Trigger already triggered during this playing ?", false);
-	
-	isTriggered->hideInEditor = true;
+	length = addFloatParameter("Length", "Time before the deactivation of the trigger, put 0 to disable automatic deactivation", 0, 0);
+	length->defaultUI = FloatParameter::TIME;
+
+	isTriggered->setEnabled(false);
 	isTriggered->isSavable = false;
+	canTrigger = addBoolParameter("Can trigger", "If false the trigger is blocked and cannot trigger", true);
+	canTrigger->hideInEditor = true;
+	canTrigger->isSavable = false;
+	triggerAtAnyTime = false;
+	collisionState = false;
 }
 
 TimeTrigger::~TimeTrigger()
@@ -58,7 +65,27 @@ void TimeTrigger::addUndoableMoveAction(Array<UndoableAction*>& actions)
 
 void TimeTrigger::trigger()
 {
-	if (!enabled->boolValue()) return;
+	if (!enabled->boolValue() || !canTrigger->boolValue() || isTriggered->boolValue()) return;
 	isTriggered->setValue(true);
 	triggerInternal();
+}
+
+void TimeTrigger::unTrigger()
+{
+	if (!isTriggered->boolValue()) return;
+	isTriggered->setValue(false);
+	if (enabled->boolValue()) unTriggerInternal();
+}
+
+void TimeTrigger::setTriggerState(bool state, bool rewind)
+{
+	collisionState = state;
+	if (state) trigger();
+	else exitedInternal(rewind);
+}
+
+void TimeTrigger::updateTriggerState()
+{
+	if (triggerAtAnyTime || !collisionState) trigger();
+	collisionState = true;
 }
