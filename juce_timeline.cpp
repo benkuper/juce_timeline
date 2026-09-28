@@ -32,6 +32,11 @@
 #include "timeline/Sequence/Layer/layers/audio/AudioLayerClipManager.cpp"
 #include "timeline/Sequence/Layer/layers/audio/AudioLayer.cpp"
 
+#include "timeline/Sequence/Layer/layers/video/VideoLayerClip.cpp"
+#include "timeline/Sequence/Layer/layers/video/VideoLayerClipManager.cpp"
+#include "timeline/Sequence/Layer/layers/video/VideoLayer.cpp"
+#include "timeline/Sequence/Layer/layers/video/VlcVideoPlayer.cpp"
+
 #include "timeline/Sequence/Layer/layers/Trigger/TimeTrigger.cpp"
 #include "timeline/Sequence/Layer/layers/Trigger/TimeTriggerManager.cpp"
 #include "timeline/Sequence/Layer/layers/Trigger/TriggerLayer.cpp"
@@ -61,6 +66,11 @@
 #include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerClipManagerUI.cpp"
 #include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerPanel.cpp"
 #include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerTimeline.cpp"
+
+#include "timeline/Sequence/Layer/layers/video/ui/VideoLayerClipUI.cpp"
+#include "timeline/Sequence/Layer/layers/video/ui/VideoLayerClipManagerUI.cpp"
+#include "timeline/Sequence/Layer/layers/video/ui/VideoLayerPanel.cpp"
+#include "timeline/Sequence/Layer/layers/video/ui/VideoLayerTimeline.cpp"
 
 
 #include "timeline/Sequence/Layer/layers/Trigger/ui/TimeTriggerUI.cpp"
