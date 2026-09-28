@@ -22,7 +22,7 @@
   website:          https://github.com/benkuper/juce_timeline
   license:          GPLv3
 
-  dependencies:    juce_organicui, juce_audio_basics,juce_audio_devices,juce_audio_formats, juce_audio_processors, juce_audio_utils
+  dependencies:    juce_organicui, juce_audio_basics,juce_audio_devices,juce_audio_formats, juce_audio_processors, juce_audio_utils, juce_video
 
  END_JUCE_MODULE_DECLARATION
 
@@ -56,6 +56,7 @@
 
 
 #include <juce_audio_utils/juce_audio_utils.h>
+#include <juce_video/juce_video.h>
 #include <juce_organicui/juce_organicui.h>
 
 //Somehow, we need to include specifically the templace class headers
@@ -91,6 +92,11 @@ using namespace juce;
 #include "timeline/Sequence/Layer/layers/audio/AudioLayerClipManager.h"
 #include "timeline/Sequence/Layer/layers/audio/AudioLayer.h"
 
+#include "timeline/Sequence/Layer/layers/video/VideoLayerClip.h"
+#include "timeline/Sequence/Layer/layers/video/VideoLayerClipManager.h"
+#include "timeline/Sequence/Layer/layers/video/VideoLayer.h"
+#include "timeline/Sequence/Layer/layers/video/VlcVideoPlayer.h"
+
 
 #include "timeline/Sequence/Layer/layers/Trigger/TimeTrigger.h"
 #include "timeline/Sequence/Layer/layers/Trigger/TimeTriggerManager.h"
@@ -119,6 +125,11 @@ using namespace juce;
 #include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerClipManagerUI.h"
 #include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerPanel.h"
 #include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerTimeline.h"
+
+#include "timeline/Sequence/Layer/layers/video/ui/VideoLayerClipUI.h"
+#include "timeline/Sequence/Layer/layers/video/ui/VideoLayerClipManagerUI.h"
+#include "timeline/Sequence/Layer/layers/video/ui/VideoLayerPanel.h"
+#include "timeline/Sequence/Layer/layers/video/ui/VideoLayerTimeline.h"
 
 #include "timeline/Sequence/Layer/layers/Trigger/ui/TimeTriggerUI.h"
 #include "timeline/Sequence/Layer/layers/Trigger/ui/TimeTriggerMultiTransformer.h"

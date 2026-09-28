@@ -25,22 +25,24 @@ public:
 		public FactoryParametricDefinition<SequenceLayer, std::function<SequenceLayer *(Sequence *, var)>>
 	{
 	public:
-		LayerDefinition(StringRef menu, StringRef type, std::function<SequenceLayer *(Sequence*, var)> func, Sequence* s, bool isAudio = false) :
+		LayerDefinition(StringRef menu, StringRef type, std::function<SequenceLayer *(Sequence*, var)> func, Sequence* s, bool isAudio = false, bool isVideo = false) :
 			FactoryParametricDefinition(menu, type, func),
 			sequence(s),
-			isAudio(isAudio)
+			isAudio(isAudio),
+			isVideo(isVideo)
 		{
 		}
 
-		static LayerDefinition* createDef(StringRef menu, StringRef type, std::function<SequenceLayer* (Sequence*, var)> func, Sequence* s, bool isAudio = false)
+		static LayerDefinition* createDef(StringRef menu, StringRef type, std::function<SequenceLayer* (Sequence*, var)> func, Sequence* s, bool isAudio = false, bool isVideo = false)
 		{
-			return new LayerDefinition(menu, type, func, s, isAudio);
+			return new LayerDefinition(menu, type, func, s, isAudio, isVideo);
 		}
 
 		virtual ~LayerDefinition() {}
 
 		Sequence* sequence;
 		bool isAudio;
+		bool isVideo;
 
 		SequenceLayer* create() override { return createFunc(sequence, params); }
 
@@ -58,6 +60,7 @@ public:
 
 	SequenceLayer * createItem() override;
 	virtual void createAudioLayerForFile(File f);
+	virtual void createVideoLayerForFile(File f);
 
 #if TIMELINE_UNIQUE_LAYER_FACTORY
 	SequenceLayer* addItemFromData(var data, bool addToUndo = false) override;
