@@ -123,7 +123,14 @@ void Sequence::setCurrentTime(float time, bool forceOverPlaying, bool seekMode)
 
 	isSeeking = seekMode;
 
-	millisAtSetTime = Time::getMillisecondCounterHiRes();
+	// Keep the playback clock anchored while run() advances the sequence. Resetting
+	// this on every playback tick makes every sleep a full frame long in addition
+	// to the processing time, which accumulates until a snapped frame is skipped.
+	if (getCurrentThreadId() != getThreadId())
+	{
+		millisAtSetTime = Time::getMillisecondCounterHiRes();
+		prevMillis = millisAtSetTime;
+	}
 	//timeAtSetTime = time;
 	if (seekMode || forceOverPlaying) targetTime = time;
 
