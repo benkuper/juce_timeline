@@ -15,6 +15,7 @@ VideoLayerClipManager::VideoLayerClipManager(VideoLayer* layer) :
 	LayerBlockManager(layer),
 	videoLayer(layer)
 {
+	itemDataType = VideoLayerClip::getTypeStringStatic();
 }
 
 VideoLayerClipManager::~VideoLayerClipManager()

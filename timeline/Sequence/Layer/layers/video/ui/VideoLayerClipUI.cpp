@@ -15,10 +15,12 @@ VideoLayerClipUI::VideoLayerClipUI(VideoLayerClip* _clip) :
 {
 	dragAndDropEnabled = false;
 	bgColor = clip->isActive->boolValue() ? VIDEO_COLOR.brighter() : VIDEO_COLOR.darker();
+	clip->addClipListener(this);
 }
 
 VideoLayerClipUI::~VideoLayerClipUI()
 {
+	if (!inspectable.wasObjectDeleted()) clip->removeClipListener(this);
 }
 
 void VideoLayerClipUI::paint(Graphics& g)
@@ -26,6 +28,25 @@ void VideoLayerClipUI::paint(Graphics& g)
 	LayerBlockUI::paint(g);
 
 	Rectangle<int> b = getCoreBounds();
+	Rectangle<int> previewBounds = b.reduced(2).withTrimmedTop(5).withTrimmedBottom(5);
+
+	if (!clip->filePath->stringValue().isEmpty() && !previewBounds.isEmpty())
+	{
+		const int cellWidth = juce::jmax(28, juce::roundToInt(previewBounds.getHeight() * 1.7f));
+		const int cells = juce::jlimit(1, 32, (previewBounds.getWidth() + cellWidth - 1) / cellWidth);
+		for (int i = 0; i < cells; ++i)
+		{
+			const int left = previewBounds.getX() + i * previewBounds.getWidth() / cells;
+			const int right = previewBounds.getX() + (i + 1) * previewBounds.getWidth() / cells;
+			const double relativeTime = viewStart + (viewCoreEnd - viewStart) * (i + 0.5) / cells;
+			Image thumbnail = clip->getThumbnailForTime(clip->clipStartOffset->doubleValue() + relativeTime);
+			if (thumbnail.isValid())
+				g.drawImageWithin(thumbnail, left, previewBounds.getY(), juce::jmax(1, right - left), previewBounds.getHeight(), RectanglePlacement::fillDestination);
+		}
+
+		g.setColour(Colours::black.withAlpha(0.28f));
+		g.fillRect(previewBounds.removeFromBottom(14));
+	}
 
 	//film perforations
 	g.setColour(Colours::black.withAlpha(.35f));
@@ -36,6 +57,30 @@ void VideoLayerClipUI::paint(Graphics& g)
 	{
 		g.fillRect(x, b.getY() + 2, size, 3);
 		g.fillRect(x, b.getBottom() - 5, size, 3);
+	}
+
+	if (clip->fadeIn->floatValue() > 0.0f && clip->coreLength->floatValue() > 0.0f)
+	{
+		const int fadeWidth = juce::roundToInt(clip->fadeIn->floatValue() * b.getWidth() / clip->coreLength->floatValue());
+		Path p;
+		p.startNewSubPath((float) b.getX(), (float) b.getY());
+		p.lineTo((float) (b.getX() + fadeWidth), (float) b.getY());
+		p.lineTo((float) b.getX(), (float) b.getBottom());
+		p.closeSubPath();
+		g.setColour(YELLOW_COLOR.withAlpha(.25f));
+		g.fillPath(p);
+	}
+
+	if (clip->fadeOut->floatValue() > 0.0f && clip->coreLength->floatValue() > 0.0f)
+	{
+		const int fadeWidth = juce::roundToInt(clip->fadeOut->floatValue() * b.getWidth() / clip->coreLength->floatValue());
+		Path p;
+		p.startNewSubPath((float) b.getRight(), (float) b.getY());
+		p.lineTo((float) (b.getRight() - fadeWidth), (float) b.getY());
+		p.lineTo((float) b.getRight(), (float) b.getBottom());
+		p.closeSubPath();
+		g.setColour(YELLOW_COLOR.withAlpha(.25f));
+		g.fillPath(p);
 	}
 
 	if (clip->filePath->stringValue().isEmpty())
@@ -68,4 +113,21 @@ void VideoLayerClipUI::paint(Graphics& g)
 
 void VideoLayerClipUI::resizedBlockInternal()
 {
+}
+
+void VideoLayerClipUI::controllableFeedbackUpdateInternal(Controllable* c)
+{
+	LayerBlockUI::controllableFeedbackUpdateInternal(c);
+	if (c == clip->time || c == clip->coreLength || c == clip->clipStartOffset || c == clip->fadeIn || c == clip->fadeOut || c == clip->isActive)
+		shouldRepaint = true;
+}
+
+void VideoLayerClipUI::clipSourceLoaded(VideoLayerClip*)
+{
+	shouldRepaint = true;
+}
+
+void VideoLayerClipUI::clipThumbnailChanged(VideoLayerClip*)
+{
+	shouldRepaint = true;
 }

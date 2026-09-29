@@ -54,6 +54,7 @@ public:
 	static void drawFrameWithTransform(juce::Graphics& g, const juce::Image& img, juce::Rectangle<int> targetArea, float opacity, float scaleX, float scaleY, float xPercent, float yPercent);
 
 	std::function<void()> onPlaybackStopped;
+	std::function<void(const juce::Image&)> onFrameDecoded;
 
 	void paint(Graphics& g) override;
 

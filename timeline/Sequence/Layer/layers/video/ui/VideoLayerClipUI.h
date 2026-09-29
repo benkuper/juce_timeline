@@ -10,7 +10,8 @@
 #pragma once
 
 class VideoLayerClipUI :
-	public LayerBlockUI
+	public LayerBlockUI,
+	public VideoLayerClip::ClipListener
 {
 public:
 	VideoLayerClipUI(VideoLayerClip* clip);
@@ -20,6 +21,9 @@ public:
 
 	void paint(Graphics& g) override;
 	void resizedBlockInternal() override;
+	void controllableFeedbackUpdateInternal(Controllable* c) override;
+	void clipSourceLoaded(VideoLayerClip*) override;
+	void clipThumbnailChanged(VideoLayerClip*) override;
 
 private:
 

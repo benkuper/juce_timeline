@@ -716,7 +716,11 @@ void VlcVideoPlayer::handlePlaybackStoppedEvent()
 void VlcVideoPlayer::handleAsyncUpdate()
 {
 	if (hasNewFrame.exchange(false))
+	{
+		if (onFrameDecoded != nullptr)
+			onFrameDecoded(getCurrentFrame());
 		repaint();
+	}
 
 	if (needsStoppedEvent.exchange(false))
 		handlePlaybackStoppedEvent();

@@ -32,6 +32,8 @@ public:
 	FloatParameter* clipStartOffset;
 
 	FloatParameter* volume;
+	FloatParameter* fadeIn;
+	FloatParameter* fadeOut;
 
 	FloatParameter* opacity;
 
@@ -60,6 +62,7 @@ public:
 	double clipDuration;
 
 	float getRenderOpacity() const { return opacity->floatValue(); }
+	float getManualFadeFactor(double timelineTime);
 	float getRenderScaleX() const { return (size->floatValue() / 100.0f) * (width->floatValue() / 100.0f); }
 	float getRenderScaleY() const { return (size->floatValue() / 100.0f) * (height->floatValue() / 100.0f); }
 	float getRenderXPercent() const { return x->floatValue(); }
@@ -78,11 +81,25 @@ public:
 		virtual ~ClipListener() {}
 		virtual void clipSourceLoaded(VideoLayerClip*) {}
 		virtual void clipParamChanged(VideoLayerClip*) {}
+		virtual void clipThumbnailChanged(VideoLayerClip*) {}
 	};
 
 	ListenerList<ClipListener> clipListeners;
 	void addClipListener(ClipListener* newListener) { clipListeners.add(newListener); }
 	void removeClipListener(ClipListener* listener) { clipListeners.remove(listener); }
+
+	struct ThumbnailSample
+	{
+		double sourceTime = 0.0;
+		juce::Image image;
+	};
+
+	void cacheThumbnail(double sourceTime, const juce::Image& frame);
+	juce::Image getThumbnailForTime(double sourceTime) const;
+	void clearThumbnails();
+
+	mutable juce::CriticalSection thumbnailLock;
+	juce::Array<ThumbnailSample> thumbnailSamples;
 
 private:
 	WeakReference<VideoLayerClip>::Master masterReference;

@@ -25,9 +25,12 @@ public:
 	VideoLayerClipManager clipManager;
 
 	std::unique_ptr<VlcVideoPlayer> moviePlayer;
+	std::unique_ptr<VlcVideoPlayer> overlapPlayer;
 
 	WeakReference<VideoLayerClip> currentClip;
 	WeakReference<VideoLayerClip> loadedClip;
+	WeakReference<VideoLayerClip> overlapClip;
+	WeakReference<VideoLayerClip> loadedOverlapClip;
 
 	bool settingPlayState;
 
@@ -67,6 +70,7 @@ public:
 	virtual VideoLayerClip* createVideoClip();
 	virtual void updateCurrentClip();   // bookkeeping only, safe to call from any thread
 	virtual void loadCurrentClip();     // message thread only
+	virtual void loadOverlapClip();
 	virtual void syncPlaybackState();   // message thread only
 	void logSyncExit(const String& why);
 
@@ -74,6 +78,7 @@ public:
 	void applyRenderTransformToPlayer();
 
 	float lastAppliedVolume = -1.0f;
+	float lastAppliedOverlapVolume = -1.0f;
 
 	void setSettingPlayState(bool value) { settingPlayState = value; }
 
@@ -89,8 +94,11 @@ public:
 	void markPlaybackDirty() { triggerAsyncUpdate(); }
 
 	virtual float getLocalTime();
+	float getLocalTimeForClip(VideoLayerClip* clip) const;
+	float getClipFadeFactor(VideoLayerClip* clip) const;
 	virtual float getVolumeFactor();
 	virtual void setVolume(float value);
+	virtual bool paste() override;
 
 	void itemAdded(LayerBlock* clip) override;
 	void itemsAdded(Array<LayerBlock*> clips) override;

@@ -32,5 +32,6 @@ public:
 	virtual bool isInterestedInFileDrag(const StringArray& files) override;
 	virtual void fileDragEnter(const StringArray& files, int x, int y) override;
 	virtual void fileDragMove(const StringArray& files, int x, int y) override;
+	virtual void fileDragExit(const StringArray& files) override;
 	virtual void filesDropped(const StringArray& files, int x, int y) override;
 };

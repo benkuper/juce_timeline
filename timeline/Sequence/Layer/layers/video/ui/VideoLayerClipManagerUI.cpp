@@ -60,9 +60,9 @@ void VideoLayerClipManagerUI::addClipWithFileChooserAt(float position)
 
 bool VideoLayerClipManagerUI::isInterestedInFileDrag(const StringArray& files)
 {
-	if (files.size() == 0) return false;
-
-	return VideoFileHelpers::isVideoOrImageFile(files[0]);
+	for (auto& file : files)
+		if (VideoFileHelpers::isVideoOrImageFile(file)) return true;
+	return false;
 }
 
 void VideoLayerClipManagerUI::fileDragEnter(const StringArray& files, int x, int y)
@@ -76,13 +76,22 @@ void VideoLayerClipManagerUI::fileDragMove(const StringArray& files, int x, int 
 	repaint();
 }
 
+void VideoLayerClipManagerUI::fileDragExit(const StringArray&)
+{
+	fileDropMode = false;
+	repaint();
+}
+
 void VideoLayerClipManagerUI::filesDropped(const StringArray& files, int x, int y)
 {
-	if (files.size() == 0) return;
-
-	float time = timeline->getTimeForX(getMouseXYRelative().x);
-	VideoLayerClip* clip = dynamic_cast<VideoLayerClip*>(manager->addBlockAt(time));
-	clip->filePath->setValue(files[0]);
+	float time = timeline->getTimeForX(x);
+	for (auto& file : files)
+	{
+		if (!VideoFileHelpers::isVideoOrImageFile(file)) continue;
+		VideoLayerClip* clip = dynamic_cast<VideoLayerClip*>(manager->addBlockAt(time));
+		clip->filePath->setValue(file);
+		time += juce::jmax(0.1f, clip->getTotalLength());
+	}
 
 	fileDropMode = false;
 	repaint();

@@ -9,6 +9,7 @@
 */
 
 #include "JuceHeader.h"
+#include "layers/video/VideoFileHelpers.h"
 
 SequenceLayerManager::SequenceLayerManager(Sequence* _sequence) :
 	BaseManager<SequenceLayer>("Layers"),
@@ -28,11 +29,10 @@ SequenceLayerManager::~SequenceLayerManager()
 
 void SequenceLayerManager::fileDropped(String file)
 {
-	if (file.endsWith("mp3") || file.endsWith("wav") || file.endsWith("aiff")) createAudioLayerForFile(file);
+	const String lower = file.toLowerCase();
+	if (lower.endsWith("mp3") || lower.endsWith("wav") || lower.endsWith("aiff")) createAudioLayerForFile(file);
 
-#if JUCE_WINDOWS
-	if (file.endsWith("mp4") || file.endsWith("mov") || file.endsWith("avi") || file.endsWith("mkv") || file.endsWith("wmv") || file.endsWith("webm") || file.endsWith("m4v")) createVideoLayerForFile(file);
-#endif
+	if (VideoFileHelpers::isVideoOrImageFile(file)) createVideoLayerForFile(file);
 }
 
 SequenceLayer* SequenceLayerManager::createItem()
