@@ -29,6 +29,10 @@ SequenceLayerManager::~SequenceLayerManager()
 void SequenceLayerManager::fileDropped(String file)
 {
 	if (file.endsWith("mp3") || file.endsWith("wav") || file.endsWith("aiff")) createAudioLayerForFile(file);
+
+#if JUCE_WINDOWS
+	if (file.endsWith("mp4") || file.endsWith("mov") || file.endsWith("avi") || file.endsWith("mkv") || file.endsWith("wmv") || file.endsWith("webm") || file.endsWith("m4v")) createVideoLayerForFile(file);
+#endif
 }
 
 SequenceLayer* SequenceLayerManager::createItem()
@@ -50,6 +54,24 @@ void SequenceLayerManager::createAudioLayerForFile(File f)
 			return;
 		}
 	}
+}
+
+void SequenceLayerManager::createVideoLayerForFile(File f)
+{
+#if JUCE_WINDOWS
+	for (auto& d : factory.defs)
+	{
+		if (((LayerDefinition*)d)->isVideo)
+		{
+			VideoLayer* layer = (VideoLayer*)factory.create(d);
+			VideoLayerClip* clip = layer->createVideoClip();
+			clip->filePath->setValue(f.getFullPathName());
+			layer->clipManager.addItem(clip, false, false);
+			addItem(layer, true, true);
+			return;
+		}
+	}
+#endif
 }
 
 #if TIMELINE_UNIQUE_LAYER_FACTORY
