@@ -20,7 +20,6 @@ AudioLayerClip::AudioLayerClip() :
 	sampleRate(0),
 	clipSamplePos(0),
 	isLoading(false),
-	shouldStop(false),
 	audioClipAsyncNotifier(10)
 {
 	itemDataType = getTypeString();
@@ -62,13 +61,12 @@ AudioLayerClip::~AudioLayerClip()
 
 void AudioLayerClip::start()
 {
-	shouldStop = false;
 	transportSource.start();
 }
 
 void AudioLayerClip::stop()
 {
-	shouldStop = true;
+	transportSource.stop();
 }
 
 void AudioLayerClip::updateAudioSourceFile()
@@ -104,7 +102,6 @@ void AudioLayerClip::onContainerParameterChangedInternal(Parameter* p)
 		if (isActive->boolValue())
 		{
 			clipSamplePos = 0;
-			start();
 		}
 		else
 		{

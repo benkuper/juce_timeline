@@ -40,8 +40,10 @@ public:
 	Array<UndoableAction*> getRemoveTimespan(float start, float end);
 
 	void onControllableFeedbackUpdate(ControllableContainer* cc, Controllable* c) override;
+	void executeTriggersTimespan(float startTime, float endTime, bool forward, bool onlyUntrigger = false);
 
 	void sequenceCurrentTimeChanged(Sequence* _sequence, float prevTime, bool evaluateSkippedData) override;
+	void sequencePlayStateChanged(Sequence*) override;
 	void sequenceTotalTimeChanged(Sequence*) override;
 	void sequencePlayDirectionChanged(Sequence*) override;
 	void sequenceLooped(Sequence*) override;
