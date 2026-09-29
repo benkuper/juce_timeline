@@ -4,8 +4,7 @@
     VlcVideoPlayer.h
     Created: 27 Sep 2026
 
-    Video playback backend based on libVLC (dynamic loading), used on Windows
-    instead of the DirectShow-based juce::VideoComponent.
+    Cross-platform video playback backend based on a dynamically loaded libVLC.
 
   ==============================================================================
 */

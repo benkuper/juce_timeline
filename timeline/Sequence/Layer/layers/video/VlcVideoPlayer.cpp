@@ -59,7 +59,7 @@ namespace
 	//==============================================================================
 	struct LibVCLLibrary
 	{
-		void* module = nullptr;
+		DynamicLibrary module;
 		void* instance = nullptr;
 		bool attempted = false;
 
@@ -93,11 +93,17 @@ namespace
 		int (*audio_set_volume)(LibVlcMediaPlayer, int) = nullptr;
 
 		//==============================================================================
-		bool isReady() const { return module != nullptr; }
+		~LibVCLLibrary()
+		{
+			if (instance != nullptr && release_instance != nullptr)
+				release_instance(instance);
+		}
+
+		bool isReady() const { return module.getNativeHandle() != nullptr && instance != nullptr; }
 
 		template <class T> bool loadSymbol(T& target, const char* name)
 		{
-			target = reinterpret_cast<T>(GetProcAddress((HMODULE) module, name));
+			target = reinterpret_cast<T>(module.getFunction(name));
 			return target != nullptr;
 		}
 
@@ -131,42 +137,75 @@ namespace
 
 		bool ensureLoaded()
 		{
-			if (attempted) return module != nullptr;
+			if (attempted) return isReady();
 			attempted = true;
 
-#if JUCE_WINDOWS
 			const char* envDir = std::getenv("CHATAIGNE_VLC_DIR");
-
-			StringArray candidates;
+			StringArray searchDirectories;
+			StringArray libraryNames;
 
 			// The bundled runtime ships next to the executable : that takes priority so the
 			// app doesn't depend on VLC being installed on the machine.
-			candidates.add(File::getSpecialLocation(File::currentExecutableFile).getParentDirectory().getFullPathName());
-			candidates.add(File::getSpecialLocation(File::currentApplicationFile).getParentDirectory().getFullPathName());
-			candidates.add(File::getCurrentWorkingDirectory().getFullPathName());
+			const File executable = File::getSpecialLocation(File::currentExecutableFile);
+			const File application = File::getSpecialLocation(File::currentApplicationFile);
+			searchDirectories.add(executable.getParentDirectory().getFullPathName());
+			searchDirectories.add(executable.getParentDirectory().getChildFile("lib").getFullPathName());
+			searchDirectories.add(application.getParentDirectory().getFullPathName());
+			searchDirectories.add(File::getCurrentWorkingDirectory().getFullPathName());
 
-			if (envDir != nullptr && envDir[0] != 0) candidates.add(envDir);
+			if (envDir != nullptr && envDir[0] != 0)
+				searchDirectories.add(envDir);
 
-			candidates.add("C:/Program Files/VideoLAN/VLC");
-			candidates.add("C:/Program Files (x86)/VideoLAN/VLC");
-
-			for (auto& dir : candidates)
+#if JUCE_WINDOWS
+			libraryNames.add("libvlc.dll");
+			searchDirectories.add("C:/Program Files/VideoLAN/VLC");
+			searchDirectories.add("C:/Program Files (x86)/VideoLAN/VLC");
+#elif JUCE_MAC
+			libraryNames.add("libvlc.dylib");
+			if (application.hasFileExtension("app"))
 			{
-				File libFile = File(dir).getChildFile("libvlc.dll");
-				if (!libFile.existsAsFile()) continue;
+				searchDirectories.add(application.getChildFile("Contents/Frameworks").getFullPathName());
+				searchDirectories.add(application.getChildFile("Contents/MacOS/lib").getFullPathName());
+			}
+			searchDirectories.add("/Applications/VLC.app/Contents/MacOS/lib");
+			searchDirectories.add("/opt/homebrew/lib");
+			searchDirectories.add("/usr/local/lib");
+			searchDirectories.add("/opt/local/lib");
+#else
+			// Try the versioned Debian/Ubuntu soname first, then the development symlink.
+			libraryNames.add("libvlc.so.5");
+			libraryNames.add("libvlc.so");
+#endif
 
-				SetDllDirectoryW((LPCWSTR) dir.toWideCharPointer());
-				HMODULE h = LoadLibraryW((LPCWSTR) libFile.getFullPathName().toWideCharPointer());
+			searchDirectories.removeDuplicates(false);
+
+			StringArray candidates;
+			for (const auto& directory : searchDirectories)
+				for (const auto& libraryName : libraryNames)
+					candidates.add(File(directory).getChildFile(libraryName).getFullPathName());
+
+#if ! JUCE_WINDOWS
+			// Let the platform loader search its configured paths after explicit bundled
+			// and application locations have been tried.
+			candidates.addArray(libraryNames);
+#endif
+
+			for (const auto& candidate : candidates)
+			{
+#if JUCE_WINDOWS
+				const String dependencyDirectory = File(candidate).getParentDirectory().getFullPathName();
+				SetDllDirectoryW(dependencyDirectory.toWideCharPointer());
+#endif
+				const bool opened = module.open(candidate);
+#if JUCE_WINDOWS
 				SetDllDirectoryW(nullptr);
-
-				if (h == nullptr) continue;
-
-				module = h;
+#endif
+				if (!opened)
+					continue;
 
 				if (!loadAllSymbols())
 				{
-					FreeLibrary((HMODULE) module);
-					module = nullptr;
+					module.close();
 					continue;
 				}
 
@@ -180,22 +219,18 @@ namespace
 
 				if (instance == nullptr)
 				{
-					FreeLibrary((HMODULE) module);
-					module = nullptr;
+					module.close();
 					continue;
 				}
 
 				if (get_version != nullptr)
-					Logger::writeToLog("Video backend: libVLC " + String(get_version()) + " (" + libFile.getFullPathName() + ")");
+					Logger::writeToLog("Video backend: libVLC " + String(get_version()) + " (" + candidate + ")");
 
 				return true;
 			}
 
-			Logger::writeToLog("Video backend: could not find libvlc.dll (is VLC installed ? Set CHATAIGNE_VLC_DIR to override)");
+			Logger::writeToLog("Video backend: could not load libVLC (is VLC installed? Set CHATAIGNE_VLC_DIR to override)");
 			return false;
-#else
-			return false;
-#endif
 		}
 
 		static LibVCLLibrary& get()
@@ -338,18 +373,6 @@ void vlcDisplay(void* opaque, void*)
 	self->frameStore->publishFrame();
 	self->hasNewFrame.store(true);
 	self->triggerAsyncUpdate();
-
-	static juce::uint32 lastFpsLog = juce::Time::getMillisecondCounter();
-	static unsigned frameCount = 0;
-	frameCount++;
-
-	const juce::uint32 now = juce::Time::getMillisecondCounter();
-	if (now - lastFpsLog > 2000)
-	{
-		Logger::writeToLog("VLC fps: " + String(frameCount / 2.0, 1));
-		lastFpsLog = now;
-		frameCount = 0;
-	}
 }
 
 void vlcEventCallback(const void* evtPtr, void* opaque)

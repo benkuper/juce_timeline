@@ -45,7 +45,5 @@ void SequenceManagerUI::addMenuExtraItems(juce::PopupMenu& p, int startIndex)
 {
 	p.addItem("Import audio files", [this]() {manager->importMultipleAudioFiles();});
 
-#if JUCE_WINDOWS
 	p.addItem("Import video or image files", [this]() {manager->importMultipleVideoFiles();});
-#endif
 }

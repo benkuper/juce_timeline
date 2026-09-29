@@ -11,9 +11,7 @@
 #include "JuceHeader.h"
 #include "SequenceManager.h"
 
-#if JUCE_WINDOWS
 #include "Sequence/Layer/layers/video/VideoFileHelpers.h"
-#endif
 
 #if TIMELINE_USE_SEQUENCEMANAGER_SINGLETON
 juce_ImplementSingleton(SequenceManager)
@@ -305,7 +303,6 @@ void SequenceManager::createSequenceFromAudioFile(File f)
 	clip->filePath->setValue(f.getFullPathName());
 }
 
-#if JUCE_WINDOWS
 void SequenceManager::importMultipleVideoFiles()
 {
 	fileChooser = std::make_unique<FileChooser>("Import video or image files", File::getCurrentWorkingDirectory(), VideoFileHelpers::getSupportedVideoAndImageWildcards());
@@ -334,4 +331,3 @@ void SequenceManager::createSequenceFromVideoFile(File f)
 	l->clipManager.addItem(clip);
 	clip->filePath->setValue(f.getFullPathName());
 }
-#endif

@@ -62,10 +62,8 @@ public:
 	virtual void importMultipleAudioFiles();
 	virtual void createSequenceFromAudioFile(File f);
 
-#if JUCE_WINDOWS
 	virtual void importMultipleVideoFiles();
 	virtual void createSequenceFromVideoFile(File f);
-#endif
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceManager)
 };

@@ -254,7 +254,7 @@ Result r = moviePlayer->load(File(path));
 }
 
 void VideoLayer::syncPlaybackState()
-	{
+{
 	// Always runs on the message thread (see handleAsyncUpdate)
 	if (moviePlayer == nullptr) return;
 
