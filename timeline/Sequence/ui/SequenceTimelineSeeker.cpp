@@ -14,7 +14,7 @@ SequenceTimelineSeeker::SequenceTimelineSeeker(Sequence * _sequence) :
 	UITimerTarget(ORGANICUI_SLOW_TIMER, "SequenceTimelineSeeker"),
 	sequence(_sequence)
 {
-	setBufferedToImage(true);
+	// Keep the moving needle out of the seeker's cached image.
 	handle.setBufferedToImage(true);
 
 	addAndMakeVisible(&needle);

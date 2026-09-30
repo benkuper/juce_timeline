@@ -10,6 +10,7 @@
 
 #include "JuceHeader.h"
 #include "Sequence.h"
+#include "SequencePlaybackClock.h"
 
 Sequence::Sequence() :
 	BaseItem("Sequence", true),
@@ -20,7 +21,7 @@ Sequence::Sequence() :
 	isSeeking(false),
 	//timeAtSetTime(0),
 	millisAtSetTime(0),
-	prevMillis(0),
+	playbackClockRevision(0),
 	targetTime(0),
 	isBeingEdited(false),
 	sequenceNotifier(10)
@@ -113,9 +114,9 @@ void Sequence::clearItem()
 	if (Engine::mainEngine != nullptr) Engine::mainEngine->removeEngineListener(this);
 }
 
-void Sequence::setCurrentTime(float time, bool forceOverPlaying, bool seekMode)
+void Sequence::setCurrentTime(double time, bool forceOverPlaying, bool seekMode)
 {
-	time = jlimit<float>(0, totalTime->floatValue(), time);
+	time = jlimit<double>(0, totalTime->doubleValue(), time);
 
 	if (isPlaying->boolValue() && !forceOverPlaying) return;
 
@@ -129,7 +130,7 @@ void Sequence::setCurrentTime(float time, bool forceOverPlaying, bool seekMode)
 	if (getCurrentThreadId() != getThreadId())
 	{
 		millisAtSetTime = Time::getMillisecondCounterHiRes();
-		prevMillis = millisAtSetTime;
+		++playbackClockRevision;
 	}
 	//timeAtSetTime = time;
 	if (seekMode || forceOverPlaying) targetTime = time;
@@ -161,7 +162,7 @@ void Sequence::handleCueAction(TimeCue* cue, TimeCue* originCue)
 	{
 		pauseTrigger->trigger();
 		prevTime = currentTime->floatValue();
-		setCurrentTime(getNextFrameTimeForTime(cue->time->floatValue()));
+		setCurrentTime(getNextFrameTimeForTime(cue->time->doubleValue()));
 		return;
 	default:
 		break;
@@ -184,23 +185,25 @@ void Sequence::handleCueAction(TimeCue* cue, TimeCue* originCue)
 	}
 }
 
-int Sequence::getFrameForTime(float time, bool forceDirection, bool forcePrev)
+int Sequence::getFrameForTime(double time, bool forceDirection, bool forcePrev)
 {
-	float f = time * fps->floatValue() / (playSpeed->floatValue() != 0 ? playSpeed->floatValue() : 1.0f);
-	return forceDirection ? (forcePrev ? floorf(f) : ceilf(f)) : round(f);
+	const double speed = playSpeed->doubleValue();
+	const double f = time * fps->intValue() / (speed != 0.0 ? std::abs(speed) : 1.0);
+	return static_cast<int>(forceDirection ? (forcePrev ? std::floor(f) : std::ceil(f)) : std::round(f));
 }
 
-double Sequence::getTimeForFrame(float frame)
+double Sequence::getTimeForFrame(double frame)
 {
-	return frame * 1.0 / (fps->floatValue() / (playSpeed->floatValue() != 0 ? playSpeed->floatValue() : 1.0f));
+	const double speed = playSpeed->doubleValue();
+	return frame * (speed != 0.0 ? std::abs(speed) : 1.0) / fps->intValue();
 }
 
-double Sequence::getNextFrameTimeForTime(float time)
+double Sequence::getNextFrameTimeForTime(double time)
 {
 	return getTimeForFrame(getFrameForTime(time, true, false));
 }
 
-double Sequence::getPrevFrameTimeForTime(float time)
+double Sequence::getPrevFrameTimeForTime(double time)
 {
 	return getTimeForFrame(getFrameForTime(time, true, true));
 }
@@ -329,6 +332,21 @@ var Sequence::getJSONData(bool includeNonOverriden)
 
 void Sequence::loadJSONDataInternal(var data)
 {
+	// The container skips parameters marked non-savable before loading their
+	// values. Restore this flag first so a saved current time is not discarded.
+	var parametersData = data.getProperty("parameters", var());
+	if (Array<var>* parameters = parametersData.getArray())
+	{
+		for (const var& parameter : *parameters)
+		{
+			if (parameter.getProperty("controlAddress", "").toString() == "/saveCurrentTime"
+				&& (bool)parameter.getProperty("value", false))
+			{
+				currentTime->isSavable = true;
+				break;
+			}
+		}
+	}
 	BaseItem::loadJSONDataInternal(data);
 	layerManager->loadJSONData(data.getProperty(layerManager->shortName, var()));
 	cueManager->loadJSONData(data.getProperty(cueManager->shortName, var()));
@@ -361,7 +379,15 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 		if ((!isPlaying->boolValue() || isSeeking) && timeIsDrivenByAudio()) hiResAudioTime = currentTime->floatValue();
 		else if (getCurrentThreadId() != getThreadId())
 		{
-			millisAtSetTime = Time::getMillisecondCounterHiRes();
+			GenericScopedLock lock(sequenceTimeLock);
+			// Parameter feedback can arrive on the message thread after a playback
+			// tick. Only a value different from the thread's target is an external seek.
+			if (std::abs(currentTime->doubleValue() - targetTime) > 1.0e-9)
+			{
+				targetTime = currentTime->doubleValue();
+				millisAtSetTime = Time::getMillisecondCounterHiRes();
+				++playbackClockRevision;
+			}
 			//timeAtSetTime = timeIsDrivenByAudio() ? hiResAudioTime : currentTime->floatValue();
 		}
 
@@ -390,10 +416,16 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 
 		if (isPlaying->boolValue())
 		{
-			if (currentTime->floatValue() >= totalTime->floatValue())
+			if (playSpeed->doubleValue() > 0.0
+				&& currentTime->doubleValue() >= totalTime->doubleValue())
 			{
 				hiResAudioTime = 0;
 				setCurrentTime(0, true, true); //if reached the end when hit play, go to 0
+			}
+			else if (playSpeed->doubleValue() < 0.0 && currentTime->doubleValue() <= 0.0)
+			{
+				hiResAudioTime = totalTime->doubleValue();
+				setCurrentTime(hiResAudioTime, true, true);
 			}
 
 			prevTime = currentTime->floatValue();
@@ -425,7 +457,7 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 
 	if (p == fps || p == playSpeed)
 	{
-		float steps = fps->floatValue() / (playSpeed->floatValue() != 0 ? playSpeed->floatValue() : 1.0f);
+		float steps = fps->floatValue() / (playSpeed->floatValue() != 0 ? std::abs(playSpeed->floatValue()) : 1.0f);
 		currentTime->unitSteps = steps;
 		totalTime->unitSteps = steps;
 
@@ -507,93 +539,127 @@ String Sequence::getPanelName() const
 
 void Sequence::run()
 {
-	millisAtSetTime = Time::getMillisecondCounterHiRes();
-	//timeAtSetTime = timeIsDrivenByAudio() ? hiResAudioTime : currentTime->floatValue();
-	prevMillis = Time::getMillisecondCounterHiRes();
+	const double startMillis = Time::getMillisecondCounterHiRes();
+	std::uint64_t observedClockRevision;
+	{
+		GenericScopedLock lock(sequenceTimeLock);
+		millisAtSetTime = startMillis;
+		targetTime = currentTime->doubleValue();
+		observedClockRevision = playbackClockRevision;
+	}
 
 	followViewRange = viewEndTime->floatValue() - viewStartTime->floatValue();
 
-	targetTime = currentTime->floatValue();
+	SequencePlaybackClock clock;
+	clock.reset(startMillis, currentTime->doubleValue(), fps->intValue(), playSpeed->doubleValue());
+	std::int64_t lastFrame = 0;
 
 	while (!threadShouldExit())
 	{
-
-		double millis = Time::getMillisecondCounterHiRes();
-		//double millisSinceSetTime = millis - millisAtSetTime;
-		double delta = millis - prevMillis;
-
-		targetTime += (delta / 1000.0) * playSpeed->floatValue();
-
-		prevMillis = millis;
-
-		//double absoluteTargetTime = timeAtSetTime + (millisSinceSetTime / 1000.0) * playSpeed->floatValue();
-
-		if (timeIsDrivenByAudio())
+		const double millis = Time::getMillisecondCounterHiRes();
+		double externalAnchorMillis;
+		std::uint64_t clockRevision;
 		{
-			//DBG("Diff (ms): " << abs(hiResAudioTime - currentTime->floatValue()));
-			//targetTime = hiResAudioTime;
+			GenericScopedLock lock(sequenceTimeLock);
+			externalAnchorMillis = millisAtSetTime;
+			clockRevision = playbackClockRevision;
+		}
+		const int currentFPS = fps->intValue();
+		const double currentSpeed = playSpeed->doubleValue();
+		if (clockRevision != observedClockRevision
+			|| currentFPS != clock.getFramesPerSecond()
+			|| currentSpeed != clock.getSpeed())
+		{
+			const bool externallyReanchored = clockRevision != observedClockRevision;
+			observedClockRevision = clockRevision;
+			const double anchorMillis = externallyReanchored ? externalAnchorMillis : millis;
+			clock.reset(anchorMillis, currentTime->doubleValue(), currentFPS, currentSpeed);
+			lastFrame = 0;
 		}
 
-		//DBG(deltaMillis << " : " << (targetTime - currentTime->floatValue()));
-
-		// A looping sequence must not briefly deactivate blocks at the clamped end point.
-		if (!isSeeking && (!loopParam->boolValue()
-			|| (targetTime > 0 && targetTime < totalTime->floatValue())))
-			setCurrentTime(targetTime);
-
-		if (viewFollowTime->boolValue())
+		const std::int64_t frame = clock.frameAt(millis);
+		if (frame > lastFrame)
 		{
-			float targetStart = jmax(currentTime->floatValue() - followViewRange / 2, 0.f);
-			float targetEnd = targetStart + followViewRange;
-			if (targetEnd > totalTime->floatValue())
+			lastFrame = frame;
+			const double frameTime = clock.timeForFrame(frame);
+			const double frameDeadlineMillis = clock.deadlineForFrame(frame);
 			{
-				targetEnd = totalTime->floatValue();
-				targetStart = targetEnd - followViewRange;
+				GenericScopedLock lock(sequenceTimeLock);
+				targetTime = frameTime;
 			}
 
-			viewStartTime->setValue(viewStartTime->getLerpValueTo(targetStart, .3f));
-			viewEndTime->setValue(viewEndTime->getLerpValueTo(targetEnd, .3f));
-		}
+			// A looping sequence must not briefly deactivate blocks at the clamped end point.
+			if (!isSeeking && (!loopParam->boolValue()
+				|| (frameTime > 0 && frameTime < totalTime->doubleValue())))
+				setCurrentTime(frameTime);
 
-		if (playSpeed->floatValue() > 0)
-		{
-			if (targetTime >= totalTime->floatValue())
+			double callbackTime;
 			{
-				if (loopParam->boolValue())
+				GenericScopedLock lock(sequenceTimeLock);
+				callbackTime = targetTime;
+			}
+			const bool cueSeeked = callbackTime != frameTime;
+			const double evaluatedTime = cueSeeked ? callbackTime : frameTime;
+			if (cueSeeked)
+			{
+				// A cue may seek from inside the current-time callback.
+				clock.reset(frameDeadlineMillis, evaluatedTime, currentFPS, currentSpeed);
+				lastFrame = 0;
+			}
+
+			if (viewFollowTime->boolValue())
+			{
+				float targetStart = jmax(currentTime->floatValue() - followViewRange / 2, 0.f);
+				float targetEnd = targetStart + followViewRange;
+				if (targetEnd > totalTime->floatValue())
 				{
-					float offset = (float) fmod(targetTime, totalTime->floatValue());
-					sequenceListeners.call(&SequenceListener::sequenceLooped, this);
-					prevTime = 0;
-					targetTime = offset;
-					setCurrentTime(offset, true, true);
+					targetEnd = totalTime->floatValue();
+					targetStart = targetEnd - followViewRange;
 				}
-				else finishTrigger->trigger();
+
+				viewStartTime->setValue(viewStartTime->getLerpValueTo(targetStart, .3f));
+				viewEndTime->setValue(viewEndTime->getLerpValueTo(targetEnd, .3f));
 			}
-		}
-		else
-		{
-			if (targetTime <= 0)
+
+			if (currentSpeed > 0)
 			{
-				if (loopParam->boolValue())
+				if (evaluatedTime >= totalTime->doubleValue())
 				{
-					float offset = (float) fmod(targetTime, totalTime->floatValue());
-					if (offset <= 0) offset += totalTime->floatValue();
-					sequenceListeners.call(&SequenceListener::sequenceLooped, this);
-					prevTime = totalTime->floatValue();
-					targetTime = offset;
-					setCurrentTime(offset, true, true);
+					if (loopParam->boolValue())
+					{
+						const double offset = std::fmod(evaluatedTime, totalTime->doubleValue());
+						sequenceListeners.call(&SequenceListener::sequenceLooped, this);
+						prevTime = 0;
+						setCurrentTime(offset, true, true);
+						clock.reset(frameDeadlineMillis, offset, currentFPS, currentSpeed);
+						lastFrame = 0;
+					}
+					else finishTrigger->trigger();
 				}
-				else finishTrigger->trigger();
+			}
+			else if (currentSpeed < 0)
+			{
+				if (evaluatedTime <= 0)
+				{
+					if (loopParam->boolValue())
+					{
+						double offset = std::fmod(evaluatedTime, totalTime->doubleValue());
+						if (offset <= 0) offset += totalTime->doubleValue();
+						sequenceListeners.call(&SequenceListener::sequenceLooped, this);
+						prevTime = totalTime->floatValue();
+						setCurrentTime(offset, true, true);
+						clock.reset(frameDeadlineMillis, offset, currentFPS, currentSpeed);
+						lastFrame = 0;
+					}
+					else finishTrigger->trigger();
+				}
 			}
 		}
 
-
-		double millisPerCycle = 1000.0 / fps->floatValue();
-		double millisAfterProcess = Time::getMillisecondCounterHiRes();
-		double relAbsMillis = millisAfterProcess - millisAtSetTime;
-		double millisToWait = ceil(millisPerCycle - fmod(relAbsMillis, millisPerCycle));
-
-		if (millisToWait >= 0) wait(millisToWait);
+		const double millisToWait = clock.deadlineForFrame(lastFrame + 1)
+			- Time::getMillisecondCounterHiRes();
+		if (millisToWait > 0)
+			wait(jmax(1, static_cast<int>(std::floor(millisToWait))));
 	}
 }
 

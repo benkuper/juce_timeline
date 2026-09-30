@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 class SequenceLayerManager;
 class TimeCueManager;
 class TimeCue;
@@ -65,7 +67,7 @@ public:
 	double prevTime;
 	//double timeAtSetTime;
 	double millisAtSetTime;
-	double prevMillis;
+	std::uint64_t playbackClockRevision;
 	double targetTime;
 	float prevSpeed;
 
@@ -82,14 +84,14 @@ public:
 
 	virtual void clearItem() override;
 
-	void setCurrentTime(float time, bool forceOverPlaying = true, bool seekMode = false);
+	void setCurrentTime(double time, bool forceOverPlaying = true, bool seekMode = false);
 
 	void handleCueAction(TimeCue* cue, TimeCue* originCue = nullptr);
 
-	int getFrameForTime(float time, bool forceDirection = false, bool forcePrev = true);
-	double getTimeForFrame(float fame);
-	double getNextFrameTimeForTime(float time);
-	double getPrevFrameTimeForTime(float time);
+	int getFrameForTime(double time, bool forceDirection = false, bool forcePrev = true);
+	double getTimeForFrame(double frame);
+	double getNextFrameTimeForTime(double time);
+	double getPrevFrameTimeForTime(double time);
 
 	void setBeingEdited(bool value);
 
