@@ -26,39 +26,8 @@ VideoLayer::VideoLayer(Sequence* _sequence, var params) :
 
 	clipManager.addBaseManagerListener(this);
 
-	moviePlayer.reset(new VlcVideoPlayer());
-
-	// All VLC work happens on the message thread : this callback is invoked from
-	// the VLC event dispatch (marshalled to the message thread), so it's already there.
-	moviePlayer->onPlaybackStopped = [this]()
-	{
-		if (settingPlayState) return;
-
-		if (sequence != nullptr && sequence->isPlaying->boolValue() && enabled->boolValue())
-		{
-			// Video reached its end (or was paused) while the sequence is still playing.
-			// Only resync while the current position is still inside the clip, and never more
-			// often than every 300ms : otherwise a clip that ends while the sequence keeps
-			// playing would loop seek→play→end as fast as the message thread can run,
-			// freezing the whole interface.
-			if (currentClip != nullptr && !currentClip.wasObjectDeleted())
-			{
-				const float localTime = getLocalTime();
-
-				if (localTime < currentClip->clipDuration)
-				{
-					const juce::uint32 now = juce::Time::getMillisecondCounter();
-
-					if (now - lastResyncTimeMs > 300)
-					{
-						lastResyncTimeMs = now;
-						needsResync = true;
-						markPlaybackDirty();
-					}
-				}
-			}
-		}
-	};
+	moviePlayer.reset(createVideoPlayer());
+	moviePlayer->addListener(this);
 }
 
 VideoLayer::~VideoLayer()
@@ -76,7 +45,7 @@ void VideoLayer::clearItem()
 	if (moviePlayer != nullptr)
 	{
 		moviePlayer->stop();
-		moviePlayer->closeVideo();
+		moviePlayer->unload();
 	}
 
 	settingPlayState = false;
@@ -84,6 +53,11 @@ void VideoLayer::clearItem()
 	BaseItem::clearItem();
 	clipManager.clear();
 	SequenceLayer::clearItem();
+}
+
+VideoPlayerEngine* VideoLayer::createVideoPlayer()
+{
+	return new NullVideoPlayer();
 }
 
 VideoLayerClip* VideoLayer::createVideoClip()
@@ -112,25 +86,14 @@ void VideoLayer::applyVolumeToPlayer()
 {
 	if (moviePlayer == nullptr) return;
 
-	// Always called on the message thread. The change detection keeps the VLC
-	// call out of the per-position sync storm : the volume is only pushed to
-	// libVLC when it actually changed (layer slider, clip slider, clip switch).
+	// Always called on the message thread. The change detection keeps the
+	// engine call out of the per-position sync storm : the volume is only
+	// pushed when it actually changed (layer slider, clip slider, clip switch).
 	const float f = getVolumeFactor();
 	if (fabsf(f - lastAppliedVolume) < 0.0005f) return;
 
 	lastAppliedVolume = f;
-	moviePlayer->setAudioVolume(f);
-}
-
-void VideoLayer::applyRenderTransformToPlayer()
-{
-	if (moviePlayer == nullptr || currentClip == nullptr || currentClip.wasObjectDeleted()) return;
-
-	moviePlayer->setRenderTransform(currentClip->getRenderOpacity(),
-		currentClip->getRenderScaleX(),
-		currentClip->getRenderScaleY(),
-		currentClip->getRenderXPercent(),
-		currentClip->getRenderYPercent());
+	moviePlayer->setVolume(f);
 }
 
 void VideoLayer::setVolume(float value)
@@ -178,78 +141,128 @@ void VideoLayer::loadCurrentClip()
 
 	if (path.isEmpty())
 	{
-		moviePlayer->closeVideo();
+		if (moviePlayer->isFileLoaded()) moviePlayer->unload();
 		loadedClip = nullptr;
+		pendingLoadClip = nullptr;
 		return;
 	}
 
 	if (loadedClip == currentClip
-		&& moviePlayer->isVideoOpen()
-		&& moviePlayer->getCurrentVideoFile() == File(path)) return; //already loaded
+		&& moviePlayer->isFileLoaded()
+		&& moviePlayer->getFilePath() == path) return; //already loaded
 
-	if (lastLoadFailed && lastLoadFailedPath == path && loadedClip == currentClip && !moviePlayer->isVideoOpen()) return; //don't retry a failed load
+	if (pendingLoadClip == currentClip) return; //asynchronous load in flight
 
-	NLOG(niceName, "loadCurrentClip open due to file change path='" + path + "' loadedClipMatch=" + (loadedClip == currentClip ? "yes" : "no") + " videoOpen=" + (moviePlayer->isVideoOpen() ? "yes" : "no"));
+	if (lastLoadFailed && lastLoadFailedPath == path && loadedClip == currentClip && !moviePlayer->isFileLoaded()) return; //don't retry a failed load
 
-Result r = moviePlayer->load(File(path));
+	NLOG(niceName, "loadCurrentClip open due to file change path='" + path + "' loadedClipMatch=" + (loadedClip == currentClip ? "yes" : "no") + " videoLoaded=" + (moviePlayer->isFileLoaded() ? "yes" : "no"));
 
-	if (r.wasOk())
+	// The engine loads asynchronously : it returns true when it accepted the
+	// path and started loading. Completion (or failure) arrives by event ; the
+	// listener callbacks finalize the loadedClip / failure bookkeeping.
+	if (moviePlayer->getFilePath() != path && moviePlayer->isFileLoaded())
+		moviePlayer->unload();
+
+	if (!moviePlayer->load(path))
+		return;
+
+	pendingLoadClip = currentClip;
+}
+
+void VideoLayer::playerFileLoaded()
+{
+	// Asynchronous part of loadCurrentClip : the engine finished loading the
+	// file it was asked for, and getDuration() / getVideoWidth() etc are valid now.
+	if (pendingLoadClip == nullptr) return;
+	if (pendingLoadClip.wasObjectDeleted()) { pendingLoadClip = nullptr; return; }
+
+	VideoLayerClip* clip = pendingLoadClip;
+	pendingLoadClip = nullptr;
+
+	lastLoadFailed = false;
+	lastLoadFailedPath = "";
+	loadedClip = clip;
+
+	clip->clipDuration = moviePlayer->getDuration();
+
+	// Still images report no length : give them a usable default duration so
+	// the block is visible on the timeline and can be looped/held.
+	if (clip->clipDuration <= 0.01f && VideoFileHelpers::isStillImageFile(clip->filePath->stringValue()))
 	{
-		lastLoadFailed = false;
-		lastLoadFailedPath = "";
-
-		currentClip->clipDuration = moviePlayer->getVideoDuration();
-
-		// Still images report no length : give them a usable default duration so
-		// the block is visible on the timeline and can be looped/held.
-		if (currentClip->clipDuration <= 0.01f && VideoFileHelpers::isStillImageFile(path))
-		{
-			currentClip->clipDuration = 10.0f;
-		}
-
-		currentClip->clipLength->setValue((float) currentClip->clipDuration);
-
-		if (!currentClip->coreLength->isOverriden)
-		{
-			currentClip->coreLength->defaultValue = currentClip->clipLength->floatValue();
-			currentClip->coreLength->resetValue();
-		}
-
-		loadedClip = currentClip;
-
-		if (!moviePlayer->wasLastLoadReuse())
-		{
-			NLOG(niceName, "Loaded video '"
-				+ currentClip->filePath->stringValue()
-				+ "' duration=" + String(currentClip->clipDuration)
-				+ " clipLength=" + String(currentClip->clipLength->floatValue())
-				+ " coreLength=" + String(currentClip->coreLength->floatValue()));
-		}
-
-		if (clipManager.items.size() == 1
-			&& totalTimeExpandedForFile != path
-			&& currentClip->getTotalLength() > sequence->totalTime->doubleValue()
-			&& currentClip->getTotalLength() > 0)
-		{
-			totalTimeExpandedForFile = path;
-			currentClip->time->setValue(0);
-			sequence->totalTime->setUndoableValue(sequence->totalTime->doubleValue(), currentClip->getTotalLength());
-			NLOG(niceName, "Imported video file is longer than the sequence, expanding total time to match the video file length.");
-		}
+		clip->clipDuration = 10.0f;
 	}
-	else
+
+	clip->clipLength->setValue((float) clip->clipDuration);
+
+	if (!clip->coreLength->isOverriden)
 	{
-		String errorMessage = r.getErrorMessage();
+		clip->coreLength->defaultValue = clip->clipLength->floatValue();
+		clip->coreLength->resetValue();
+	}
 
-		// "Can't create window" is transient (no top-level peer yet) : retry on the next update instead of remembering the failure.
-		if (!errorMessage.containsIgnoreCase("window"))
-		{
-			lastLoadFailed = true;
-			lastLoadFailedPath = path;
-		}
+	NLOG(niceName, "Loaded video '"
+		+ clip->filePath->stringValue()
+		+ "' duration=" + String(clip->clipDuration)
+		+ " clipLength=" + String(clip->clipLength->floatValue())
+		+ " coreLength=" + String(clip->coreLength->floatValue()));
 
+	String path = clip->filePath->stringValue();
+
+	if (clipManager.items.size() == 1
+		&& totalTimeExpandedForFile != path
+		&& clip->getTotalLength() > sequence->totalTime->doubleValue()
+		&& clip->getTotalLength() > 0)
+	{
+		totalTimeExpandedForFile = path;
+		clip->time->setValue(0);
+		sequence->totalTime->setUndoableValue(sequence->totalTime->doubleValue(), clip->getTotalLength());
+		NLOG(niceName, "Imported video file is longer than the sequence, expanding total time to match the video file length.");
+	}
+}
+
+void VideoLayer::playerFileEnd()
+{
+	if (settingPlayState) return;
+
+	// A "file end" while a load was still pending means the load failed : the
+	// engine never reached the file-loaded state. Remember the failure so the
+	// sync does not hammer the player with retries of an unusable path.
+	if (pendingLoadClip != nullptr && !pendingLoadClip.wasObjectDeleted() && !moviePlayer->isFileLoaded())
+	{
+		String path = pendingLoadClip->filePath->stringValue();
+		pendingLoadClip = nullptr;
 		loadedClip = nullptr;
-		NLOG(niceName, "Could not load video file : " + path + " - " + errorMessage);
+		lastLoadFailed = true;
+		lastLoadFailedPath = path;
+		NLOG(niceName, "Could not load video file : " + path);
+		return;
+	}
+
+	pendingLoadClip = nullptr;
+
+	if (sequence != nullptr && sequence->isPlaying->boolValue() && enabled->boolValue())
+	{
+		// Video reached its end (or was paused) while the sequence is still playing.
+		// Only resync while the current position is still inside the clip, and never more
+		// often than every 300ms : otherwise a clip that ends while the sequence keeps
+		// playing would loop seek→play→end as fast as the message thread can run,
+		// freezing the whole interface.
+		if (currentClip != nullptr && !currentClip.wasObjectDeleted())
+		{
+			const float localTime = getLocalTime();
+
+			if (localTime < currentClip->clipDuration)
+			{
+				const juce::uint32 now = juce::Time::getMillisecondCounter();
+
+				if (now - lastResyncTimeMs > 300)
+				{
+					lastResyncTimeMs = now;
+					needsResync = true;
+					markPlaybackDirty();
+				}
+			}
+		}
 	}
 }
 
@@ -268,7 +281,7 @@ void VideoLayer::syncPlaybackState()
 	if (currentClip == nullptr || currentClip.wasObjectDeleted() || currentClip->filePath->stringValue().isEmpty())
 	{
 		logSyncExit("syncExit clip=" + String(currentClip != nullptr ? 1 : 0) + " path='" + (currentClip != nullptr ? currentClip->filePath->stringValue() : "") + "'");
-		if (moviePlayer->isVideoOpen()) moviePlayer->closeVideo();
+		if (moviePlayer->isFileLoaded()) moviePlayer->unload();
 		loadedClip = nullptr;
 		forceResyncOnPlay = false;
 		needsResync = false;
@@ -286,12 +299,11 @@ void VideoLayer::syncPlaybackState()
 
 	if (sequence == nullptr) return;
 
-	// Volume and render transform follow the CURRENT clip : apply them on every
-	// sync (even the "still playing the same clip" early-return below), otherwise
-	// adjusting the layer or clip volume while playing would do nothing. Both
-	// apply Volume changes live via internal change detection.
+	// Volume follows the CURRENT clip : apply it on every sync (even the
+	// "still playing the same clip" early-return below), otherwise adjusting the
+	// layer or clip volume while playing would do nothing. It applies Volume
+	// changes live via internal change detection.
 	applyVolumeToPlayer();
-	applyRenderTransformToPlayer();
 
 	if (sequence->isPlaying->boolValue())
 	{
@@ -301,7 +313,7 @@ void VideoLayer::syncPlaybackState()
 			{
 				stats.resyncs++;
 				needsResync = false;
-				moviePlayer->setPlayPosition(getLocalTime());
+				moviePlayer->setPosition(getLocalTime());
 				moviePlayer->play();
 			}
 
@@ -331,7 +343,7 @@ void VideoLayer::syncPlaybackState()
 		forceResyncOnPlay = false;
 		needsResync = false;
 		moviePlayer->setPlaySpeed(sequence->playSpeed->floatValue());
-		moviePlayer->setPlayPosition(getLocalTime());
+		moviePlayer->setPosition(getLocalTime());
 		moviePlayer->play();
 	}
 	else
@@ -340,7 +352,7 @@ void VideoLayer::syncPlaybackState()
 		const juce::int64 s0 = juce::Time::getHighResolutionTicks();
 		if (moviePlayer->isPlaying()) moviePlayer->stop();
 		const juce::int64 s1 = juce::Time::getHighResolutionTicks();
-		moviePlayer->setPlayPosition(getLocalTime());
+		moviePlayer->setPosition(getLocalTime());
 		const juce::int64 s2 = juce::Time::getHighResolutionTicks();
 		const juce::int64 costMs = (s2 - s0) / ticksPerMs;
 		stats.costUs += costMs;
@@ -531,8 +543,9 @@ void VideoLayer::sequencePlayStateChanged(Sequence*)
 
 	if (currentClip == nullptr || currentClip.wasObjectDeleted() || currentClip->filePath->stringValue().isEmpty())
 	{
-		if (moviePlayer->isVideoOpen()) moviePlayer->closeVideo();
+		if (moviePlayer->isFileLoaded()) moviePlayer->unload();
 		loadedClip = nullptr;
+		pendingLoadClip = nullptr;
 		return;
 	}
 
@@ -544,14 +557,14 @@ void VideoLayer::sequencePlayStateChanged(Sequence*)
 		{
 			moviePlayer->setPlaySpeed(sequence->playSpeed->floatValue());
 			applyVolumeToPlayer();
-			moviePlayer->setPlayPosition(getLocalTime());
+			moviePlayer->setPosition(getLocalTime());
 			moviePlayer->play();
 		}
 	}
 	else
 	{
 		if (moviePlayer->isPlaying()) moviePlayer->pause();
-		moviePlayer->setPlayPosition(getLocalTime());
+		moviePlayer->setPosition(getLocalTime());
 	}
 }
 

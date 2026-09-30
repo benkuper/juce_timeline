@@ -35,7 +35,6 @@
 #include "timeline/Sequence/Layer/layers/video/VideoLayerClip.cpp"
 #include "timeline/Sequence/Layer/layers/video/VideoLayerClipManager.cpp"
 #include "timeline/Sequence/Layer/layers/video/VideoLayer.cpp"
-#include "timeline/Sequence/Layer/layers/video/VlcVideoPlayer.cpp"
 
 #include "timeline/Sequence/Layer/layers/Trigger/TimeTrigger.cpp"
 #include "timeline/Sequence/Layer/layers/Trigger/TimeTriggerManager.cpp"

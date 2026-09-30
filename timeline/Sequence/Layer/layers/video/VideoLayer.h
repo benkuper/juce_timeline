@@ -9,12 +9,13 @@
 
 #pragma once
 
-#include "VlcVideoPlayer.h"
+#include "VideoPlayerEngine.h"
 
 class VideoLayer :
 	public SequenceLayer,
 	public VideoLayerClipManager::ManagerListener,
 	public VideoLayerClip::ClipListener,
+	public VideoPlayerEngine::Listener,
 	private juce::AsyncUpdater,
 	private juce::Timer
 {
@@ -24,10 +25,11 @@ public:
 
 	VideoLayerClipManager clipManager;
 
-	std::unique_ptr<VlcVideoPlayer> moviePlayer;
+	std::unique_ptr<VideoPlayerEngine> moviePlayer;
 
 	WeakReference<VideoLayerClip> currentClip;
 	WeakReference<VideoLayerClip> loadedClip;
+	WeakReference<VideoLayerClip> pendingLoadClip;
 
 	bool settingPlayState;
 
@@ -64,6 +66,10 @@ public:
 
 	virtual void clearItem() override;
 
+	// Factory : the host application overrides it (e.g. ChataigneVideoLayer) to
+	// provide a concrete engine. The base class returns a no-op NullVideoPlayer.
+	virtual VideoPlayerEngine* createVideoPlayer();
+
 	virtual VideoLayerClip* createVideoClip();
 	virtual void updateCurrentClip();   // bookkeeping only, safe to call from any thread
 	virtual void loadCurrentClip();     // message thread only
@@ -71,19 +77,10 @@ public:
 	void logSyncExit(const String& why);
 
 	void applyVolumeToPlayer();
-	void applyRenderTransformToPlayer();
 
 	float lastAppliedVolume = -1.0f;
 
 	void setSettingPlayState(bool value) { settingPlayState = value; }
-
-	void detachMoviePlayer()
-	{
-		if (moviePlayer != nullptr && moviePlayer->getParentComponent() != nullptr)
-		{
-			moviePlayer->getParentComponent()->removeChildComponent(moviePlayer.get());
-		}
-	}
 
 	// Marshals DirectShow work to the message thread, safe to call from any thread
 	void markPlaybackDirty() { triggerAsyncUpdate(); }
@@ -91,6 +88,10 @@ public:
 	virtual float getLocalTime();
 	virtual float getVolumeFactor();
 	virtual void setVolume(float value);
+
+	// VideoPlayerEngine::Listener : asynchronous load / playback events.
+	void playerFileLoaded() override;
+	void playerFileEnd() override;
 
 	void itemAdded(LayerBlock* clip) override;
 	void itemsAdded(Array<LayerBlock*> clips) override;
