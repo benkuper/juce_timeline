@@ -26,59 +26,10 @@ VideoLayer::VideoLayer(Sequence* _sequence, var params) :
 
 	clipManager.addBaseManagerListener(this);
 
-	moviePlayer.reset(new VlcVideoPlayer());
-	overlapPlayer.reset(new VlcVideoPlayer());
-
-	moviePlayer->onFrameDecoded = [this](const Image& frame)
-	{
-		if (currentClip != nullptr && !currentClip.wasObjectDeleted())
-			currentClip->cacheThumbnail(getLocalTimeForClip(currentClip), frame);
-	};
-	overlapPlayer->onFrameDecoded = [this](const Image& frame)
-	{
-		if (overlapClip != nullptr && !overlapClip.wasObjectDeleted())
-			overlapClip->cacheThumbnail(getLocalTimeForClip(overlapClip), frame);
-	};
-
-	// All VLC work happens on the message thread : this callback is invoked from
-	// the VLC event dispatch (marshalled to the message thread), so it's already there.
-	moviePlayer->onPlaybackStopped = [this]()
-	{
-		if (settingPlayState) return;
-
-		if (sequence != nullptr && sequence->isPlaying->boolValue() && enabled->boolValue())
-		{
-			// Video reached its end (or was paused) while the sequence is still playing.
-			// Only resync while the current position is still inside the clip, and never more
-			// often than every 300ms : otherwise a clip that ends while the sequence keeps
-			// playing would loop seek→play→end as fast as the message thread can run,
-			// freezing the whole interface.
-			if (currentClip != nullptr && !currentClip.wasObjectDeleted())
-			{
-				const float localTime = getLocalTime();
-
-				if (localTime < currentClip->clipDuration)
-				{
-					const juce::uint32 now = juce::Time::getMillisecondCounter();
-
-					if (now - lastResyncTimeMs > 300)
-					{
-						lastResyncTimeMs = now;
-						needsResync = true;
-						markPlaybackDirty();
-					}
-				}
-			}
-		}
-	};
-	overlapPlayer->onPlaybackStopped = [this]()
-	{
-		if (!settingPlayState && sequence != nullptr && sequence->isPlaying->boolValue())
-		{
-			needsResync = true;
-			markPlaybackDirty();
-		}
-	};
+	moviePlayer.reset(createVideoPlayer());
+	overlapPlayer.reset(createVideoPlayer());
+	moviePlayer->addListener(this);
+	overlapPlayer->addListener(this);
 }
 
 VideoLayer::~VideoLayer()
@@ -96,19 +47,28 @@ void VideoLayer::clearItem()
 	if (moviePlayer != nullptr)
 	{
 		moviePlayer->stop();
-		moviePlayer->closeVideo();
+		moviePlayer->unload();
 	}
 	if (overlapPlayer != nullptr)
 	{
 		overlapPlayer->stop();
-		overlapPlayer->closeVideo();
+		overlapPlayer->unload();
 	}
+	loadedClip = nullptr;
+	loadedOverlapClip = nullptr;
+	pendingLoadClip = nullptr;
+	pendingOverlapLoadClip = nullptr;
 
 	settingPlayState = false;
 
 	BaseItem::clearItem();
 	clipManager.clear();
 	SequenceLayer::clearItem();
+}
+
+VideoPlayerEngine* VideoLayer::createVideoPlayer()
+{
+	return new NullVideoPlayer();
 }
 
 VideoLayerClip* VideoLayer::createVideoClip()
@@ -183,14 +143,12 @@ void VideoLayer::applyVolumeToPlayer()
 {
 	if (moviePlayer == nullptr) return;
 
-	// Always called on the message thread. The change detection keeps the VLC
-	// call out of the per-position sync storm : the volume is only pushed to
-	// libVLC when it actually changed (layer slider, clip slider, clip switch).
+	// Change detection keeps engine calls out of the per-position sync storm.
 	const float f = getVolumeFactor();
 	if (fabsf(f - lastAppliedVolume) >= 0.0005f)
 	{
 		lastAppliedVolume = f;
-		moviePlayer->setAudioVolume(f);
+		moviePlayer->setVolume(f);
 	}
 
 	if (overlapPlayer != nullptr && overlapClip != nullptr && !overlapClip.wasObjectDeleted())
@@ -199,26 +157,8 @@ void VideoLayer::applyVolumeToPlayer()
 		if (fabsf(overlapVolume - lastAppliedOverlapVolume) >= 0.0005f)
 		{
 			lastAppliedOverlapVolume = overlapVolume;
-			overlapPlayer->setAudioVolume(overlapVolume);
+			overlapPlayer->setVolume(overlapVolume);
 		}
-	}
-}
-
-void VideoLayer::applyRenderTransformToPlayer()
-{
-	if (moviePlayer == nullptr || currentClip == nullptr || currentClip.wasObjectDeleted()) return;
-
-	moviePlayer->setRenderTransform(currentClip->getRenderOpacity() * getClipFadeFactor(currentClip),
-		currentClip->getRenderScaleX(),
-		currentClip->getRenderScaleY(),
-		currentClip->getRenderXPercent(),
-		currentClip->getRenderYPercent());
-
-	if (overlapPlayer != nullptr && overlapClip != nullptr && !overlapClip.wasObjectDeleted())
-	{
-		overlapPlayer->setRenderTransform(overlapClip->getRenderOpacity() * getClipFadeFactor(overlapClip),
-			overlapClip->getRenderScaleX(), overlapClip->getRenderScaleY(),
-			overlapClip->getRenderXPercent(), overlapClip->getRenderYPercent());
 	}
 }
 
@@ -258,78 +198,96 @@ void VideoLayer::loadCurrentClip()
 
 	if (path.isEmpty())
 	{
-		moviePlayer->closeVideo();
+		moviePlayer->unload();
 		loadedClip = nullptr;
+		pendingLoadClip = nullptr;
 		return;
 	}
 
 	if (loadedClip == currentClip
-		&& moviePlayer->isVideoOpen()
-		&& moviePlayer->getCurrentVideoFile() == File(path)) return; //already loaded
+		&& moviePlayer->isFileLoaded()
+		&& moviePlayer->getFilePath() == path) return;
 
-	if (lastLoadFailed && lastLoadFailedPath == path && loadedClip == currentClip && !moviePlayer->isVideoOpen()) return; //don't retry a failed load
+	if (pendingLoadClip == currentClip && moviePlayer->getFilePath() == path) return;
+	if (lastLoadFailed && lastLoadFailedPath == path) return;
 
-	NLOG(niceName, "loadCurrentClip open due to file change path='" + path + "' loadedClipMatch=" + (loadedClip == currentClip ? "yes" : "no") + " videoOpen=" + (moviePlayer->isVideoOpen() ? "yes" : "no"));
-
-Result r = moviePlayer->load(File(path));
-
-	if (r.wasOk())
+	if (moviePlayer->isFileLoaded()) moviePlayer->unload();
+	loadedClip = nullptr;
+	pendingLoadClip = currentClip;
+	if (!moviePlayer->load(path))
 	{
-		lastLoadFailed = false;
-		lastLoadFailedPath = "";
-
-		currentClip->clipDuration = moviePlayer->getVideoDuration();
-
-		// Still images report no length : give them a usable default duration so
-		// the block is visible on the timeline and can be looped/held.
-		if (currentClip->clipDuration <= 0.01f && VideoFileHelpers::isStillImageFile(path))
-		{
-			currentClip->clipDuration = 10.0f;
-		}
-
-		currentClip->clipLength->setValue((float) currentClip->clipDuration);
-
-		if (!currentClip->coreLength->isOverriden)
-		{
-			currentClip->coreLength->defaultValue = currentClip->clipLength->floatValue();
-			currentClip->coreLength->resetValue();
-		}
-
-		loadedClip = currentClip;
-
-		if (!moviePlayer->wasLastLoadReuse())
-		{
-			NLOG(niceName, "Loaded video '"
-				+ currentClip->filePath->stringValue()
-				+ "' duration=" + String(currentClip->clipDuration)
-				+ " clipLength=" + String(currentClip->clipLength->floatValue())
-				+ " coreLength=" + String(currentClip->coreLength->floatValue()));
-		}
-
-		if (clipManager.items.size() == 1
-			&& totalTimeExpandedForFile != path
-			&& currentClip->getTotalLength() > sequence->totalTime->doubleValue()
-			&& currentClip->getTotalLength() > 0)
-		{
-			totalTimeExpandedForFile = path;
-			currentClip->time->setValue(0);
-			sequence->totalTime->setUndoableValue(sequence->totalTime->doubleValue(), currentClip->getTotalLength());
-			NLOG(niceName, "Imported video file is longer than the sequence, expanding total time to match the video file length.");
-		}
+		pendingLoadClip = nullptr;
+		lastLoadFailed = true;
+		lastLoadFailedPath = path;
+		NLOG(niceName, "Could not load video file : " + path);
 	}
-	else
-	{
-		String errorMessage = r.getErrorMessage();
+}
 
-		// "Can't create window" is transient (no top-level peer yet) : retry on the next update instead of remembering the failure.
-		if (!errorMessage.containsIgnoreCase("window"))
+void VideoLayer::playerFileLoaded(VideoPlayerEngine* player)
+{
+	const bool isOverlap = player == overlapPlayer.get();
+	WeakReference<VideoLayerClip>& pending = isOverlap ? pendingOverlapLoadClip : pendingLoadClip;
+	WeakReference<VideoLayerClip>& loaded = isOverlap ? loadedOverlapClip : loadedClip;
+	if (pending == nullptr || pending.wasObjectDeleted()) { pending = nullptr; return; }
+
+	VideoLayerClip* clip = pending.get();
+	pending = nullptr;
+	if (player->getFilePath() != clip->filePath->stringValue()) return;
+	loaded = clip;
+	lastLoadFailed = false;
+	lastLoadFailedPath.clear();
+	clip->clipDuration = player->getDuration();
+	if (clip->clipDuration <= 0.01f && VideoFileHelpers::isStillImageFile(clip->filePath->stringValue()))
+		clip->clipDuration = 10.0f;
+	clip->clipLength->setValue((float) clip->clipDuration);
+	if (!clip->coreLength->isOverriden)
+	{
+		clip->coreLength->defaultValue = clip->clipLength->floatValue();
+		clip->coreLength->resetValue();
+	}
+	if (!isOverlap && clipManager.items.size() == 1
+		&& totalTimeExpandedForFile != clip->filePath->stringValue()
+		&& clip->getTotalLength() > sequence->totalTime->doubleValue()
+		&& clip->getTotalLength() > 0)
+	{
+		totalTimeExpandedForFile = clip->filePath->stringValue();
+		clip->time->setValue(0);
+		sequence->totalTime->setUndoableValue(sequence->totalTime->doubleValue(), clip->getTotalLength());
+	}
+	markPlaybackDirty();
+}
+
+void VideoLayer::playerFileEnd(VideoPlayerEngine* player)
+{
+	if (settingPlayState) return;
+	const bool isOverlap = player == overlapPlayer.get();
+	WeakReference<VideoLayerClip>& pending = isOverlap ? pendingOverlapLoadClip : pendingLoadClip;
+	WeakReference<VideoLayerClip>& loaded = isOverlap ? loadedOverlapClip : loadedClip;
+	if (pending != nullptr && !player->isFileLoaded())
+	{
+		if (!pending.wasObjectDeleted())
 		{
 			lastLoadFailed = true;
-			lastLoadFailedPath = path;
+			lastLoadFailedPath = pending->filePath->stringValue();
+			NLOG(niceName, "Could not load video file : " + lastLoadFailedPath);
 		}
-
-		loadedClip = nullptr;
-		NLOG(niceName, "Could not load video file : " + path + " - " + errorMessage);
+		pending = nullptr;
+		loaded = nullptr;
+		return;
+	}
+	if (sequence != nullptr && sequence->isPlaying->boolValue() && enabled->boolValue())
+	{
+		VideoLayerClip* clip = isOverlap ? overlapClip.get() : currentClip.get();
+		if (clip != nullptr && getLocalTimeForClip(clip) < clip->clipDuration)
+		{
+			const juce::uint32 now = juce::Time::getMillisecondCounter();
+			if (now - lastResyncTimeMs > 300)
+			{
+				lastResyncTimeMs = now;
+				needsResync = true;
+				markPlaybackDirty();
+			}
+		}
 	}
 }
 
@@ -347,25 +305,18 @@ void VideoLayer::syncPlaybackState()
 	{
 		std::swap(moviePlayer, overlapPlayer);
 		std::swap(loadedClip, loadedOverlapClip);
+		std::swap(pendingLoadClip, pendingOverlapLoadClip);
 		std::swap(lastAppliedVolume, lastAppliedOverlapVolume);
-		moviePlayer->onFrameDecoded = [this](const Image& frame)
-		{
-			if (currentClip != nullptr && !currentClip.wasObjectDeleted())
-				currentClip->cacheThumbnail(getLocalTimeForClip(currentClip), frame);
-		};
-		overlapPlayer->onFrameDecoded = [this](const Image& frame)
-		{
-			if (overlapClip != nullptr && !overlapClip.wasObjectDeleted())
-				overlapClip->cacheThumbnail(getLocalTimeForClip(overlapClip), frame);
-		};
 	}
 
 	if (currentClip == nullptr || currentClip.wasObjectDeleted() || currentClip->filePath->stringValue().isEmpty())
 	{
-		if (moviePlayer->isVideoOpen()) moviePlayer->closeVideo();
-		if (overlapPlayer->isVideoOpen()) overlapPlayer->closeVideo();
+		moviePlayer->unload();
+		overlapPlayer->unload();
 		loadedClip = nullptr;
 		loadedOverlapClip = nullptr;
+		pendingLoadClip = nullptr;
+		pendingOverlapLoadClip = nullptr;
 		forceResyncOnPlay = false;
 		needsResync = false;
 		return;
@@ -383,17 +334,17 @@ void VideoLayer::syncPlaybackState()
 		loadOverlapClip();
 	else
 	{
-		if (overlapPlayer->isVideoOpen()) overlapPlayer->closeVideo();
+		if (overlapPlayer->isFileLoaded() || pendingOverlapLoadClip != nullptr) overlapPlayer->unload();
 		loadedOverlapClip = nullptr;
+		pendingOverlapLoadClip = nullptr;
 		lastAppliedOverlapVolume = -1.0f;
 	}
 
 	applyVolumeToPlayer();
-	applyRenderTransformToPlayer();
 
-	auto syncSlot = [this](VlcVideoPlayer* player, VideoLayerClip* clip, bool forceSeek)
+	auto syncSlot = [this](VideoPlayerEngine* player, VideoLayerClip* clip, bool forceSeek)
 	{
-		if (player == nullptr || clip == nullptr || !player->isVideoOpen()) return;
+		if (player == nullptr || clip == nullptr || !player->isFileLoaded()) return;
 		const float localTime = getLocalTimeForClip(clip);
 
 		if (sequence->isPlaying->boolValue())
@@ -401,14 +352,14 @@ void VideoLayer::syncPlaybackState()
 			player->setPlaySpeed(sequence->playSpeed->floatValue());
 			if (!player->isPlaying() || forceSeek)
 			{
-				player->setPlayPosition(localTime);
+				player->setPosition(localTime);
 				player->play();
 			}
 		}
 		else
 		{
 			if (player->isPlaying()) player->pause();
-			player->setPlayPosition(localTime);
+			player->setPosition(localTime);
 		}
 	};
 
@@ -532,9 +483,7 @@ void VideoLayer::clipParamChanged(VideoLayerClip* clip)
 {
 	if (clip == nullptr || (clip != currentClip && clip != overlapClip)) return;
 
-	// Volume / opacity / transform / blend mode were edited : the throttled sync
-	// picks the new volume up immediately (even while playing) and re-pushes the
-	// render transform to the preview player.
+	// The throttled sync picks up volume and fade edits while playing.
 	markPlaybackDirty();
 }
 
@@ -595,15 +544,16 @@ void VideoLayer::sequencePlayStateChanged(Sequence*)
 	updateCurrentClip();
 	markPlaybackDirty();
 
-	// Instant transport response : drive libVLC directly from this message-thread
+	// Instant transport response : drive the player from this message-thread
 	// callback so pause and play hit the player immediately, instead of waiting
 	// for the throttled async drag.
 	if (moviePlayer == nullptr) return;
 
 	if (currentClip == nullptr || currentClip.wasObjectDeleted() || currentClip->filePath->stringValue().isEmpty())
 	{
-		if (moviePlayer->isVideoOpen()) moviePlayer->closeVideo();
+		moviePlayer->unload();
 		loadedClip = nullptr;
+		pendingLoadClip = nullptr;
 		return;
 	}
 
@@ -615,14 +565,17 @@ void VideoLayer::sequencePlayStateChanged(Sequence*)
 		{
 			moviePlayer->setPlaySpeed(sequence->playSpeed->floatValue());
 			applyVolumeToPlayer();
-			moviePlayer->setPlayPosition(getLocalTime());
-			moviePlayer->play();
+			if (moviePlayer->isFileLoaded())
+			{
+				moviePlayer->setPosition(getLocalTime());
+				moviePlayer->play();
+			}
 		}
 	}
 	else
 	{
 		if (moviePlayer->isPlaying()) moviePlayer->pause();
-		moviePlayer->setPlayPosition(getLocalTime());
+		if (moviePlayer->isFileLoaded()) moviePlayer->setPosition(getLocalTime());
 	}
 }
 
@@ -646,34 +599,24 @@ void VideoLayer::loadOverlapClip()
 	const String path = overlapClip->filePath->stringValue();
 	if (path.isEmpty())
 	{
-		overlapPlayer->closeVideo();
+		overlapPlayer->unload();
 		loadedOverlapClip = nullptr;
+		pendingOverlapLoadClip = nullptr;
 		return;
 	}
 
-	if (loadedOverlapClip == overlapClip && overlapPlayer->isVideoOpen()
-		&& overlapPlayer->getCurrentVideoFile() == File(path)) return;
+	if (loadedOverlapClip == overlapClip && overlapPlayer->isFileLoaded()
+		&& overlapPlayer->getFilePath() == path) return;
+	if (pendingOverlapLoadClip == overlapClip && overlapPlayer->getFilePath() == path) return;
 
-	Result r = overlapPlayer->load(File(path));
-	if (r.failed())
+	if (overlapPlayer->isFileLoaded()) overlapPlayer->unload();
+	loadedOverlapClip = nullptr;
+	pendingOverlapLoadClip = overlapClip;
+	if (!overlapPlayer->load(path))
 	{
-		loadedOverlapClip = nullptr;
-		NLOG(niceName, "Could not load overlapping video file : " + path + " - " + r.getErrorMessage());
-		return;
+		pendingOverlapLoadClip = nullptr;
+		NLOG(niceName, "Could not load overlapping video file : " + path);
 	}
-
-	overlapClip->clipDuration = overlapPlayer->getVideoDuration();
-	if (overlapClip->clipDuration <= 0.01f && VideoFileHelpers::isStillImageFile(path))
-		overlapClip->clipDuration = 10.0f;
-
-	overlapClip->clipLength->setValue((float) overlapClip->clipDuration);
-	if (!overlapClip->coreLength->isOverriden)
-	{
-		overlapClip->coreLength->defaultValue = overlapClip->clipLength->floatValue();
-		overlapClip->coreLength->resetValue();
-	}
-
-	loadedOverlapClip = overlapClip;
 }
 
 bool VideoLayer::paste()

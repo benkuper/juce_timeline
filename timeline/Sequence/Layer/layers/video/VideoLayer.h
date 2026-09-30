@@ -9,12 +9,13 @@
 
 #pragma once
 
-#include "VlcVideoPlayer.h"
+#include "VideoPlayerEngine.h"
 
 class VideoLayer :
 	public SequenceLayer,
 	public VideoLayerClipManager::ManagerListener,
 	public VideoLayerClip::ClipListener,
+	public VideoPlayerEngine::Listener,
 	private juce::AsyncUpdater,
 	private juce::Timer
 {
@@ -24,13 +25,15 @@ public:
 
 	VideoLayerClipManager clipManager;
 
-	std::unique_ptr<VlcVideoPlayer> moviePlayer;
-	std::unique_ptr<VlcVideoPlayer> overlapPlayer;
+	std::unique_ptr<VideoPlayerEngine> moviePlayer;
+	std::unique_ptr<VideoPlayerEngine> overlapPlayer;
 
 	WeakReference<VideoLayerClip> currentClip;
 	WeakReference<VideoLayerClip> loadedClip;
+	WeakReference<VideoLayerClip> pendingLoadClip;
 	WeakReference<VideoLayerClip> overlapClip;
 	WeakReference<VideoLayerClip> loadedOverlapClip;
+	WeakReference<VideoLayerClip> pendingOverlapLoadClip;
 
 	bool settingPlayState;
 
@@ -66,6 +69,7 @@ public:
 	FloatParameter* volume;
 
 	virtual void clearItem() override;
+	virtual VideoPlayerEngine* createVideoPlayer();
 
 	virtual VideoLayerClip* createVideoClip();
 	virtual void updateCurrentClip();   // bookkeeping only, safe to call from any thread
@@ -75,22 +79,13 @@ public:
 	void logSyncExit(const String& why);
 
 	void applyVolumeToPlayer();
-	void applyRenderTransformToPlayer();
 
 	float lastAppliedVolume = -1.0f;
 	float lastAppliedOverlapVolume = -1.0f;
 
 	void setSettingPlayState(bool value) { settingPlayState = value; }
 
-	void detachMoviePlayer()
-	{
-		if (moviePlayer != nullptr && moviePlayer->getParentComponent() != nullptr)
-		{
-			moviePlayer->getParentComponent()->removeChildComponent(moviePlayer.get());
-		}
-	}
-
-	// Marshals DirectShow work to the message thread, safe to call from any thread
+	// Marshals playback work to the message thread, safe to call from any thread
 	void markPlaybackDirty() { triggerAsyncUpdate(); }
 
 	virtual float getLocalTime();
@@ -98,6 +93,8 @@ public:
 	float getClipFadeFactor(VideoLayerClip* clip) const;
 	virtual float getVolumeFactor();
 	virtual void setVolume(float value);
+	void playerFileLoaded(VideoPlayerEngine* player) override;
+	void playerFileEnd(VideoPlayerEngine* player) override;
 	virtual bool paste() override;
 
 	void itemAdded(LayerBlock* clip) override;

@@ -94,8 +94,8 @@ using namespace juce;
 
 #include "timeline/Sequence/Layer/layers/video/VideoLayerClip.h"
 #include "timeline/Sequence/Layer/layers/video/VideoLayerClipManager.h"
+#include "timeline/Sequence/Layer/layers/video/VideoPlayerEngine.h"
 #include "timeline/Sequence/Layer/layers/video/VideoLayer.h"
-#include "timeline/Sequence/Layer/layers/video/VlcVideoPlayer.h"
 
 
 #include "timeline/Sequence/Layer/layers/Trigger/TimeTrigger.h"
