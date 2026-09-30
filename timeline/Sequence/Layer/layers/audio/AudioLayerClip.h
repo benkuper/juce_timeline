@@ -45,6 +45,7 @@ public:
 	int numChannels;
 
 	bool isLoading;
+	bool resizeSequenceOnLoad = true;
 
 	void start();
 	void stop();

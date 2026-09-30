@@ -48,9 +48,9 @@ void SequenceLayerManager::createAudioLayerForFile(File f)
 		{
 			AudioLayer* layer = (AudioLayer*)factory.create(d);
 			AudioLayerClip* clip = new AudioLayerClip();
-			clip->filePath->setValue(f.getFullPathName());
 			layer->clipManager.addItem(clip, false, false);
 			addItem(layer, true, true);
+			clip->filePath->setValue(f.getFullPathName());
 			return;
 		}
 	}

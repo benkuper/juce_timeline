@@ -82,6 +82,7 @@ public:
 	virtual void clearItem() override;
 
 	void setAudioProcessorGraph(AudioProcessorGraph* graph, AudioProcessorGraph::NodeID graphOutputID = AudioProcessorGraph::NodeID(2));
+	void refreshOutputChannels();
 	virtual AudioLayerProcessor* createAudioLayerProcessor();
 
 	virtual int getNodeGraphIDIncrement() { return graphIDIncrement++; }

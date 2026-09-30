@@ -10,6 +10,10 @@
 
 #pragma once
 
+#include <memory>
+
+struct WaveformThumbnail;
+
 class AudioLayerClipUI :
 	public LayerBlockUI,
 	public AudioLayerClip::AsyncListener,
@@ -19,8 +23,7 @@ public:
 	AudioLayerClipUI(AudioLayerClip * clip);
 	~AudioLayerClipUI();
 
-	AudioThumbnailCache thumbnailCache;
-	AudioThumbnail thumbnail;
+	std::shared_ptr<WaveformThumbnail> thumbnail;
 	AudioLayerClip * clip;
 
 	std::unique_ptr<AutomationUI> automationUI;
@@ -32,6 +35,7 @@ public:
 	void mouseDown(const MouseEvent &e) override;
 
 	virtual void setupThumbnail();
+	void clearThumbnail();
 
 	void setTargetAutomation(ParameterAutomation* a);
 

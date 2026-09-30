@@ -134,6 +134,35 @@ void AudioLayer::setAudioProcessorGraph(AudioProcessorGraph* graph, AudioProcess
 
 }
 
+void AudioLayer::refreshOutputChannels()
+{
+	if (currentGraph == nullptr) return;
+
+	// Rebuild the inspector channels after a device layout change, preserving
+	// the selections already made for the channels that still exist.
+	Array<bool> previousChannels, previousMetronome;
+	for (auto* channel : channelsCC.controllables)
+		previousChannels.add(static_cast<BoolParameter*>(channel)->boolValue());
+	for (auto* channel : metronomeCC.controllables)
+		previousMetronome.add(static_cast<BoolParameter*>(channel)->boolValue());
+	settingAudioGraph = true;
+	channelsCC.clear();
+	metronomeCC.clear();
+
+	const int numChannels = currentGraph->getMainBusNumOutputChannels();
+	const AudioChannelSet channelSet = currentGraph->getChannelLayoutOfBus(false, 0);
+	for (int i = 0; i < numChannels; ++i)
+	{
+		const String name = "Channel " + String(i + 1) + " : " + AudioChannelSet::getChannelTypeName(channelSet.getTypeOfChannel(i));
+		channelsCC.addBoolParameter(name, "If enabled, sends audio from this layer to this channel",
+			i < previousChannels.size() ? previousChannels[i] : i < 2);
+		metronomeCC.addBoolParameter(name, "If enabled, sends the metronome to this channel",
+			i < previousMetronome.size() ? previousMetronome[i] : i < 2);
+	}
+	settingAudioGraph = false;
+	updateSelectedOutChannels();
+}
+
 AudioLayerProcessor* AudioLayer::createAudioLayerProcessor()
 {
 	return new AudioLayerProcessor(this);
@@ -227,12 +256,43 @@ void AudioLayer::itemsRemoved(Array<LayerBlock*> clips)
 void AudioLayer::clipSourceLoaded(AudioLayerClip* clip)
 {
 	if (isCurrentlyLoadingData || Engine::mainEngine->isLoadingFile) return;
-	if (clipManager.items.size() == 1 && clip->getTotalLength() > sequence->totalTime->doubleValue())
+	if (!clip->resizeSequenceOnLoad)
 	{
-		clip->time->setValue(0);
-		sequence->totalTime->setUndoableValue(sequence->totalTime->doubleValue(), clip->getTotalLength());
-		NLOG(niceName, "Imported audio file is longer than the sequence, expanding total time to match the audio file length.");
+		clip->resizeSequenceOnLoad = true;
+		return;
 	}
+	if (clip->clipDuration <= 0) return;
+
+	// Keep the end of existing content, including other clips, keys and cues.
+	// Ignore the importing clip's previous length when its file is replaced.
+	double contentEnd = sequence->minSequenceTime;
+	for (auto* layer : sequence->layerManager->items)
+	{
+		if (layer == this)
+		{
+			for (auto* other : clipManager.items)
+				if (other != clip) contentEnd = jmax(contentEnd, (double) other->getEndTime());
+		}
+		else
+		{
+			Array<float> times;
+			layer->getSnapTimes(&times);
+			for (float time : times) contentEnd = jmax(contentEnd, (double) time);
+
+			// Video layers do not expose their clip edges as snap times.
+			if (auto* video = dynamic_cast<VideoLayer*>(layer))
+				for (auto* videoClip : video->clipManager.items)
+					contentEnd = jmax(contentEnd, (double) videoClip->getEndTime());
+		}
+	}
+
+	Array<float> cueTimes;
+	sequence->cueManager->getSnapTimes(&cueTimes);
+	for (float time : cueTimes) contentEnd = jmax(contentEnd, (double) time);
+
+	const double length = jmax(contentEnd, (double) clip->getEndTime());
+	if (std::abs(length - sequence->totalTime->doubleValue()) > 0.0001)
+		sequence->totalTime->setUndoableValue(sequence->totalTime->doubleValue(), length);
 }
 
 void AudioLayer::updateSelectedOutChannels()

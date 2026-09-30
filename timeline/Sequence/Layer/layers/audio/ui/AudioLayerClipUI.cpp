@@ -10,10 +10,155 @@
 
 #include "JuceHeader.h"
 
+#include <algorithm>
+#include <memory>
+#include <vector>
+
+// Preview data is shared across timeline UIs, so closing a track does not stop a
+// scan. Finished previews are also saved outside the project for the next launch.
+namespace
+{
+constexpr int waveformSamplesPerPoint = 1024;
+constexpr size_t maxLiveWaveforms = 32;
+constexpr int maxSavedWaveforms = 256;
+
+class WaveformFileSource : public FileInputSource
+{
+public:
+    explicit WaveformFileSource(const File& file) : FileInputSource(file, true), sourceFile(file) {}
+
+    int64 hashCode() const override
+    {
+        return FileInputSource::hashCode() ^ (static_cast<int64>(static_cast<uint64>(sourceFile.getSize()) * 0x5deece66dULL));
+    }
+
+private:
+    File sourceFile;
+};
+
+class WaveformThumbnailCache : public AudioThumbnailCache
+{
+public:
+    WaveformThumbnailCache() : AudioThumbnailCache(maxSavedWaveforms),
+        directory(File::getSpecialLocation(File::userApplicationDataDirectory)
+            .getChildFile("Chataigne").getChildFile("Waveforms")) {}
+
+protected:
+    bool loadNewThumb(AudioThumbnailBase& thumb, int64 hash) override
+    {
+        const File file = fileFor(hash);
+        if (auto stream = std::unique_ptr<FileInputStream>(file.createInputStream()))
+        {
+            if (thumb.loadFrom(*stream) && thumb.isFullyLoaded() && thumb.getTotalLength() > 0)
+                return true;
+            file.deleteFile();
+        }
+        return false;
+    }
+
+    void saveNewlyFinishedThumbnail(const AudioThumbnailBase& thumb, int64 hash) override
+    {
+        if (!thumb.isFullyLoaded() || thumb.getTotalLength() <= 0) return;
+        if (directory.createDirectory().failed()) return;
+
+        TemporaryFile temporary(fileFor(hash));
+        bool written = false;
+        if (auto stream = std::unique_ptr<FileOutputStream>(temporary.getFile().createOutputStream()))
+        {
+            thumb.saveTo(*stream);
+            stream->flush();
+            written = stream->getStatus().wasOk();
+        }
+        if (!written || !temporary.overwriteTargetFileWithTemporary()) return;
+
+        Array<File> files;
+        directory.findChildFiles(files, File::findFiles, false, "*.thumb");
+        if (files.size() <= maxSavedWaveforms) return;
+        std::sort(files.begin(), files.end(), [](const File& a, const File& b)
+        {
+            return a.getLastModificationTime() < b.getLastModificationTime();
+        });
+        for (int i = 0; i < files.size() - maxSavedWaveforms; ++i)
+            files[i].deleteFile();
+    }
+
+private:
+    File fileFor(int64 hash) const
+    {
+        return directory.getChildFile("v1-1024-" + String::toHexString(hash) + ".thumb");
+    }
+
+    File directory;
+};
+}
+
+struct WaveformThumbnail
+{
+    WaveformThumbnail(AudioFormatManager& formats, AudioThumbnailCache& cache, const File& sourceFile) :
+        file(sourceFile), thumbnail(waveformSamplesPerPoint, formats, cache)
+    {
+        thumbnail.setSource(new WaveformFileSource(file));
+    }
+
+    File file;
+    AudioThumbnail thumbnail;
+};
+
+namespace
+{
+class WaveformThumbnailStore
+{
+public:
+    WaveformThumbnailStore()
+    {
+        formats.registerBasicFormats();
+    }
+
+    std::shared_ptr<WaveformThumbnail> get(const File& file)
+    {
+        if (!file.existsAsFile()) return {};
+
+        const int64 hash = WaveformFileSource(file).hashCode();
+        for (auto it = entries.begin(); it != entries.end(); ++it)
+        {
+            if (it->first == hash && it->second->file == file)
+            {
+                auto result = it->second;
+                entries.erase(it);
+                entries.emplace_back(hash, result);
+                return result;
+            }
+        }
+
+        auto result = std::make_shared<WaveformThumbnail>(formats, cache, file);
+        entries.emplace_back(hash, result);
+        while (entries.size() > maxLiveWaveforms)
+        {
+            auto unused = std::find_if(entries.begin(), entries.end(), [](const auto& entry)
+            {
+                return entry.second.use_count() == 1;
+            });
+            if (unused == entries.end()) break;
+            entries.erase(unused);
+        }
+        return result;
+    }
+
+private:
+    AudioFormatManager formats;
+    WaveformThumbnailCache cache;
+    std::vector<std::pair<int64, std::shared_ptr<WaveformThumbnail>>> entries;
+};
+
+WaveformThumbnailStore& waveformStore()
+{
+    static WaveformThumbnailStore store;
+    return store;
+}
+}
+
 AudioLayerClipUI::AudioLayerClipUI(AudioLayerClip* _clip) :
 	LayerBlockUI(_clip),
-	thumbnailCache(100000),
-	thumbnail(50, _clip->formatManager, thumbnailCache),
 	clip(_clip)
 {
 	dragAndDropEnabled = false;
@@ -21,7 +166,6 @@ AudioLayerClipUI::AudioLayerClipUI(AudioLayerClip* _clip) :
 
 	clip->addAsyncClipListener(this);
 
-	thumbnail.addChangeListener(this);
 
 #if JUCE_WINDOWS
 	if (clip->filePath->stringValue().startsWithChar('/')) return;
@@ -31,6 +175,7 @@ AudioLayerClipUI::AudioLayerClipUI(AudioLayerClip* _clip) :
 
 AudioLayerClipUI::~AudioLayerClipUI()
 {
+	clearThumbnail();
 	if (!inspectable.wasObjectDeleted()) clip->removeAsyncClipListener(this);
 }
 
@@ -53,7 +198,7 @@ void AudioLayerClipUI::paint(Graphics& g)
 		float startOffset = clip->clipStartOffset->floatValue();
 		float viewRange = viewCoreEnd - viewStart;
 
-		thumbnail.drawChannels(g, getCoreBounds(), startOffset + viewStart, startOffset + viewStart + viewRange / stretch, volume);
+		if (thumbnail != nullptr) thumbnail->thumbnail.drawChannels(g, getCoreBounds(), startOffset + viewStart, startOffset + viewStart + viewRange / stretch, volume);
 	}
 
 	if (clip->fadeIn->floatValue() > 0)
@@ -161,9 +306,20 @@ void AudioLayerClipUI::mouseDown(const MouseEvent& e)
 	}
 }
 
+void AudioLayerClipUI::clearThumbnail()
+{
+	if (thumbnail != nullptr)
+	{
+		thumbnail->thumbnail.removeChangeListener(this);
+		thumbnail.reset();
+	}
+}
+
 void AudioLayerClipUI::setupThumbnail()
 {
-	thumbnail.setSource(new FileInputSource(clip->filePath->getFile()));
+	clearThumbnail();
+	thumbnail = waveformStore().get(clip->filePath->getFile());
+	if (thumbnail != nullptr) thumbnail->thumbnail.addChangeListener(this);
 	shouldRepaint = true;
 }
 
@@ -234,7 +390,7 @@ void AudioLayerClipUI::newMessage(const AudioLayerClip::ClipEvent& e)
 	switch (e.type)
 	{
 	case AudioLayerClip::ClipEvent::SOURCE_LOAD_START:
-		thumbnail.setSource(nullptr);
+		clearThumbnail();
 		shouldRepaint = true;
 		break;
 
