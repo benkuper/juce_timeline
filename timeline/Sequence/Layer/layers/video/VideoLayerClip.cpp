@@ -140,6 +140,15 @@ void VideoLayerClip::cacheThumbnail(double sourceTime, const juce::Image& frame)
 	clipListeners.call(&ClipListener::clipThumbnailChanged, this);
 }
 
+bool VideoLayerClip::needsThumbnail(double sourceTime) const
+{
+	const double spacing = juce::jmax(0.35, clipDuration > 0.0 ? clipDuration / 36.0 : 0.35);
+	const juce::ScopedLock lock(thumbnailLock);
+	for (auto& sample : thumbnailSamples)
+		if (std::abs(sample.sourceTime - sourceTime) < spacing) return false;
+	return true;
+}
+
 juce::Image VideoLayerClip::getThumbnailForTime(double sourceTime) const
 {
 	const juce::ScopedLock lock(thumbnailLock);

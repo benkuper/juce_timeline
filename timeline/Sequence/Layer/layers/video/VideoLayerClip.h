@@ -95,6 +95,7 @@ public:
 	};
 
 	void cacheThumbnail(double sourceTime, const juce::Image& frame);
+	bool needsThumbnail(double sourceTime) const;
 	juce::Image getThumbnailForTime(double sourceTime) const;
 	void clearThumbnails();
 
