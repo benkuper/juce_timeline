@@ -211,7 +211,10 @@ void VideoLayer::loadCurrentClip()
 	if (pendingLoadClip == currentClip && moviePlayer->getFilePath() == path) return;
 	if (lastLoadFailed && lastLoadFailedPath == path) return;
 
-	if (moviePlayer->isFileLoaded()) moviePlayer->unload();
+	// Adjacent clips may use the same file after a splice. Keep the decoder and
+	// let the player report the new clip as loaded without a black frame.
+	if (moviePlayer->isFileLoaded() && moviePlayer->getFilePath() != path)
+		moviePlayer->unload();
 	loadedClip = nullptr;
 	pendingLoadClip = currentClip;
 	if (!moviePlayer->load(path))
@@ -609,7 +612,8 @@ void VideoLayer::loadOverlapClip()
 		&& overlapPlayer->getFilePath() == path) return;
 	if (pendingOverlapLoadClip == overlapClip && overlapPlayer->getFilePath() == path) return;
 
-	if (overlapPlayer->isFileLoaded()) overlapPlayer->unload();
+	if (overlapPlayer->isFileLoaded() && overlapPlayer->getFilePath() != path)
+		overlapPlayer->unload();
 	loadedOverlapClip = nullptr;
 	pendingOverlapLoadClip = overlapClip;
 	if (!overlapPlayer->load(path))
