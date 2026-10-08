@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include "TimelineAudioTransportSource.h"
+
 class AudioLayerClip :
 	public LayerBlock,
 	public Thread //async loading
@@ -21,7 +23,7 @@ public:
 	AudioFormatManager formatManager;
 	//AudioSampleBuffer buffer;
 	std::unique_ptr<AudioFormatReaderSource> readerSource;
-	AudioTransportSource transportSource;
+	TimelineAudioTransportSource transportSource;
 	ResamplingAudioSource resamplingAudioSource;
 	ChannelRemappingAudioSource channelRemapAudioSource;
 

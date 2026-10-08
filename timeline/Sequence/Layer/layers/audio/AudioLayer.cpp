@@ -29,7 +29,6 @@ AudioLayer::AudioLayer(Sequence* _sequence, var params) :
 	targetVolume(1),
 	volumeInterpolationAutomation(nullptr),
 	stopAtVolumeInterpolationFinish(false),
-	clipIsStopping(false),
 	metronomeCC("Metronome Channels"),
 	prevMetronomeBeat(0),
 	settingAudioGraph(false)
@@ -611,9 +610,7 @@ void AudioLayer::sequencePlayStateChanged(Sequence*)
 		enveloppe->setValue(0);
 		if (currentClip != nullptr)
 		{
-			clipIsStopping = true;
-			currentClip->transportSource.stop();
-			clipIsStopping = false;
+			currentClip->stop();
 		}
 	}
 	else
@@ -819,7 +816,7 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 		noProcess = true;
 	}
 
-	//Do this before noProcess to avoid freeze of transportSource when stopping
+	// Render clips only while the layer can produce audio.
 	AudioSourceChannelInfo bufferToFill;
 	bufferToFill.buffer = &buffer;
 	bufferToFill.startSample = 0;
@@ -833,7 +830,7 @@ void AudioLayerProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& m
 	if (currentClip != nullptr)
 	{
 		bufferToFill.buffer = &buffer;
-		bool canRenderClip = (!noProcess || currentClip->transportSource.isPlaying() || layer->clipIsStopping);
+		bool canRenderClip = !noProcess;
 		if (layer == nullptr || layer->currentGraph == nullptr
 			|| layer->currentGraph->getBlockSize() <= 0
 			|| layer->currentGraph->getSampleRate() <= 0

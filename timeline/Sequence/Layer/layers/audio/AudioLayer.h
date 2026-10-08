@@ -58,8 +58,6 @@ public:
 	float volumeInterpolationTime;
 	bool stopAtVolumeInterpolationFinish;
 
-	//thread transportSource stop flag
-	bool clipIsStopping;
 	std::atomic<unsigned int> audioDiscontinuityCounter { 0 };
 	void requestAudioDeclick() { audioDiscontinuityCounter.fetch_add(1, std::memory_order_relaxed); }
 	std::atomic<bool> sequenceLoopPending { false };
