@@ -22,7 +22,6 @@ LayerBlockManagerUI::LayerBlockManagerUI(SequenceLayerTimeline* timeline, LayerB
 	bringToFrontOnSelect = false;
 
 	addItemBT->setVisible(false);
-	setBufferedToImage(true);
 
 }
 
@@ -37,7 +36,7 @@ void LayerBlockManagerUI::resized()
 
 void LayerBlockManagerUI::updateContent()
 {
-	for (auto& cui : itemsUI) placeBlockUI(cui);
+	for (auto& cui : itemsUI) { placeBlockUI(cui); cui->updateFadeHandles(); cui->shouldRepaint = true; }
 }
 
 void LayerBlockManagerUI::setMiniMode(bool value)
@@ -60,8 +59,8 @@ void LayerBlockManagerUI::placeBlockUI(LayerBlockUI* cui)
 	float itemStart = cui->item->time->floatValue();
 	float itemEnd = cui->item->getEndTime();
 
-	int xStart = jmax(0, timeline->getXForTime(itemStart));
-	int xEnd = jmin(getWidth(), timeline->getXForTime(itemEnd));
+	int xStart = jlimit(0, getWidth(), timeline->getXForTime(itemStart));
+	int xEnd = jlimit(xStart, getWidth(), timeline->getXForTime(itemEnd));
 	
 	float itemViewStart = timeline->getTimeForX(xStart) - cui->item->time->floatValue();
 	float itemViewEnd = timeline->getTimeForX(xEnd) - cui->item->time->floatValue();
@@ -98,7 +97,7 @@ void LayerBlockManagerUI::removeItemUIInternal(LayerBlockUI* cui)
 
 void LayerBlockManagerUI::blockUITimeChanged(LayerBlockUI* cui)
 {
-	placeBlockUI(cui);
+	updateContent();
 }
 
 void LayerBlockManagerUI::blockUIMouseDown(LayerBlockUI* cui, const MouseEvent& e)

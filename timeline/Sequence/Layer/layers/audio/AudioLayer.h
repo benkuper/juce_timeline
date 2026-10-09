@@ -157,6 +157,7 @@ public:
 	float tempRMS;
 	float currentEnveloppe;
 
+	AudioBuffer<float> clipBuffer;
 	std::vector<float> lastOutputSamples;
 	std::vector<float> transitionStartSamples;
 	unsigned int lastAudioDiscontinuity = 0;

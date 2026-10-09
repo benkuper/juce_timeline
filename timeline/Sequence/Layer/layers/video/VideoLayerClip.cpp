@@ -16,6 +16,7 @@ VideoLayerClip::VideoLayerClip() :
 	clipDuration(0)
 {
 	itemDataType = getTypeString();
+	itemColor->setDefaultValue(VIDEO_COLOR.darker());
 
 	// Persist the clip's child containers (the Transform group) in the project
 	// file : without this, only the clip-level parameters are saved.

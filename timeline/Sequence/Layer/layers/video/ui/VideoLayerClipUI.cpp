@@ -14,7 +14,6 @@ VideoLayerClipUI::VideoLayerClipUI(VideoLayerClip* _clip) :
 	clip(_clip)
 {
 	dragAndDropEnabled = false;
-	bgColor = clip->isActive->boolValue() ? VIDEO_COLOR.brighter() : VIDEO_COLOR.darker();
 	clip->addClipListener(this);
 }
 

@@ -61,7 +61,7 @@ void LayerBlockManager::addBlockAt(LayerBlock* b, float time)
 	placeBlockAt(b, time);
 
 	int nextIndex = items.indexOf(b) + 1;
-	if (nextIndex < items.size())
+	if (!blocksCanOverlap && nextIndex < items.size())
 	{
 
 		if (b->getEndTime() > items[nextIndex]->time->floatValue()) b->setCoreLength(items[nextIndex]->time->floatValue() - b->time->floatValue(), false);

@@ -43,10 +43,8 @@ AudioLayerClip::AudioLayerClip() :
 
 	volume = addFloatParameter("Volume", "Volume multiplier", 1, 0);
 
-	fadeIn = addFloatParameter("Fade In", "Fade time at start of the clip", 0, 0);
-	fadeIn->defaultUI = FloatParameter::TIME;
-	fadeOut = addFloatParameter("Fade Out", "Fade time at end of the clip", 0, 0);
-	fadeOut->defaultUI = FloatParameter::TIME;
+    addFadeParameters();
+    fadeIn = blockFadeIn; fadeOut = blockFadeOut;
 
 	formatManager.registerBasicFormats();
 
@@ -112,6 +110,16 @@ void AudioLayerClip::onContainerParameterChangedInternal(Parameter* p)
 
 }
 
+void AudioLayerClip::parameterControlModeChanged(Parameter* p)
+{
+    if (p == volume && volume->controlMode == Parameter::AUTOMATION && volume->automation)
+    {
+        volume->automation->setManualMode(true);
+        if (auto* curve = dynamic_cast<Automation*>(volume->automation->automationContainer))
+        { curve->allowKeysOutside = true; curve->setLength(coreLength->floatValue()); }
+    }
+}
+
 void AudioLayerClip::setCoreLength(float value, bool stretch, bool stickToCoreEnd)
 {
 	if (stickToCoreEnd)
@@ -126,6 +134,12 @@ void AudioLayerClip::setCoreLength(float value, bool stretch, bool stickToCoreEn
 		stretchFactor->setValue(stretchFactor->floatValue() + ((value / coreLength->floatValue()) - 1) * stretchFactor->floatValue());
 	}
 
+    if (volume->controlMode == Parameter::AUTOMATION && volume->automation)
+        if (auto* automation = dynamic_cast<Automation*>(volume->automation->automationContainer))
+        {
+            automation->allowKeysOutside = true;
+            automation->setLength(value, stretch, false);
+        }
 	LayerBlock::setCoreLength(value, stretch, stickToCoreEnd);
 }
 
@@ -191,4 +205,17 @@ void AudioLayerClip::setupFromSource()
 		//buffer.setSize((int)reader->numChannels, (int)reader->lengthInSamples);
 		//reader->read(&buffer, 0, (int)reader->lengthInSamples, 0, true, true);
 	}
+}
+
+void AudioLayerClip::loadJSONDataInternal(var data)
+{
+    LayerBlock::loadJSONDataInternal(data);
+    if (volume->controlMode == Parameter::AUTOMATION && volume->automation)
+        volume->automation->setManualMode(true);
+    // Preserve explicit fades from projects written before optional fade controls.
+    if (auto* list = data.getProperty("parameters", var()).getArray())
+        for (auto p : *list)
+            for (auto* fade : { fadeIn, fadeOut })
+                if (p.getProperty("controlAddress", "").toString() == "/" + fade->shortName
+                    && !p.hasProperty("enabled")) fade->setEnabled(fade->doubleValue() > 0);
 }

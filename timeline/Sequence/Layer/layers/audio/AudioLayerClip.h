@@ -53,8 +53,10 @@ public:
 	void stop();
 
 	void updateAudioSourceFile();
+    void loadJSONDataInternal(var data) override;
 	void onContainerTriggerTriggered(Trigger* t) override;
 	void onContainerParameterChangedInternal(Parameter *) override;
+    void parameterControlModeChanged(Parameter*) override;
 
 	void setCoreLength(float value, bool stretch, bool stickToCoreEnd = false) override;
 	void setStartTime(float value, bool stretch, bool stickToCoreEnd = false) override;

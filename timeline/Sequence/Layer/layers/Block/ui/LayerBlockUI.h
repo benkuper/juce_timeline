@@ -38,6 +38,27 @@ public:
 	Grabber grabber;
 	Grabber coreGrabber;
 	Grabber loopGrabber;
+	class FadeHandle : public Component
+	{
+	public:
+		FadeHandle() { setMouseCursor(MouseCursor::LeftRightResizeCursor); }
+		void paint(Graphics& g) override
+		{
+			g.setColour(Colours::black.withAlpha(.8f)); g.fillEllipse(getLocalBounds().toFloat());
+			g.setColour(YELLOW_COLOR); g.drawEllipse(getLocalBounds().toFloat().reduced(1), 2);
+		}
+	};
+	FadeHandle fadeInHandle, fadeOutHandle;
+	std::unique_ptr<AutomationUI> automationUI;
+	std::unique_ptr<GradientColorManagerUI> gradientUI;
+	void setInlineEditor(Automation* automation, GradientColorManager* gradient = nullptr);
+	void updateInlineEditorBounds();
+	void updateFadeHandles();
+	double xForLocalTime(double time) const;
+	double localTimeForX(double x) const;
+	double fadeBeforeDrag = 0;
+	double fadeDurationAtMouseDown = 0, fadeSecondsPerPixelAtMouseDown = 0;
+	bool fadeEnabledBeforeDrag = false;
 
 	virtual void paint(Graphics &g) override;
 	virtual void paintOverChildren(Graphics& g) override;
@@ -58,6 +79,7 @@ public:
 	virtual Rectangle<int> getGrabberBounds();
 
 	virtual void controllableFeedbackUpdateInternal(Controllable *) override;
+    void controllableStateUpdateInternal(Controllable*) override;
 
 	Rectangle<int> getCoreBounds();
 	int getCoreWidth();
