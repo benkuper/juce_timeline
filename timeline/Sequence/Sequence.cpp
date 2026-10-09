@@ -114,38 +114,82 @@ void Sequence::clearItem()
 	if (Engine::mainEngine != nullptr) Engine::mainEngine->removeEngineListener(this);
 }
 
-void Sequence::setCurrentTime(double time, bool forceOverPlaying, bool seekMode)
+void Sequence::setCurrentTime(double time, bool forceOverPlaying, bool seekMode, TimeChangeKind kind)
 {
-	time = jlimit<double>(0, totalTime->doubleValue(), time);
+    TimeChange change {};
+    {
+        const ScopedLock lock(sequenceTimeLock);
+        time = jlimit<double>(0, totalTime->doubleValue(), time);
+        if (isPlaying->boolValue() && !forceOverPlaying) return;
+        if (kind == TimeChangeKind::Automatic)
+            kind = !seekMode && getCurrentThreadId() == getThreadId() ? TimeChangeKind::Playback : TimeChangeKind::Seek;
+        const double previousValue = currentTime->doubleValue();
+        // Playback ticks preserve the clock anchor; external position changes reset it.
+        if (getCurrentThreadId() != getThreadId())
+        {
+            millisAtSetTime = Time::getMillisecondCounterHiRes();
+            ++playbackClockRevision;
+        }
+        if (seekMode || forceOverPlaying) targetTime = time;
+        if (timeIsDrivenByAudio())
+        {
+            hiResAudioTime = time;
+            if (!isPlaying->boolValue() || seekMode || forceOverPlaying) currentTime->setValue(time, true, true);
+        }
+        else currentTime->setValue(time, true);
+        const double nextValue = currentTime->doubleValue();
+        // Forced seeks must reach audio listeners even when the displayed time is
+        // unchanged (the audio transport may already have advanced independently).
+        if (nextValue == previousValue && kind == TimeChangeKind::Playback) return;
+        if (kind == TimeChangeKind::Seek) ++transportRevision;
+        const auto mode = evaluateOnSeek->getValueDataAsEnum<EvaluateMode>();
+        const bool playing = isPlaying->boolValue();
+        change = { previousValue, nextValue, kind, playing,
+            mode == ALWAYS || (mode == ONLY_PLAYING && playing) || (mode == ONLY_NOT_PLAYING && !playing), transportRevision.load() };
+    }
+    // No sequence-owned locks may span consequences: they can clear or remove this sequence.
+    WeakReference<ControllableContainer> safeThis(this);
+    if (auto* mm = MessageManager::getInstanceWithoutCreating(); mm && !mm->isThisTheMessageThread())
+        MessageManager::callAsync([safeThis, change]()
+        {
+            if (auto* sequence = dynamic_cast<Sequence*>(safeThis.get()); sequence && !sequence->isClearing)
+                sequence->deliverTimeChange(change);
+        });
+    else deliverTimeChange(change);
+}
+void Sequence::deliverTimeChange(const TimeChange& change)
+{
+	if (change.revision != transportRevision.load()) return;
+	WeakReference<ControllableContainer> safeThis(this);
+	const auto* previousPending = pendingTimeChange;
+	const bool previousSeeking = isSeeking;
+	pendingTimeChange = &change;
+	isSeeking = change.kind != TimeChangeKind::Playback;
+	currentTime->notifyValueChanged();
+	if (safeThis == nullptr) return;
+	pendingTimeChange = previousPending;
+	isSeeking = previousSeeking;
+}
 
-	if (isPlaying->boolValue() && !forceOverPlaying) return;
-
-	GenericScopedLock lock(sequenceTimeLock);
-
-	isSeeking = seekMode;
-
-	// Keep the playback clock anchored while run() advances the sequence. Resetting
-	// this on every playback tick makes every sleep a full frame long in addition
-	// to the processing time, which accumulates until a snapped frame is skipped.
-	if (getCurrentThreadId() != getThreadId())
+void Sequence::parameterValueChangedWithValue(Parameter* p, const var& value)
+{
+	if (p != currentTime) { BaseItem::parameterValueChangedWithValue(p, value); return; }
+	TimeChange change = pendingTimeChange ? *pendingTimeChange
+		: TimeChange { prevTime, (double)value, TimeChangeKind::Seek, isPlaying->boolValue(), false, ++transportRevision };
+	const bool internal = pendingTimeChange != nullptr;
+	// Consume the metadata once, so a nested direct parameter edit is a fresh seek.
+	pendingTimeChange = nullptr;
+	if (!internal)
 	{
-		millisAtSetTime = Time::getMillisecondCounterHiRes();
-		++playbackClockRevision;
+		const auto mode = evaluateOnSeek->getValueDataAsEnum<EvaluateMode>();
+		change.evaluateSkippedData = mode == ALWAYS || (mode == ONLY_PLAYING && change.playing)
+			|| (mode == ONLY_NOT_PLAYING && !change.playing);
 	}
-	//timeAtSetTime = time;
-	if (seekMode || forceOverPlaying) targetTime = time;
-
-	if (timeIsDrivenByAudio())
-	{
-		hiResAudioTime = time;
-		if (!isPlaying->boolValue() || isSeeking || forceOverPlaying) currentTime->setValue(time, false, true);
-	}
-	else
-	{
-		currentTime->setValue(time);
-	}
-
-	isSeeking = false;
+	WeakReference<ControllableContainer> safeThis(this);
+	const auto* previous = deliveredTimeChange;
+	deliveredTimeChange = &change;
+	BaseItem::parameterValueChangedWithValue(p, value);
+	if (safeThis != nullptr) deliveredTimeChange = previous;
 }
 
 void Sequence::handleCueAction(TimeCue* cue, TimeCue* originCue)
@@ -367,17 +411,23 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 	}
 	else if (p == currentTime)
 	{
-		if (isPlaying->boolValue() && !isSeeking)
+		const double updatePrevious = deliveredTimeChange ? deliveredTimeChange->previousTime : prevTime;
+		const double updateCurrent = deliveredTimeChange ? deliveredTimeChange->currentTime : currentTime->doubleValue();
+		if (isPlaying->boolValue() && !isSeeking && (!deliveredTimeChange || deliveredTimeChange->kind == TimeChangeKind::Playback))
 		{
-			float minTime = jmin<float>(prevTime, currentTime->floatValue());
-			float maxTime = jmax<float>(prevTime, currentTime->floatValue());
-			bool playingForward = playSpeed->floatValue() > 0;
+			float minTime = (float)jmin(updatePrevious, updateCurrent);
+			float maxTime = (float)jmax(updatePrevious, updateCurrent);
+			bool playingForward = updateCurrent >= updatePrevious;
 			Array<TimeCue*> cues = cueManager->getCuesInTimespan(minTime, maxTime, !playingForward, playingForward);
+			WeakReference<ControllableContainer> safeThis(this);
+			const auto revision = transportRevision.load();
 			if (cues.size() > 0) handleCueAction(cues[0]);
+			if (safeThis == nullptr || transportRevision.load() != revision) return;
 		}
 
 		if ((!isPlaying->boolValue() || isSeeking) && timeIsDrivenByAudio()) hiResAudioTime = currentTime->floatValue();
-		else if (getCurrentThreadId() != getThreadId())
+		else if (getCurrentThreadId() != getThreadId()
+			&& (!deliveredTimeChange || deliveredTimeChange->kind != TimeChangeKind::Playback))
 		{
 			GenericScopedLock lock(sequenceTimeLock);
 			// Parameter feedback can arrive on the message thread after a playback
@@ -393,8 +443,27 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 
 		EvaluateMode e = evaluateOnSeek->getValueDataAsEnum<EvaluateMode>();
 		bool shouldEvaluate = e == ALWAYS || (e == ONLY_PLAYING && isPlaying->boolValue()) || (e == ONLY_NOT_PLAYING && !isPlaying->boolValue());
-		sequenceListeners.call(&SequenceListener::sequenceCurrentTimeChanged, this, (float)prevTime, shouldEvaluate);
-		prevTime = currentTime->floatValue();
+		const TimeChange change = deliveredTimeChange ? *deliveredTimeChange
+			: TimeChange { prevTime, currentTime->doubleValue(), TimeChangeKind::Seek, isPlaying->boolValue(), shouldEvaluate, transportRevision.load() };
+		// Commit before consequences, which may seek recursively.
+		prevTime = change.currentTime;
+		WeakReference<ControllableContainer> safeThis(this);
+		if (change.kind == TimeChangeKind::Loop)
+		{
+			sequenceListeners.call([safeThis, change](SequenceListener& listener)
+			{
+				auto* sequence = dynamic_cast<Sequence*>(safeThis.get());
+				if (sequence && !sequence->isClearing && sequence->transportRevision.load() == change.revision)
+					listener.sequenceLooped(sequence);
+			});
+			if (safeThis == nullptr || isClearing || transportRevision.load() != change.revision) return;
+		}
+		sequenceListeners.call([safeThis, change](SequenceListener& listener)
+		{
+			auto* sequence = dynamic_cast<Sequence*>(safeThis.get());
+			if (sequence && !sequence->isClearing && sequence->transportRevision.load() == change.revision)
+				listener.sequenceTimeChanged(sequence, change);
+		});
 	}
 	else if (p == totalTime)
 	{
@@ -628,9 +697,7 @@ void Sequence::run()
 					if (loopParam->boolValue())
 					{
 						const double offset = std::fmod(evaluatedTime, totalTime->doubleValue());
-						sequenceListeners.call(&SequenceListener::sequenceLooped, this);
-						prevTime = 0;
-						setCurrentTime(offset, true, true);
+						setCurrentTime(offset, true, true, TimeChangeKind::Loop);
 						clock.reset(frameDeadlineMillis, offset, currentFPS, currentSpeed);
 						lastFrame = 0;
 					}
@@ -645,9 +712,7 @@ void Sequence::run()
 					{
 						double offset = std::fmod(evaluatedTime, totalTime->doubleValue());
 						if (offset <= 0) offset += totalTime->doubleValue();
-						sequenceListeners.call(&SequenceListener::sequenceLooped, this);
-						prevTime = totalTime->floatValue();
-						setCurrentTime(offset, true, true);
+						setCurrentTime(offset, true, true, TimeChangeKind::Loop);
 						clock.reset(frameDeadlineMillis, offset, currentFPS, currentSpeed);
 						lastFrame = 0;
 					}

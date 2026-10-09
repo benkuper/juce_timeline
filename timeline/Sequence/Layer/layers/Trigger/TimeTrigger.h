@@ -23,6 +23,9 @@ public:
 	BoolParameter * canTrigger;
 	bool triggerAtAnyTime;
 	bool collisionState;
+	enum SeekEvaluation { inheritSeek = -1, neverSeek = 0, playingSeek = 1, stoppedSeek = 2, alwaysSeek = 3 };
+	EnumParameter* forwardSeek;
+	EnumParameter* backwardSeek;
 
 	//ui
 	FloatParameter * flagY;
@@ -40,6 +43,11 @@ public:
 	virtual void exitedInternal(bool rewind) {}
 	void setTriggerState(bool state, bool rewind = false);
 	void updateTriggerState();
+	virtual void setTimelineActive(bool active, bool evaluate, bool rewind = false);
+	virtual void evaluateCurrentVisit() { updateTriggerState(); }
+	virtual void dispatchConsequences(bool state);
+	virtual bool replayForwardSeek() const { return false; }
+	bool shouldEvaluateSeek(bool forward, bool playing, bool inherited) const;
 
 	DECLARE_TYPE("TimeTrigger");
 };

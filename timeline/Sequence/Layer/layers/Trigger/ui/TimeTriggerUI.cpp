@@ -59,7 +59,7 @@ void TimeTriggerUI::paint(Graphics & g)
 
 	if (item->isSelected) c = HIGHLIGHT_COLOR;
 	else if (item->isPreselected) c = PRESELECT_COLOR;
-	else if (item->isTriggered->boolValue()) c = GREEN_COLOR.darker();
+	else if (item->length->floatValue() > 0 ? item->collisionState : item->isTriggered->boolValue()) c = GREEN_COLOR.darker();
 	g.setColour(c.brighter());
 	g.drawRect(flagRect);
 	g.drawVerticalLine(startXOffset, 0, (float)getHeight());
@@ -202,6 +202,7 @@ void TimeTriggerUI::controllableFeedbackUpdateInternal(Controllable * c)
 	{
 		repaint();
 	}
+	else repaint(); // Duration feedback is optional and appears only for nonzero lengths.
 }
 
 void TimeTriggerUI::inspectableSelectionChanged(Inspectable * i)

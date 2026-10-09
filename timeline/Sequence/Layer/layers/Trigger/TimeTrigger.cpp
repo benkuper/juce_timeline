@@ -32,6 +32,15 @@ TimeTrigger::TimeTrigger(StringRef name) :
 	canTrigger->isSavable = false;
 	triggerAtAnyTime = false;
 	collisionState = false;
+	auto addSeek = [this](const String& name)
+	{
+		auto* p = addEnumParameter(name, "Override the sequence's Evaluate on Seek setting for this direction");
+		p->addOption("Inherit", inheritSeek)->addOption("Always", alwaysSeek)->addOption("Playing only", playingSeek)
+			->addOption("Stopped only", stoppedSeek)->addOption("Never", neverSeek);
+		return p;
+	};
+	forwardSeek = addSeek("Forward seek");
+	backwardSeek = addSeek("Backward seek");
 }
 
 TimeTrigger::~TimeTrigger()
@@ -79,9 +88,33 @@ void TimeTrigger::unTrigger()
 
 void TimeTrigger::setTriggerState(bool state, bool rewind)
 {
-	collisionState = state;
-	if (state) trigger();
+	setTimelineActive(state, true, rewind);
+}
+
+void TimeTrigger::setTimelineActive(bool active, bool evaluate, bool rewind)
+{
+	collisionState = active;
+	if (!evaluate) return;
+	if (active) trigger();
 	else exitedInternal(rewind);
+}
+
+void TimeTrigger::dispatchConsequences(bool state)
+{
+	if (!enabled->boolValue() || isClearing) return;
+	if (auto* layer = ControllableUtil::findParentAs<SequenceLayer>(this);
+		layer && (!layer->enabled->boolValue() || !layer->sequence->enabled->boolValue())) return;
+	WeakReference<ControllableContainer> safeThis(this);
+	isTriggered->setValue(state);
+	if (safeThis == nullptr) return;
+	if (state) triggerInternal();
+	else unTriggerInternal();
+}
+
+bool TimeTrigger::shouldEvaluateSeek(bool forward, bool playing, bool inherited) const
+{
+	auto mode = (forward ? forwardSeek : backwardSeek)->getValueDataAsEnum<SeekEvaluation>();
+	return mode == inheritSeek ? inherited : mode == alwaysSeek || (mode == playingSeek && playing) || (mode == stoppedSeek && !playing);
 }
 
 void TimeTrigger::updateTriggerState()

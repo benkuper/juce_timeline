@@ -62,6 +62,15 @@ public:
 	double sampleRate;
 
 	bool isSeeking;
+	enum class TimeChangeKind { Automatic, Playback, Seek, Loop };
+	struct TimeChange
+	{
+		double previousTime, currentTime;
+		TimeChangeKind kind;
+		bool playing, evaluateSkippedData;
+		std::uint64_t revision;
+	};
+	std::atomic<std::uint64_t> transportRevision { 0 };
 
 	//Playback
 	double prevTime;
@@ -84,7 +93,9 @@ public:
 
 	virtual void clearItem() override;
 
-	void setCurrentTime(double time, bool forceOverPlaying = true, bool seekMode = false);
+	void setCurrentTime(double time, bool forceOverPlaying = true, bool seekMode = false,
+		TimeChangeKind kind = TimeChangeKind::Automatic);
+	void parameterValueChangedWithValue(Parameter*, const var&) override;
 
 	void handleCueAction(TimeCue* cue, TimeCue* originCue = nullptr);
 
@@ -147,6 +158,8 @@ public:
 		virtual ~SequenceListener() {}
 		virtual void sequencePlayStateChanged(Sequence *) {}
 		virtual void sequenceCurrentTimeChanged(Sequence *, float /*prevTime*/, bool /*evaluateSkippedData*/) {}
+		virtual void sequenceTimeChanged(Sequence* s, const TimeChange& change)
+		{ sequenceCurrentTimeChanged(s, (float)change.previousTime, change.evaluateSkippedData); }
 		virtual void sequenceFinished(Sequence*) {}
 		virtual void sequenceLooped(Sequence *) {}
 		virtual void sequencePlaySpeedChanged(Sequence*) {}
@@ -160,5 +173,8 @@ public:
 	DECLARE_ASYNC_EVENT(Sequence, Sequence, sequence, ENUM_LIST(EDITING_STATE_CHANGED, PLAY_STATE_CHANGED), EVENT_ITEM_CHECK);
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Sequence)
+	void deliverTimeChange(const TimeChange&);
+	const TimeChange* pendingTimeChange = nullptr;
+	const TimeChange* deliveredTimeChange = nullptr;
 
 };

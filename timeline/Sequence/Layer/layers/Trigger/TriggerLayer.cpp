@@ -19,6 +19,10 @@ TriggerLayer::TriggerLayer(Sequence* _sequence, StringRef name, var params) :
 
 	lockAll = addTrigger("Lock All", "Lock all existing triggers in this layer");
 	unlockAll = addTrigger("Unlock All", "Unlock all existing triggers in this layer");
+	triggerAllTrue = addTrigger("Trigger All TRUE", "Run TRUE consequences for all enabled triggers, regardless of conditions");
+	triggerAllFalse = addTrigger("Trigger All FALSE", "Run FALSE consequences for all enabled triggers, regardless of conditions");
+	forwardSeekPoints = addEnumParameter("Forward seek point cues", "Which eligible point cues to execute when seeking forward; duration blocks are independent");
+	forwardSeekPoints->addOption("All crossed cues", 0)->addOption("Latest crossed cue", 1);
 	goToPrevKey = addTrigger("Go to Previous Key", "Go to the previous key in this layer");
 	goToNextKey = addTrigger("Go to Next Key", "Go to the next key in this layer");
 
@@ -72,6 +76,8 @@ void TriggerLayer::onContainerTriggerTriggered(Trigger* t)
 
 	if (t == lockAll) for (auto& i : ttm->items) i->isUILocked->setValue(true);
 	else if (t == unlockAll) for (auto& i : ttm->items) i->isUILocked->setValue(false);
+	else if (t == triggerAllTrue) ttm->triggerAllConsequences(true);
+	else if (t == triggerAllFalse) ttm->triggerAllConsequences(false);
 	else if (t == goToPrevKey)
 	{
 		if (TimeTrigger* tt = ttm->getPrevTrigger(sequence->currentTime->floatValue())) sequence->setCurrentTime(tt->time->floatValue());
