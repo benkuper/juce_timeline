@@ -17,6 +17,10 @@
 
 #include "juce_timeline.h"
 
+#if ORGANICUI_USE_MCP
+#include "mcp/TimelineMcpProvider.cpp"
+#endif
+
 //==============================================================================
 
 #include "resources/BinaryData.cpp"

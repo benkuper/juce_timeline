@@ -156,3 +156,7 @@ using namespace juce;
 #include "timeline/ui/SequenceManagerUI.h"
 
 #include "TimelineAppCommands.h"
+
+#if ORGANICUI_USE_MCP
+#include "mcp/TimelineMcpProvider.h"
+#endif
