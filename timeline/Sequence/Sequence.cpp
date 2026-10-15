@@ -181,15 +181,31 @@ void Sequence::parameterValueChangedWithValue(Parameter* p, const var& value)
 	pendingTimeChange = nullptr;
 	if (!internal)
 	{
+		const ScopedLock lock(sequenceTimeLock);
+		// A playback tick may have overwritten the parameter while this external
+		// notification was waiting on the message thread. Apply the requested seek.
+		currentTime->setValue(change.currentTime, true);
+		targetTime = change.currentTime;
+		hiResAudioTime = change.currentTime;
+		millisAtSetTime = Time::getMillisecondCounterHiRes();
+		++playbackClockRevision;
 		const auto mode = evaluateOnSeek->getValueDataAsEnum<EvaluateMode>();
 		change.evaluateSkippedData = mode == ALWAYS || (mode == ONLY_PLAYING && change.playing)
 			|| (mode == ONLY_NOT_PLAYING && !change.playing);
 	}
 	WeakReference<ControllableContainer> safeThis(this);
 	const auto* previous = deliveredTimeChange;
+	const bool previousSeeking = isSeeking;
 	deliveredTimeChange = &change;
+	// All time edits, including generic parameter writes, share the seek state
+	// used by media layers and timecode outputs while their listeners run.
+	isSeeking = change.kind != TimeChangeKind::Playback;
 	BaseItem::parameterValueChangedWithValue(p, value);
-	if (safeThis != nullptr) deliveredTimeChange = previous;
+	if (safeThis != nullptr)
+	{
+		deliveredTimeChange = previous;
+		isSeeking = previousSeeking;
+	}
 }
 
 void Sequence::handleCueAction(TimeCue* cue, TimeCue* originCue)

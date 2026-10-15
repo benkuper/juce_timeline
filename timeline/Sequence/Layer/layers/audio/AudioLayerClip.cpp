@@ -47,6 +47,7 @@ AudioLayerClip::AudioLayerClip() :
     fadeIn = blockFadeIn; fadeOut = blockFadeOut;
 
 	formatManager.registerBasicFormats();
+	filePath->fileTypeFilter = formatManager.getWildcardForAllFormats();
 
 }
 

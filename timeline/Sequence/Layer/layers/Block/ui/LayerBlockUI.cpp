@@ -130,12 +130,6 @@ void LayerBlockUI::mouseEnter(const MouseEvent & e)
 	if (inspectable.wasObjectDeleted()) return;
 
 
-	if (canBeGrabbed && !item->isUILocked->boolValue() && getWidth() > 24)
-	{
-		grabber.setVisible(true);
-		coreGrabber.setVisible(true);
-		loopGrabber.setVisible(true && item->loopLength->floatValue() > 0);
-	}
 	updateFadeHandles();
 }
 
@@ -143,19 +137,7 @@ void LayerBlockUI::mouseExit(const MouseEvent & e)
 {
 	BaseItemMinimalUI::mouseExit(e);
 	
-	if (canBeGrabbed)
-	{
-		grabber.setVisible(isMouseOverOrDragging());
-		coreGrabber.setVisible(isMouseOverOrDragging());
-		loopGrabber.setVisible(isMouseOverOrDragging() && item->loopLength->floatValue() > 0);
-
-		if (isMouseOverOrDragging())
-		{
-			grabber.toFront(false);
-			coreGrabber.toFront(false);
-			loopGrabber.toFront(false);
-		}
-	}
+	updateFadeHandles();
 }
 
 
@@ -275,9 +257,7 @@ void LayerBlockUI::mouseUp(const MouseEvent & e)
 
 		isDragging = false;
 
-		grabber.setVisible(isMouseOverOrDragging());
-		coreGrabber.setVisible(isMouseOverOrDragging());
-		loopGrabber.setVisible(isMouseOverOrDragging());
+		updateFadeHandles();
 	}
 
 	BaseItemMinimalUI::mouseUp(e);
@@ -413,14 +393,25 @@ void LayerBlockUI::updateInlineEditorBounds()
 void LayerBlockUI::updateFadeHandles()
 {
 	if (inspectable.wasObjectDeleted()) return;
-    const bool handles = canBeGrabbed && !item->isUILocked->boolValue() && isMouseOverOrDragging();
-    grabber.setVisible(handles && viewStart <= 0);
-    coreGrabber.setVisible(handles && viewEnd >= item->coreLength->floatValue() && viewStart < item->coreLength->floatValue());
-    loopGrabber.setVisible(handles && viewEnd >= item->getTotalLength() && item->loopLength->floatValue() > 0);
+	const bool handles = canBeGrabbed && !item->isUILocked->boolValue() && isMouseOverOrDragging(true);
+	// Timeline bounds are rounded to pixels. An endpoint within one pixel of
+	// the view edge is still visible, even if its exact time is just outside it.
+	auto endpointVisible = [&](double time)
+	{
+		const double x = xForLocalTime(time);
+		return viewEnd > viewStart && x >= -1 && x <= getWidth() + 1;
+	};
+	grabber.setVisible(handles && endpointVisible(0));
+	coreGrabber.setVisible(handles && endpointVisible(item->coreLength->doubleValue()));
+	loopGrabber.setVisible(handles && endpointVisible(item->getTotalLength()) && item->loopLength->floatValue() > 0);
+	// Embedded editors are added later and would otherwise cover the trim handles.
+	grabber.toFront(false);
+	coreGrabber.toFront(false);
+	loopGrabber.toFront(false);
 	const auto fades = item->getEffectiveFades();
 	auto place = [&](FadeHandle& handle, FloatParameter* p, double t)
 	{
-		handle.setVisible(p && !item->isUILocked->boolValue() && t >= viewStart && t <= viewEnd && getWidth() > 24);
+		handle.setVisible(p && !item->isUILocked->boolValue() && endpointVisible(t) && getWidth() > 24);
 		handle.setBounds(jlimit(0, jmax(0, getWidth() - 10), roundToInt(xForLocalTime(t)) - 5), 1, 10, 10); handle.toFront(false);
 	};
 	place(fadeInHandle, item->blockFadeIn, fades.in);
