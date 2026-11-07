@@ -62,7 +62,7 @@ public:
 	double sampleRate;
 
 	bool isSeeking;
-	enum class TimeChangeKind { Automatic, Playback, Seek, Loop };
+	enum class TimeChangeKind { Automatic, Playback, Seek, Loop, Cue };
 	struct TimeChange
 	{
 		double previousTime, currentTime;
@@ -85,8 +85,11 @@ public:
 	FloatParameter * viewStartTime;
 	FloatParameter * viewEndTime;
 	FloatParameter* minViewTime;
-	BoolParameter* viewFollowTime;
-	float followViewRange;
+	enum class ViewFollowMode { Never, PlayingOnly, PlayingAndCues, Always };
+	EnumParameter* viewFollowTime;
+	float followViewRange = 30;
+	bool isFollowingPlayback() const;
+	void followTimeChange(const TimeChange& change);
 	bool isBeingEdited;
 
 	CriticalSection sequenceTimeLock;

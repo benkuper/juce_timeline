@@ -100,7 +100,7 @@ void SequenceTimelineSeeker::mouseDrag(const MouseEvent & e)
 	}
 	else if (e.mods.isLeftButtonDown())
 	{
-		bool followPlayingMode = sequence->isPlaying->boolValue() && sequence->viewFollowTime->boolValue();
+		bool followPlayingMode = sequence->isFollowingPlayback();
 
 		if (e.originalComponent == &handle)
 		{
@@ -167,7 +167,7 @@ void SequenceTimelineSeeker::mouseUp(const MouseEvent & e)
 
 		selectionSpan.setXY(0, 0);
 
-		bool followPlayingMode = sequence->isPlaying->boolValue() && sequence->viewFollowTime->boolValue();
+		bool followPlayingMode = sequence->isFollowingPlayback();
 		if (followPlayingMode) sequence->followViewRange = end - start;
 		else
 		{

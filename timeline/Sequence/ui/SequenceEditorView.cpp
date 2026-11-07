@@ -125,7 +125,7 @@ void SequenceEditorView::mouseWheelMove(const MouseEvent& e, const MouseWheelDet
 
 			if (newViewRange >= sequence->minViewTime->floatValue())
 			{
-				bool followPlayingMode = sequence->isPlaying->boolValue() && sequence->viewFollowTime->boolValue();
+				bool followPlayingMode = sequence->isFollowingPlayback();
 				if (followPlayingMode) sequence->followViewRange = newViewEnd - newViewStart;
 				else
 				{

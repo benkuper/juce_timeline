@@ -54,7 +54,7 @@ void TimeCue::onContainerTriggerTriggered(Trigger* t)
 		if (Sequence* seq = getSequence())
 		{
 			const double safePlayTime = seq->getNextFrameTimeForTime(time->doubleValue());
-			seq->setCurrentTime(safePlayTime,true, true);
+			seq->setCurrentTime(safePlayTime, true, true, Sequence::TimeChangeKind::Cue);
 			seq->playTrigger->trigger();
 		}
 	}

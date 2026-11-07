@@ -81,7 +81,9 @@ Sequence::Sequence() :
 	viewEndTime->defaultUI = FloatParameter::TIME;
 	minViewTime->defaultUI = FloatParameter::TIME;
 
-	viewFollowTime = addBoolParameter("View follow time", "If checked, this will automatically follow the current time so the cursor is at the center of the timeline.", false);
+	viewFollowTime = addEnumParameter("View follow time", "Center the timeline during playback, cue jumps, or all time changes including manual seeks.");
+	viewFollowTime->addOption("Never", static_cast<int>(ViewFollowMode::Never))->addOption("Playing Only", static_cast<int>(ViewFollowMode::PlayingOnly))
+		->addOption("Playing and Cues", static_cast<int>(ViewFollowMode::PlayingAndCues))->addOption("Always", static_cast<int>(ViewFollowMode::Always));
 
 	setHasCustomColor(true);
 	itemColor->setDefaultValue(BG_COLOR.brighter(.1f));
@@ -141,7 +143,7 @@ void Sequence::setCurrentTime(double time, bool forceOverPlaying, bool seekMode,
         // Forced seeks must reach audio listeners even when the displayed time is
         // unchanged (the audio transport may already have advanced independently).
         if (nextValue == previousValue && kind == TimeChangeKind::Playback) return;
-        if (kind == TimeChangeKind::Seek) ++transportRevision;
+        if (kind == TimeChangeKind::Seek || kind == TimeChangeKind::Cue) ++transportRevision;
         const auto mode = evaluateOnSeek->getValueDataAsEnum<EvaluateMode>();
         const bool playing = isPlaying->boolValue();
         change = { previousValue, nextValue, kind, playing,
@@ -203,9 +205,35 @@ void Sequence::parameterValueChangedWithValue(Parameter* p, const var& value)
 	BaseItem::parameterValueChangedWithValue(p, value);
 	if (safeThis != nullptr)
 	{
+		if (transportRevision.load() == change.revision) followTimeChange(change);
 		deliveredTimeChange = previous;
 		isSeeking = previousSeeking;
 	}
+}
+
+bool Sequence::isFollowingPlayback() const
+{
+	return isPlaying->boolValue() && viewFollowTime->getValueDataAsEnum<ViewFollowMode>() != ViewFollowMode::Never;
+}
+
+void Sequence::followTimeChange(const TimeChange& change)
+{
+	if (isCurrentlyLoadingData || (Engine::mainEngine && Engine::mainEngine->isLoadingFile)) return;
+	const auto mode = viewFollowTime->getValueDataAsEnum<ViewFollowMode>();
+	if (mode == ViewFollowMode::Never) return;
+	if (mode != ViewFollowMode::Always && !change.playing
+		&& !(mode == ViewFollowMode::PlayingAndCues && change.kind == TimeChangeKind::Cue)) return;
+	const bool smooth = change.playing && change.kind == TimeChangeKind::Playback;
+	const float range = jlimit(jmin(minViewTime->floatValue(), totalTime->floatValue()), totalTime->floatValue(),
+		smooth ? followViewRange : viewEndTime->floatValue() - viewStartTime->floatValue());
+	followViewRange = range;
+	const float start = jlimit(0.f, totalTime->floatValue() - range, static_cast<float>(change.currentTime) - range / 2);
+	// Updating the start also changes the end parameter's allowed range.
+	// Compute both positions before that can crop the old end value.
+	const float nextStart = smooth ? viewStartTime->getLerpValueTo(start, .3f) : start;
+	const float nextEnd = smooth ? viewEndTime->getLerpValueTo(start + range, .3f) : start + range;
+	viewStartTime->setValue(nextStart);
+	viewEndTime->setValue(nextEnd);
 }
 
 void Sequence::handleCueAction(TimeCue* cue, TimeCue* originCue)
@@ -222,7 +250,7 @@ void Sequence::handleCueAction(TimeCue* cue, TimeCue* originCue)
 	{
 		pauseTrigger->trigger();
 		prevTime = currentTime->floatValue();
-		setCurrentTime(getNextFrameTimeForTime(cue->time->doubleValue()));
+		setCurrentTime(getNextFrameTimeForTime(cue->time->doubleValue()), true, true, TimeChangeKind::Cue);
 		return;
 	default:
 		break;
@@ -235,7 +263,7 @@ void Sequence::handleCueAction(TimeCue* cue, TimeCue* originCue)
 		{
 			if (tc != cue && tc != originCue)
 			{
-				setCurrentTime(tc->time->floatValue(), true, true);
+				setCurrentTime(tc->time->floatValue(), true, true, TimeChangeKind::Cue);
 				TimeCue::CueAction a = cue->cueAction->getValueDataAsEnum<TimeCue::CueAction>();
 				if (a != TimeCue::NOTHING) handleCueAction(tc, originCue);
 			}
@@ -392,6 +420,16 @@ var Sequence::getJSONData(bool includeNonOverriden)
 
 void Sequence::loadJSONDataInternal(var data)
 {
+	// Earlier projects stored this option as a boolean under the same address.
+	if (auto* parameters = data.getProperty("parameters", var()).getArray())
+		for (auto& parameter : *parameters)
+			if (parameter.getProperty("controlAddress", "").toString() == "/viewFollowTime"
+				&& parameter["value"].isBool())
+			{
+				// The container has already loaded the generic parameters before
+				// calling this hook, so apply the migrated value explicitly.
+				viewFollowTime->setValue((bool)parameter["value"] ? "Playing Only" : "Never");
+			}
 	// The container skips parameters marked non-savable before loading their
 	// values. Restore this flag first so a saved current time is not discarded.
 	var parametersData = data.getProperty("parameters", var());
@@ -580,11 +618,11 @@ void Sequence::onContainerTriggerTriggered(Trigger* t)
 	}
 	else if (t == prevCue)
 	{
-		setCurrentTime(cueManager->getPrevCueForTime(currentTime->floatValue(), 1), true, true);
+		setCurrentTime(cueManager->getPrevCueForTime(currentTime->floatValue(), 1), true, true, TimeChangeKind::Cue);
 	}
 	else if (t == nextCue)
 	{
-		setCurrentTime(cueManager->getNextCueForTime(currentTime->floatValue()), true, true);
+		setCurrentTime(cueManager->getNextCueForTime(currentTime->floatValue()), true, true, TimeChangeKind::Cue);
 	}
 }
 
@@ -690,20 +728,6 @@ void Sequence::run()
 				// A cue may seek from inside the current-time callback.
 				clock.reset(frameDeadlineMillis, evaluatedTime, currentFPS, currentSpeed);
 				lastFrame = 0;
-			}
-
-			if (viewFollowTime->boolValue())
-			{
-				float targetStart = jmax(currentTime->floatValue() - followViewRange / 2, 0.f);
-				float targetEnd = targetStart + followViewRange;
-				if (targetEnd > totalTime->floatValue())
-				{
-					targetEnd = totalTime->floatValue();
-					targetStart = targetEnd - followViewRange;
-				}
-
-				viewStartTime->setValue(viewStartTime->getLerpValueTo(targetStart, .3f));
-				viewEndTime->setValue(viewEndTime->getLerpValueTo(targetEnd, .3f));
 			}
 
 			if (currentSpeed > 0)

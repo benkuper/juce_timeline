@@ -233,7 +233,7 @@ bool TimeTriggerManager::processTimeChange(const Sequence::TimeChange& change, b
         && !(Engine::mainEngine && Engine::mainEngine->isLoadingFile);
     const bool forward = change.currentTime > change.previousTime
         || (change.currentTime == change.previousTime && (!includeFrom || sequence->playSpeed->floatValue() >= 0));
-    const bool seek = change.kind == Sequence::TimeChangeKind::Seek;
+    const bool seek = change.kind == Sequence::TimeChangeKind::Seek || change.kind == Sequence::TimeChangeKind::Cue;
     const double low = jmin(change.previousTime, change.currentTime);
     const double high = jmax(change.previousTime, change.currentTime);
     struct Action { double time; Boundary boundary; bool active; bool point; bool rewind; bool evaluate; };
