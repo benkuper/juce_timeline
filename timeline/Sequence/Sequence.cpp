@@ -230,8 +230,8 @@ void Sequence::followTimeChange(const TimeChange& change)
 	const float start = jlimit(0.f, totalTime->floatValue() - range, static_cast<float>(change.currentTime) - range / 2);
 	// Updating the start also changes the end parameter's allowed range.
 	// Compute both positions before that can crop the old end value.
-	const float nextStart = smooth ? viewStartTime->getLerpValueTo(start, .3f) : start;
-	const float nextEnd = smooth ? viewEndTime->getLerpValueTo(start + range, .3f) : start + range;
+	const float nextStart = smooth ? static_cast<float>(viewStartTime->getLerpValueTo(start, .3f)) : start;
+	const float nextEnd = smooth ? static_cast<float>(viewEndTime->getLerpValueTo(start + range, .3f)) : start + range;
 	viewStartTime->setValue(nextStart);
 	viewEndTime->setValue(nextEnd);
 }
