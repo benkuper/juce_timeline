@@ -283,7 +283,10 @@ void AudioLayer::clipSourceLoaded(AudioLayerClip* clip)
 
 	const double length = jmax(contentEnd, (double) clip->getEndTime());
 	if (std::abs(length - sequence->totalTime->doubleValue()) > 0.0001)
+	{
+		sequence->totalTime->resetLastUndoValue();
 		sequence->totalTime->setUndoableValue(length);
+	}
 }
 
 void AudioLayer::updateSelectedOutChannels()

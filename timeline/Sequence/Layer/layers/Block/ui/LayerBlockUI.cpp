@@ -115,7 +115,7 @@ void LayerBlockUI::updateGrabbers()
 {
 	if (inspectable.wasObjectDeleted()) return;
 
-	if (!canBeGrabbed || !isMouseOverOrDragging(true) || getWidth() < 20 || item->isUILocked->boolValue())
+	if (!canBeGrabbed || !isMouseOverOrDragging(true) || item->isUILocked->boolValue())
 	{
 		grabber.setVisible(false);
 		coreGrabber.setVisible(false);
@@ -137,11 +137,11 @@ void LayerBlockUI::updateGrabbers()
 	Rectangle<int> grabberBounds = unclippedCoreBounds.removeFromLeft(grabberSize);
 	Rectangle<int> coreGrabberBounds = unclippedCoreBounds.removeFromRight(grabberSize);
 
-	grabber.setVisible(grabberBounds.getRight() > 0 && grabberBounds.getX() < getRight());
+	grabber.setVisible(grabberBounds.getRight() > getX() && grabberBounds.getX() < getRight());
 
 	if (grabber.isVisible()) grabber.setBounds(grabberBounds.translated(-getX(), 0));
 
-	coreGrabber.setVisible(coreGrabberBounds.getRight() > 0 && coreGrabberBounds.getX() < getRight());
+	coreGrabber.setVisible(coreGrabberBounds.getRight() > getX() && coreGrabberBounds.getX() < getRight());
 	if (coreGrabber.isVisible()) coreGrabber.setBounds(coreGrabberBounds.translated(-getX(), 0));
 
 
@@ -152,7 +152,7 @@ void LayerBlockUI::updateGrabbers()
 		getHeight());
 	Rectangle<int> loopGrabberBounds = unclippedLoopBounds.removeFromRight(grabberSize);
 
-	loopGrabber.setVisible(loopGrabberBounds.getRight() > 0 && loopGrabberBounds.getX() < getRight());
+	loopGrabber.setVisible(item->loopLength->floatValue() > 0 && loopGrabberBounds.getRight() > getX() && loopGrabberBounds.getX() < getRight());
 	if (loopGrabber.isVisible()) loopGrabber.setBounds(loopGrabberBounds.translated(-getX(), 0));
 }
 

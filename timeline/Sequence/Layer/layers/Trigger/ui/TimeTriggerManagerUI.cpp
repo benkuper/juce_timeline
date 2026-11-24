@@ -60,22 +60,15 @@ void TimeTriggerManagerUI::placeTimeTriggerUI(TimeTriggerUI * ttui)
 {
 	int tx = timeline->getXForTime(ttui->item->time->floatValue());
 	float totalTime = timeline->item->sequence->totalTime->floatValue();
-
-	float maxX = timeline->getXForTime(totalTime);
-
+	int maxX = timeline->getXForTime(totalTime);
 	int triggerWidth = 0;
 	float length = ttui->item->length->floatValue();
-	if(length > 0.f)
-	{
-		triggerWidth = timeline->getXForTime(ttui->item->time->floatValue() + length) - tx;
-	}
+	if (length > 0.f)
+		triggerWidth = jmax(0, timeline->getXForTime(ttui->item->time->floatValue() + length) - tx);
 
-	int endX = tx + ttui->labelWidth;
-
-	if (endX > maxX && tx <= maxX)
+	if (tx + ttui->labelWidth > maxX && tx <= maxX)
 	{
 		int diff = ttui->labelWidth - 1;
-
 		tx -= diff;
 		ttui->startXOffset = diff;
 		ttui->flagXOffset = 0;
@@ -86,8 +79,9 @@ void TimeTriggerManagerUI::placeTimeTriggerUI(TimeTriggerUI * ttui)
 		ttui->flagXOffset = 0;
 	}
 	ttui->triggerWidth = triggerWidth;
-
 	ttui->setBounds(tx, 0, ttui->labelWidth + triggerWidth + 1, getHeight());
+	ttui->resized();
+	ttui->repaint();
 }
 
 void TimeTriggerManagerUI::mouseDown(const MouseEvent & e)
@@ -191,7 +185,7 @@ void TimeTriggerManagerUI::timeTriggerDragged(TimeTriggerUI * ttui, const MouseE
 	}
 	else
 	{
-		offset.y = (e.mods.isAltDown() || e.mods.isCtrlDown())?0:e.getDistanceFromDragStartY()*1.0f / (getHeight() -20); //-20 is for subtracting flag height
+		offset.y = (e.mods.isAltDown() || e.mods.isCtrlDown() || e.mods.isShiftDown()) ? 0.f : e.getDistanceFromDragStartY() * 1.0f / jmax(1, getHeight() - 20); //-20 is for subtracting flag height
 
 		if (e.mods.isShiftDown() || timeline->item->sequence->autoSnap->boolValue())
 		{
@@ -209,7 +203,7 @@ void TimeTriggerManagerUI::timeTriggerDragged(TimeTriggerUI * ttui, const MouseE
 	}
 
 	ttui->item->movePosition(offset, true);
-	ttui->item->length->setValue(length);
+	ttui->item->length->setValue(jmax(0.f, length));
 }
 
 void TimeTriggerManagerUI::timeTriggerTimeChanged(TimeTriggerUI * ttui)

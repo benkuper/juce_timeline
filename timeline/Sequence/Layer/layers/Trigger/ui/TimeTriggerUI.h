@@ -28,7 +28,7 @@ public:
 	float timeAtMouseDown;
 	float lengthAtMouseDown;
 	float flagYAtMouseDown;
-	bool draggingLength;
+	bool draggingLength = false;
 
 	int startXOffset;
 	int flagXOffset; //to avoid end of layer overflow

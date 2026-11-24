@@ -40,6 +40,11 @@ void TimeTriggerUI::paint(Graphics & g)
 {
 	Colour c = item->itemColor->getColor();
 	if (!item->enabled->boolValue()) c = c.darker(.6f).withAlpha(.7f);
+	if (triggerWidth > 0)
+	{
+		g.setColour(c.withAlpha(.4f));
+		g.fillRect(startXOffset + 1, 0, triggerWidth - 1, getHeight());
+	}
 
 	g.setColour(c);
 	
@@ -52,29 +57,14 @@ void TimeTriggerUI::paint(Graphics & g)
 		g.fillRect(flagRect);
 	}
 
-	if(item->isSelected)
-	{
-		c = HIGHLIGHT_COLOR;
-	}
-	else if(item->isPreselected)
-	{
-		c = PRESELECT_COLOR;
-	}
-	else if (item->isTriggered->boolValue())
-	{
-		c = GREEN_COLOR.darker();
-	}
-
+	if (item->isSelected) c = HIGHLIGHT_COLOR;
+	else if (item->isPreselected) c = PRESELECT_COLOR;
+	else if (item->length->floatValue() > 0 ? item->collisionState : item->isTriggered->boolValue()) c = GREEN_COLOR.darker();
 	g.setColour(c.brighter());
 	g.drawRect(flagRect);
 	g.drawVerticalLine(startXOffset, 0, (float)getHeight());
-
-	if(triggerWidth > 0)
-	{
+	if (triggerWidth > 0)
 		g.drawVerticalLine(startXOffset + triggerWidth, 0, (float)getHeight());
-		g.setColour(c.interpolatedWith(item->itemColor->getColor(), 0.7f).withAlpha(.4f));
-		g.fillRect(startXOffset + 1, 0, triggerWidth - 1, getHeight());
-	}
 
 }
 
@@ -86,8 +76,7 @@ void TimeTriggerUI::resized()
 
 	flagRect = r.translated(flagXOffset, ty).withSize(labelWidth, 20);
 	lineRect = r.translated(startXOffset, 0).withWidth(6);
-	if(labelWidth > 0)
-		lengthRect = r.translated(startXOffset + triggerWidth - 6, 0).withWidth(6);
+	lengthRect = triggerWidth > 0 ? r.translated(startXOffset + triggerWidth - 6, 0).withWidth(8) : Rectangle<int>();
 
 	Rectangle<int> p = flagRect.reduced(2, 2);
 	if (item->isSelected)
@@ -120,6 +109,7 @@ void TimeTriggerUI::updateSizeFromName()
 		newWidth += 60; //for all the buttons
 	}
 	labelWidth = newWidth;
+	triggerUIListeners.call(&TimeTriggerUIListener::timeTriggerTimeChanged, this);
 }
 
 void TimeTriggerUI::mouseDown(const MouseEvent& e)
@@ -183,6 +173,7 @@ void TimeTriggerUI::mouseDrag(const MouseEvent & e)
 void TimeTriggerUI::mouseUp(const MouseEvent & e)
 {
 	ItemUI::mouseUp(e);
+	if (item->isUILocked->boolValue()) return;
 
 	Array<UndoableAction*> actions;
 
