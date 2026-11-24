@@ -4,9 +4,7 @@
     VideoFileHelpers.h
     Created: 27 Sep 2026
 
-    Shared helpers for the video layer file formats : which extensions are
-    accepted by the import choosers, drag & drop and the libVLC backend, and
-    how to tell still images apart from actual video files.
+    Shared file filters for video import, drag and drop, and still images.
 
   ==============================================================================
 */
