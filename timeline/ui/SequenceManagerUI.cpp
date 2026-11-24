@@ -44,4 +44,5 @@ void SequenceManagerUI::mouseDoubleClick(const MouseEvent & e)
 void SequenceManagerUI::addMenuExtraItems(juce::PopupMenu& p, int startIndex)
 {
 	p.addItem("Import audio files", [this]() {manager->importMultipleAudioFiles();});
+	p.addItem("Import video or image files", [this]() {manager->importMultipleVideoFiles();});
 }

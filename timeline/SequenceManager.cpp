@@ -10,6 +10,7 @@
 
 #include "JuceHeader.h"
 #include "SequenceManager.h"
+#include "Sequence/Layer/layers/video/VideoFileHelpers.h"
 
 #if TIMELINE_USE_SEQUENCEMANAGER_SINGLETON
 juce_ImplementSingleton(SequenceManager)
@@ -297,6 +298,35 @@ void SequenceManager::createSequenceFromAudioFile(File f)
 	l->uiHeight->setValue(80);
 
 	AudioLayerClip* clip = new AudioLayerClip();
+	l->clipManager.addItem(clip);
+	clip->filePath->setValue(f.getFullPathName());
+}
+
+void SequenceManager::importMultipleVideoFiles()
+{
+	fileChooser = std::make_unique<FileChooser>("Import video or image files", File::getCurrentWorkingDirectory(), VideoFileHelpers::getSupportedVideoAndImageWildcards());
+	auto fileChooserFlags = FileBrowserComponent::canSelectMultipleItems | FileBrowserComponent::FileChooserFlags::openMode | FileBrowserComponent::FileChooserFlags::canSelectFiles;
+	fileChooser->launchAsync(fileChooserFlags, [this](const FileChooser& chooser)
+		{
+			auto results = chooser.getResults();
+			for (int i = 0; i < results.size(); i++) {
+				File f = results[i];
+				createSequenceFromVideoFile(f);
+			}
+		});
+}
+
+void SequenceManager::createSequenceFromVideoFile(File f)
+{
+	Sequence* seq = new Sequence();
+	addItem(seq);
+	seq->setNiceName(f.getFileNameWithoutExtension());
+
+	VideoLayer* l = new VideoLayer(seq, var());
+	seq->layerManager->addItem(l);
+	l->uiHeight->setValue(80);
+
+	VideoLayerClip* clip = l->createVideoClip();
 	l->clipManager.addItem(clip);
 	clip->filePath->setValue(f.getFullPathName());
 }

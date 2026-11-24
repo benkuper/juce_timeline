@@ -62,6 +62,8 @@ public:
 	std::unique_ptr<FileChooser> fileChooser;
 	virtual void importMultipleAudioFiles();
 	virtual void createSequenceFromAudioFile(File f);
+	virtual void importMultipleVideoFiles();
+	virtual void createSequenceFromVideoFile(File f);
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequenceManager)
 };

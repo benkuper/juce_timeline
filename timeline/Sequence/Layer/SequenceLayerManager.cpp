@@ -10,6 +10,7 @@
 
 #include "JuceHeader.h"
 #include "SequenceLayerManager.h"
+#include "layers/video/VideoFileHelpers.h"
 
 SequenceLayerManager::SequenceLayerManager(Sequence* _sequence) :
 	Manager<SequenceLayer>("Layers"),
@@ -32,6 +33,8 @@ void SequenceLayerManager::fileDropped(String file)
 	const auto lower = file.toLowerCase();
 	if (lower.endsWith(".mp3") || lower.endsWith(".wav") || lower.endsWith(".aiff") || lower.endsWith(".flac") || lower.endsWith(".ogg"))
 		createAudioLayerForFile(file);
+	else if (VideoFileHelpers::isVideoOrImageFile(file))
+		createVideoLayerForFile(file);
 }
 
 SequenceLayer* SequenceLayerManager::createItem()
@@ -47,6 +50,22 @@ void SequenceLayerManager::createAudioLayerForFile(File f)
 		{
 			AudioLayer* layer = (AudioLayer*)factory.create(d);
 			AudioLayerClip* clip = new AudioLayerClip();
+			layer->clipManager.addItem(clip, false, false);
+			addItem(layer, true, true);
+			clip->filePath->setValue(f.getFullPathName());
+			return;
+		}
+	}
+}
+
+void SequenceLayerManager::createVideoLayerForFile(File f)
+{
+	for (auto& d : factory.defs)
+	{
+		if (((LayerDefinition*)d)->isVideo)
+		{
+			VideoLayer* layer = (VideoLayer*)factory.create(d);
+			VideoLayerClip* clip = layer->createVideoClip();
 			layer->clipManager.addItem(clip, false, false);
 			addItem(layer, true, true);
 			clip->filePath->setValue(f.getFullPathName());

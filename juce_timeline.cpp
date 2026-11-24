@@ -17,6 +17,10 @@
 
 #include "juce_timeline.h"
 
+#if ORGANICUI_USE_MCP
+#include "mcp/TimelineMcpProvider.cpp"
+#endif
+
 //==============================================================================
 
 #include "resources/BinaryData.cpp"
@@ -31,6 +35,10 @@
 #include "timeline/Sequence/Layer/layers/audio/AudioLayerClip.cpp"
 #include "timeline/Sequence/Layer/layers/audio/AudioLayerClipManager.cpp"
 #include "timeline/Sequence/Layer/layers/audio/AudioLayer.cpp"
+
+#include "timeline/Sequence/Layer/layers/video/VideoLayerClip.cpp"
+#include "timeline/Sequence/Layer/layers/video/VideoLayerClipManager.cpp"
+#include "timeline/Sequence/Layer/layers/video/VideoLayer.cpp"
 
 #include "timeline/Sequence/Layer/layers/Trigger/TimeTrigger.cpp"
 #include "timeline/Sequence/Layer/layers/Trigger/TimeTriggerManager.cpp"

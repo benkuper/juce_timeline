@@ -92,6 +92,11 @@ using namespace juce;
 #include "timeline/Sequence/Layer/layers/audio/AudioLayerClipManager.h"
 #include "timeline/Sequence/Layer/layers/audio/AudioLayer.h"
 
+#include "timeline/Sequence/Layer/layers/video/VideoLayerClip.h"
+#include "timeline/Sequence/Layer/layers/video/VideoLayerClipManager.h"
+#include "timeline/Sequence/Layer/layers/video/VideoPlayerEngine.h"
+#include "timeline/Sequence/Layer/layers/video/VideoLayer.h"
+
 
 #include "timeline/Sequence/Layer/layers/Trigger/TimeTrigger.h"
 #include "timeline/Sequence/Layer/layers/Trigger/TimeTriggerManager.h"
@@ -121,6 +126,11 @@ using namespace juce;
 #include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerPanel.h"
 #include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerTimeline.h"
 
+#include "timeline/Sequence/Layer/layers/video/ui/VideoLayerClipUI.h"
+#include "timeline/Sequence/Layer/layers/video/ui/VideoLayerClipManagerUI.h"
+#include "timeline/Sequence/Layer/layers/video/ui/VideoLayerPanel.h"
+#include "timeline/Sequence/Layer/layers/video/ui/VideoLayerTimeline.h"
+
 #include "timeline/Sequence/Layer/layers/Trigger/ui/TimeTriggerUI.h"
 #include "timeline/Sequence/Layer/layers/Trigger/ui/TimeTriggerMultiTransformer.h"
 #include "timeline/Sequence/Layer/layers/Trigger/ui/TriggerLayerPanel.h"
@@ -146,3 +156,7 @@ using namespace juce;
 #include "timeline/ui/SequenceManagerUI.h"
 
 #include "TimelineAppCommands.h"
+
+#if ORGANICUI_USE_MCP
+#include "mcp/TimelineMcpProvider.h"
+#endif

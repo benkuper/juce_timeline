@@ -9,6 +9,7 @@
 */
 
 #include "JuceHeader.h"
+#include "../layers/video/VideoFileHelpers.h"
 
 SequenceLayerTimelineManagerUI::SequenceLayerTimelineManagerUI(SequenceLayerManager * _manager) :
 	ManagerUI<SequenceLayerManager, SequenceLayer, SequenceLayerTimeline>("Layers", _manager)
@@ -51,6 +52,7 @@ bool SequenceLayerTimelineManagerUI::isInterestedInFileDrag(const StringArray& f
 	{
 		const String lower = files[i].toLowerCase();
 		if (lower.endsWith(".mp3") || lower.endsWith(".wav") || lower.endsWith(".aiff") || lower.endsWith(".flac") || lower.endsWith(".ogg")) return true;
+		if (VideoFileHelpers::isVideoOrImageFile(files[i])) return true;
 	}
 
 	return false;

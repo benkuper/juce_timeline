@@ -269,6 +269,11 @@ void AudioLayer::clipSourceLoaded(AudioLayerClip* clip)
 			layer->getSnapTimes(&times);
 			for (float time : times) contentEnd = jmax(contentEnd, (double) time);
 
+			// Video clips do not expose their edges as snap times.
+			if (auto* video = dynamic_cast<VideoLayer*>(layer))
+				for (auto* videoClip : video->clipManager.items)
+					contentEnd = jmax(contentEnd, (double) videoClip->getEndTime());
+
 		}
 	}
 

@@ -32,6 +32,11 @@
 #include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerPanel.cpp"
 #include "timeline/Sequence/Layer/layers/audio/ui/AudioLayerTimeline.cpp"
 
+#include "timeline/Sequence/Layer/layers/video/ui/VideoLayerClipUI.cpp"
+#include "timeline/Sequence/Layer/layers/video/ui/VideoLayerClipManagerUI.cpp"
+#include "timeline/Sequence/Layer/layers/video/ui/VideoLayerPanel.cpp"
+#include "timeline/Sequence/Layer/layers/video/ui/VideoLayerTimeline.cpp"
+
 
 #include "timeline/Sequence/Layer/layers/Trigger/ui/TimeTriggerUI.cpp"
 #include "timeline/Sequence/Layer/layers/Trigger/ui/TimeTriggerMultiTransformer.cpp"
