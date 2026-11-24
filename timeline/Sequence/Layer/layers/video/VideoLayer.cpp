@@ -191,10 +191,10 @@ void VideoLayer::loadCurrentClip()
 	if (moviePlayer == nullptr) return;
 
 #if JUCE_WINDOWS
-	if (currentClip->filePath->stringValue().startsWithChar('/')) return;
+	if (currentClip->filePath->getAbsolutePath().startsWithChar('/')) return;
 #endif
 
-	String path = currentClip->filePath->stringValue();
+	String path = currentClip->filePath->getAbsolutePath();
 
 	if (path.isEmpty())
 	{
@@ -235,12 +235,12 @@ void VideoLayer::playerFileLoaded(VideoPlayerEngine* player)
 
 	VideoLayerClip* clip = pending.get();
 	pending = nullptr;
-	if (player->getFilePath() != clip->filePath->stringValue()) return;
+	if (player->getFilePath() != clip->filePath->getAbsolutePath()) return;
 	loaded = clip;
 	lastLoadFailed = false;
 	lastLoadFailedPath.clear();
 	clip->clipDuration = player->getDuration();
-	if (clip->clipDuration <= 0.01f && VideoFileHelpers::isStillImageFile(clip->filePath->stringValue()))
+	if (clip->clipDuration <= 0.01f && VideoFileHelpers::isStillImageFile(clip->filePath->getAbsolutePath()))
 		clip->clipDuration = 10.0f;
 	clip->clipLength->setValue((float) clip->clipDuration);
 	if (!clip->coreLength->isOverriden)
@@ -249,11 +249,11 @@ void VideoLayer::playerFileLoaded(VideoPlayerEngine* player)
 		clip->coreLength->resetValue();
 	}
 	if (!isOverlap && clipManager.items.size() == 1
-		&& totalTimeExpandedForFile != clip->filePath->stringValue()
+		&& totalTimeExpandedForFile != clip->filePath->getAbsolutePath()
 		&& clip->getTotalLength() > sequence->totalTime->doubleValue()
 		&& clip->getTotalLength() > 0)
 	{
-		totalTimeExpandedForFile = clip->filePath->stringValue();
+		totalTimeExpandedForFile = clip->filePath->getAbsolutePath();
 		clip->time->setValue(0);
 		sequence->totalTime->resetLastUndoValue();
 		sequence->totalTime->setUndoableValue(clip->getTotalLength());
@@ -272,7 +272,7 @@ void VideoLayer::playerFileEnd(VideoPlayerEngine* player)
 		if (!pending.wasObjectDeleted())
 		{
 			lastLoadFailed = true;
-			lastLoadFailedPath = pending->filePath->stringValue();
+			lastLoadFailedPath = pending->filePath->getAbsolutePath();
 			NLOG(niceName, "Could not load video file : " + lastLoadFailedPath);
 		}
 		pending = nullptr;
@@ -313,7 +313,7 @@ void VideoLayer::syncPlaybackState()
 		std::swap(lastAppliedVolume, lastAppliedOverlapVolume);
 	}
 
-	if (currentClip == nullptr || currentClip.wasObjectDeleted() || currentClip->filePath->stringValue().isEmpty())
+	if (currentClip == nullptr || currentClip.wasObjectDeleted() || currentClip->filePath->getAbsolutePath().isEmpty())
 	{
 		moviePlayer->unload();
 		overlapPlayer->unload();
@@ -334,7 +334,7 @@ void VideoLayer::syncPlaybackState()
 	}
 
 	loadCurrentClip();
-	if (overlapClip != nullptr && !overlapClip.wasObjectDeleted() && overlapClip->filePath->stringValue().isNotEmpty())
+	if (overlapClip != nullptr && !overlapClip.wasObjectDeleted() && overlapClip->filePath->getAbsolutePath().isNotEmpty())
 		loadOverlapClip();
 	else
 	{
@@ -367,13 +367,13 @@ void VideoLayer::syncPlaybackState()
 		}
 	};
 
-	const bool forceSeek = forceResyncOnPlay || needsResync;
+	const bool playRequested = forceResyncOnPlay.exchange(false);
+	const bool seekRequested = needsResync.exchange(false);
+	const bool forceSeek = playRequested || seekRequested;
 	syncSlot(moviePlayer.get(), currentClip.get(), forceSeek);
 	if (overlapClip != nullptr && !overlapClip.wasObjectDeleted())
 		syncSlot(overlapPlayer.get(), overlapClip.get(), forceSeek);
 
-	forceResyncOnPlay = false;
-	needsResync = false;
 }
 
 void VideoLayer::handleAsyncUpdate()
@@ -421,7 +421,7 @@ void VideoLayer::itemAdded(LayerBlock* clip)
 {
 	((VideoLayerClip*)clip)->addClipListener(this);
 
-	if (isCurrentlyLoadingData || Engine::mainEngine->isLoadingFile) return;
+	if (isCurrentlyLoadingData || (Engine::mainEngine != nullptr && Engine::mainEngine->isLoadingFile)) return;
 	updateCurrentClip();
 	markPlaybackDirty();
 }
@@ -432,7 +432,7 @@ void VideoLayer::itemsAdded(Array<LayerBlock*> clips)
 	{
 		((VideoLayerClip*)clip)->addClipListener(this);
 
-		if (isCurrentlyLoadingData || Engine::mainEngine->isLoadingFile) continue;
+		if (isCurrentlyLoadingData || (Engine::mainEngine != nullptr && Engine::mainEngine->isLoadingFile)) continue;
 	}
 
 	updateCurrentClip();
@@ -460,15 +460,15 @@ void VideoLayer::itemsRemoved(Array<LayerBlock*> clips)
 
 void VideoLayer::clipSourceLoaded(VideoLayerClip* clip)
 {
-	if (isCurrentlyLoadingData || Engine::mainEngine->isLoadingFile)
+	if (isCurrentlyLoadingData || (Engine::mainEngine != nullptr && Engine::mainEngine->isLoadingFile))
 	{
 		NLOG(niceName, "clipSourceLoaded SKIPPED (engine loading)");
 		return;
 	}
 
-	if (clip == nullptr || clip->filePath->stringValue().isEmpty()) return;
+	if (clip == nullptr || clip->filePath->getAbsolutePath().isEmpty()) return;
 
-	NLOG(niceName, "clipSourceLoaded '" + clip->filePath->stringValue() + "'");
+	NLOG(niceName, "clipSourceLoaded '" + clip->filePath->getAbsolutePath() + "'");
 
 	// Load synchronously instead of raising an async update : the message posted by
 	// markPlaybackDirty() right after a file drop is not guaranteed to be delivered before
@@ -523,37 +523,35 @@ SequenceLayerTimeline* VideoLayer::getTimelineUI()
 
 void VideoLayer::sequenceCurrentTimeChanged(Sequence* s, float, bool)
 {
-	updateCurrentClip();
+	if (s != nullptr && s->isSeeking) needsResync = true;
 	markPlaybackDirty();
+}
 
-	// A manual seek while playing must move the video along as well : without this,
-	// syncPlaybackState's early-return path keeps playing the previous position.
-	if (s != nullptr && s->isPlaying->boolValue() && s->isSeeking)
-	{
-		needsResync = true;
-	}
+void VideoLayer::sequenceTimeChanged(Sequence* s, const Sequence::TimeChange& change)
+{
+	sequenceCurrentTimeChanged(s, (float) change.previousTime, change.evaluateSkippedData);
 }
 
 void VideoLayer::sequenceLooped(Sequence*)
 {
 	needsResync = true;
-	updateCurrentClip();
 	markPlaybackDirty();
 }
 
 void VideoLayer::sequencePlayStateChanged(Sequence*)
 {
 	forceResyncOnPlay = sequence->isPlaying->boolValue();
-
-	updateCurrentClip();
 	markPlaybackDirty();
+
+	if (!MessageManager::getInstance()->isThisTheMessageThread()) return;
+	updateCurrentClip();
 
 	// Instant transport response : drive the player from this message-thread
 	// callback so pause and play hit the player immediately, instead of waiting
 	// for the throttled async drag.
 	if (moviePlayer == nullptr) return;
 
-	if (currentClip == nullptr || currentClip.wasObjectDeleted() || currentClip->filePath->stringValue().isEmpty())
+	if (currentClip == nullptr || currentClip.wasObjectDeleted() || currentClip->filePath->getAbsolutePath().isEmpty())
 	{
 		moviePlayer->unload();
 		loadedClip = nullptr;
@@ -597,10 +595,10 @@ void VideoLayer::loadOverlapClip()
 	if (overlapClip == nullptr || overlapClip.wasObjectDeleted() || overlapPlayer == nullptr) return;
 
 #if JUCE_WINDOWS
-	if (overlapClip->filePath->stringValue().startsWithChar('/')) return;
+	if (overlapClip->filePath->getAbsolutePath().startsWithChar('/')) return;
 #endif
 
-	const String path = overlapClip->filePath->stringValue();
+	const String path = overlapClip->filePath->getAbsolutePath();
 	if (path.isEmpty())
 	{
 		overlapPlayer->unload();

@@ -38,8 +38,8 @@ public:
 	bool settingPlayState;
 
 	// Playback flags: written from the transport thread, applied once on the message thread.
-	bool needsResync = false;
-	bool forceResyncOnPlay = false;
+	std::atomic<bool> needsResync { false };
+	std::atomic<bool> forceResyncOnPlay { false };
 	bool lastLoadFailed = false;
 	String lastLoadFailedPath;
 
@@ -72,7 +72,7 @@ public:
 	virtual VideoPlayerEngine* createVideoPlayer();
 
 	virtual VideoLayerClip* createVideoClip();
-	virtual void updateCurrentClip();   // bookkeeping only, safe to call from any thread
+	virtual void updateCurrentClip();   // message thread only
 	virtual void loadCurrentClip();     // message thread only
 	virtual void loadOverlapClip();
 	virtual void syncPlaybackState();   // message thread only
@@ -112,6 +112,7 @@ public:
 	virtual SequenceLayerTimeline* getTimelineUI() override;
 
 	void sequenceCurrentTimeChanged(Sequence*, float prevTime, bool evaluatedSkippedData) override;
+	void sequenceTimeChanged(Sequence*, const Sequence::TimeChange&) override;
 	void sequenceLooped(Sequence*) override;
 	void sequencePlayStateChanged(Sequence*) override;
 
