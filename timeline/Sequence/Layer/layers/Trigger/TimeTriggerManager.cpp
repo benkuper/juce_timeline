@@ -119,7 +119,11 @@ Array<UndoableAction*> TimeTriggerManager::getMoveKeysBy(float start, float offs
 {
 	Array<UndoableAction*> actions;
 	Array<TimeTrigger*> triggers = getTriggersInTimespan(start, sequence->totalTime->floatValue());
-	for (auto& t : triggers) actions.addArray(t->time->setUndoableValue(t->time->floatValue() + offset, true, false));
+	for (auto* trigger : triggers)
+	{
+		const float previousTime = trigger->time->floatValue();
+		actions.add(new Parameter::ParameterSetValueAction(trigger->time, previousTime, previousTime + offset));
+	}
 	return actions;
 }
 

@@ -279,19 +279,19 @@ void LayerBlockUI::mouseUp(const MouseEvent& e)
 			item->addMoveToUndoManager(true);
 			blockUIListeners.call(&BlockUIListener::blockUINeedsReorder);
 		}
-		else if (e.eventComponent == &grabber)
+		else if (e.eventComponent == &grabber || e.eventComponent == &coreGrabber)
 		{
-			item->time->setUndoableValue(item->time->floatValue());
-			item->coreLength->setUndoableValue(item->coreLength->floatValue());
+			Array<UndoableAction*> actions;
+			if (item->time->floatValue() != item->movePositionReference.x)
+				actions.add(new Parameter::ParameterSetValueAction(item->time, item->movePositionReference.x, item->time->getValue()));
+			if (item->coreLength->floatValue() != coreLengthAtMouseDown)
+				actions.add(new Parameter::ParameterSetValueAction(item->coreLength, coreLengthAtMouseDown, item->coreLength->getValue()));
+			UndoMaster::getInstance()->performActions("Trim block", actions);
 		}
-		else if (e.eventComponent == &coreGrabber)
+		else if (e.eventComponent == &loopGrabber && item->loopLength->floatValue() != loopLengthAtMouseDown)
 		{
-			item->time->setUndoableValue(item->time->floatValue());
-			item->coreLength->setUndoableValue(item->coreLength->floatValue());
-		}
-		else if (e.eventComponent == &loopGrabber)
-		{
-			item->loopLength->setUndoableValue(item->loopLength->floatValue());
+			UndoMaster::getInstance()->performAction("Trim block loop",
+				new Parameter::ParameterSetValueAction(item->loopLength, loopLengthAtMouseDown, item->loopLength->getValue()));
 		}
 
 		isDragging = false;

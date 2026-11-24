@@ -124,8 +124,12 @@ void TimeTriggerMultiTransformer::mouseUp(const MouseEvent& e)
 	int numKeys = triggersUI.size();
 	for (int i = 0; i < numKeys; ++i)
 	{
-		actions.addArray(triggersUI[i]->item->time->setUndoableValue(triggersUI[i]->item->time->floatValue(), true, false));
-		actions.addArray(triggersUI[i]->item->flagY->setUndoableValue(triggersUI[i]->item->flagY->floatValue(), true, false));
+		auto* trigger = triggersUI[i]->item;
+		const auto previousPosition = triggersTimesAndValuesPositions[i];
+		if (trigger->time->floatValue() != previousPosition.x)
+			actions.add(new Parameter::ParameterSetValueAction(trigger->time, previousPosition.x, trigger->time->getValue()));
+		if (trigger->flagY->floatValue() != previousPosition.y)
+			actions.add(new Parameter::ParameterSetValueAction(trigger->flagY, previousPosition.y, trigger->flagY->getValue()));
 	}
 
 	UndoMaster::getInstance()->performActions("Move " + String(numKeys) + " keys", actions);

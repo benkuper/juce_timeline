@@ -326,14 +326,16 @@ void Sequence::removeTimespan(float start, float end)
 	Array<UndoableAction*> actions;
 	for (auto& l : layerManager->items)  actions.addArray(l->getRemoveTimespan(start, end));
 	actions.addArray(cueManager->getRemoveTimespan(start, end));
-	actions.addArray(totalTime->setUndoableValue(totalTime->floatValue() - (end - start), true));
+	const float previousLength = totalTime->floatValue();
+	actions.add(new Parameter::ParameterSetValueAction(totalTime, previousLength, previousLength - (end - start)));
 	UndoMaster::getInstance()->performActions("Remove timespan", actions);
 }
 
 void Sequence::insertTimespan(float start, float length)
 {
 	Array<UndoableAction*> actions;
-	actions.addArray(totalTime->setUndoableValue(totalTime->floatValue() + length, true));
+	const float previousLength = totalTime->floatValue();
+	actions.add(new Parameter::ParameterSetValueAction(totalTime, previousLength, previousLength + length));
 	for (auto& l : layerManager->items)  actions.addArray(l->getInsertTimespan(start, length));
 	actions.addArray(cueManager->getInsertTimespan(start, length));
 	UndoMaster::getInstance()->performActions("Insert timespan", actions);

@@ -101,7 +101,8 @@ Point<float> LayerBlock::getPosition()
 
 void LayerBlock::addUndoableMoveAction(Array<UndoableAction *> &actions)
 {
-	actions.addArray(time->setUndoableValue(time->floatValue(), true));
+	if (time->floatValue() != movePositionReference.x)
+		actions.add(new Parameter::ParameterSetValueAction(time, movePositionReference.x, time->getValue()));
 }
 
 

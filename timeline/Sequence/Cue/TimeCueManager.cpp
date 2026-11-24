@@ -99,8 +99,9 @@ Array<UndoableAction*> TimeCueManager::getMoveKeysBy(float start, float offset)
 
 	for (const auto& c : items)
 	{
-		if (c->time->floatValue() >= start)
-			actions.addArray(c->time->setUndoableValue(c->time->floatValue() + offset, true));
+		const float previousTime = c->time->floatValue();
+		if (previousTime >= start)
+			actions.add(new Parameter::ParameterSetValueAction(c->time, previousTime, previousTime + offset));
 	}
 
 	return actions;

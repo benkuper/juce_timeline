@@ -114,11 +114,12 @@ void TimeTriggerUI::updateSizeFromName()
 
 void TimeTriggerUI::mouseDown(const MouseEvent& e)
 {
+	hasDragStart = false;
 	ItemUI::mouseDown(e);
+	if (inspectable == nullptr || item->isUILocked->boolValue() || !e.mods.isLeftButtonDown()) return;
 
+	hasDragStart = true;
 	flagYAtMouseDown = item->flagY->floatValue();
-
-	if (item->isUILocked->boolValue()) return;
 
 	//float lengthDragPos = startXOffset + triggerWidth;
 	//float xCursorPos = e.getPosition().getX();
@@ -140,7 +141,7 @@ void TimeTriggerUI::mouseDown(const MouseEvent& e)
 
 void TimeTriggerUI::mouseDrag(const MouseEvent & e)
 {
-	if (itemLabel.isBeingEdited()) return;
+	if (!hasDragStart || inspectable == nullptr || itemLabel.isBeingEdited()) return;
 
 	ItemUI::mouseDrag(e);
 	
@@ -173,18 +174,19 @@ void TimeTriggerUI::mouseDrag(const MouseEvent & e)
 void TimeTriggerUI::mouseUp(const MouseEvent & e)
 {
 	ItemUI::mouseUp(e);
-	if (item->isUILocked->boolValue()) return;
+	const bool wasDragging = std::exchange(hasDragStart, false);
+	if (!wasDragging || inspectable == nullptr || item->isUILocked->boolValue()) return;
 
 	Array<UndoableAction*> actions;
 
 	if(lengthAtMouseDown != item->length->floatValue())
 	{
-		actions.addArray(item->length->setUndoableValue(item->length->floatValue(), true, false));
+		actions.add(new Parameter::ParameterSetValueAction(item->length, lengthAtMouseDown, item->length->getValue()));
 	}
 
 	if (flagYAtMouseDown != item->flagY->floatValue())
 	{
-		actions.addArray(item->flagY->setUndoableValue(item->flagY->floatValue(), true, false));
+		actions.add(new Parameter::ParameterSetValueAction(item->flagY, flagYAtMouseDown, item->flagY->getValue()));
 	}
 	
 	if(timeAtMouseDown != item->time->floatValue())
@@ -195,7 +197,7 @@ void TimeTriggerUI::mouseUp(const MouseEvent & e)
 		}
 		else
 		{
-			if (!item->isUILocked->boolValue()) actions.addArray(item->time->setUndoableValue(item->time->floatValue(), true, false));
+			actions.add(new Parameter::ParameterSetValueAction(item->time, timeAtMouseDown, item->time->getValue()));
 		}
 	}
 

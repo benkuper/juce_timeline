@@ -123,7 +123,8 @@ void TimeCueUI::mouseUp(const MouseEvent& e)
 	ItemMinimalUI::mouseUp(e);
 
 	if (e.mods.isRightButtonDown()) return;
-	if (!item->isUILocked->boolValue() && item->time->floatValue() != timeAtMouseDown) item->time->setUndoableValue(item->time->floatValue());
+	if (!item->isUILocked->boolValue() && item->time->floatValue() != timeAtMouseDown)
+		UndoMaster::getInstance()->performAction("Move cue", new Parameter::ParameterSetValueAction(item->time, timeAtMouseDown, item->time->getValue()));
 
 	if (!item->isUILocked->boolValue() && e.eventComponent != &itemLabel) cueUIListeners.call(&TimeCueUIListener::cueMouseUp, this, e);
 }
