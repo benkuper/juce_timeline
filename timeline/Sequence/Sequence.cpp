@@ -9,6 +9,7 @@
 */
 
 #include "JuceHeader.h"
+#include "SequencePlaybackClock.h"
 
 
 Sequence::Sequence(SequenceLayerManager* _layerManager) :
@@ -20,7 +21,7 @@ Sequence::Sequence(SequenceLayerManager* _layerManager) :
 	isSeeking(false),
 	//timeAtSetTime(0),
 	millisAtSetTime(0),
-	prevMillis(0),
+	playbackClockRevision(0),
 	targetTime(0),
 	isBeingEdited(false),
 	sequenceNotifier(10)
@@ -80,7 +81,9 @@ Sequence::Sequence(SequenceLayerManager* _layerManager) :
 	viewEndTime->defaultUI = FloatParameter::TIME;
 	minViewTime->defaultUI = FloatParameter::TIME;
 
-	viewFollowTime = addBoolParameter("View follow time", "If checked, this will automatically follow the current time so the cursor is at the center of the timeline.", false);
+	viewFollowTime = addEnumParameter("View follow time", "Center the timeline during playback, cue jumps, or all time changes including manual seeks.");
+	viewFollowTime->addOption("Never", static_cast<int>(ViewFollowMode::Never))->addOption("Playing Only", static_cast<int>(ViewFollowMode::PlayingOnly))
+		->addOption("Playing and Cues", static_cast<int>(ViewFollowMode::PlayingAndCues))->addOption("Always", static_cast<int>(ViewFollowMode::Always));
 
 	setHasCustomColor(true);
 	itemColor->setDefaultValue(BG_COLOR.brighter(.1f));
@@ -116,31 +119,124 @@ void Sequence::clearItem()
 	if (Engine::mainEngine != nullptr) Engine::mainEngine->removeEngineListener(this);
 }
 
-void Sequence::setCurrentTime(float time, bool forceOverPlaying, bool seekMode)
+void Sequence::setCurrentTime(double time, bool forceOverPlaying, bool seekMode, TimeChangeKind kind)
 {
-	time = jlimit<float>(0, totalTime->floatValue(), time);
+    TimeChange change {};
+    {
+        const ScopedLock lock(sequenceTimeLock);
+        time = jlimit<double>(0, totalTime->doubleValue(), time);
+        if (isPlaying->boolValue() && !forceOverPlaying) return;
+        if (kind == TimeChangeKind::Automatic)
+            kind = !seekMode && getCurrentThreadId() == getThreadId() ? TimeChangeKind::Playback : TimeChangeKind::Seek;
+        const double previousValue = currentTime->doubleValue();
+        // Playback ticks preserve the clock anchor; external position changes reset it.
+        if (getCurrentThreadId() != getThreadId())
+        {
+            millisAtSetTime = Time::getMillisecondCounterHiRes();
+            ++playbackClockRevision;
+        }
+        if (seekMode || forceOverPlaying) targetTime = time;
+        if (timeIsDrivenByAudio())
+        {
+            hiResAudioTime = time;
+            if (!isPlaying->boolValue() || seekMode || forceOverPlaying) currentTime->setValue(time, true, true);
+        }
+        else currentTime->setValue(time, true);
+        const double nextValue = currentTime->doubleValue();
+        // Forced seeks must reach audio listeners even when the displayed time is
+        // unchanged (the audio transport may already have advanced independently).
+        if (nextValue == previousValue && kind == TimeChangeKind::Playback) return;
+        if (kind == TimeChangeKind::Seek || kind == TimeChangeKind::Cue) ++transportRevision;
+        const auto mode = evaluateOnSeek->getValueDataAsEnum<EvaluateMode>();
+        const bool playing = isPlaying->boolValue();
+        change = { previousValue, nextValue, kind, playing,
+            mode == ALWAYS || (mode == ONLY_PLAYING && playing) || (mode == ONLY_NOT_PLAYING && !playing), transportRevision.load() };
+    }
+    // No sequence-owned locks may span consequences: they can clear or remove this sequence.
+    WeakReference<ControllableContainer> safeThis(this);
+    if (auto* mm = MessageManager::getInstanceWithoutCreating(); mm && !mm->isThisTheMessageThread())
+        MessageManager::callAsync([safeThis, change]()
+        {
+            if (auto* sequence = dynamic_cast<Sequence*>(safeThis.get()); sequence && !sequence->isClearing)
+                sequence->deliverTimeChange(change);
+        });
+    else deliverTimeChange(change);
+}
+void Sequence::deliverTimeChange(const TimeChange& change)
+{
+	if (change.revision != transportRevision.load()) return;
+	WeakReference<ControllableContainer> safeThis(this);
+	const auto* previousPending = pendingTimeChange;
+	const bool previousSeeking = isSeeking;
+	pendingTimeChange = &change;
+	isSeeking = change.kind != TimeChangeKind::Playback;
+	currentTime->notifyValueChanged();
+	if (safeThis == nullptr) return;
+	pendingTimeChange = previousPending;
+	isSeeking = previousSeeking;
+}
 
-	if (isPlaying->boolValue() && !forceOverPlaying) return;
-
-	GenericScopedLock lock(sequenceTimeLock);
-
-	isSeeking = seekMode;
-
-	millisAtSetTime = Time::getMillisecondCounterHiRes();
-	//timeAtSetTime = time;
-	if (seekMode || forceOverPlaying) targetTime = time;
-
-	if (timeIsDrivenByAudio())
+void Sequence::parameterValueChangedWithValue(Parameter* p, const var& value)
+{
+	if (p != currentTime) { BaseItem::parameterValueChangedWithValue(p, value); return; }
+	TimeChange change = pendingTimeChange ? *pendingTimeChange
+		: TimeChange { prevTime, (double)value, TimeChangeKind::Seek, isPlaying->boolValue(), false, ++transportRevision };
+	const bool internal = pendingTimeChange != nullptr;
+	// Consume the metadata once, so a nested direct parameter edit is a fresh seek.
+	pendingTimeChange = nullptr;
+	if (!internal)
 	{
-		hiResAudioTime = time;
-		if (!isPlaying->boolValue() || isSeeking || forceOverPlaying) currentTime->setValue(time, false, true);
+		const ScopedLock lock(sequenceTimeLock);
+		// A playback tick may have overwritten the parameter while this external
+		// notification was waiting on the message thread. Apply the requested seek.
+		currentTime->setValue(change.currentTime, true);
+		targetTime = change.currentTime;
+		hiResAudioTime = change.currentTime;
+		millisAtSetTime = Time::getMillisecondCounterHiRes();
+		++playbackClockRevision;
+		const auto mode = evaluateOnSeek->getValueDataAsEnum<EvaluateMode>();
+		change.evaluateSkippedData = mode == ALWAYS || (mode == ONLY_PLAYING && change.playing)
+			|| (mode == ONLY_NOT_PLAYING && !change.playing);
 	}
-	else
+	WeakReference<ControllableContainer> safeThis(this);
+	const auto* previous = deliveredTimeChange;
+	const bool previousSeeking = isSeeking;
+	deliveredTimeChange = &change;
+	// All time edits, including generic parameter writes, share the seek state
+	// used by media layers and timecode outputs while their listeners run.
+	isSeeking = change.kind != TimeChangeKind::Playback;
+	BaseItem::parameterValueChangedWithValue(p, value);
+	if (safeThis != nullptr)
 	{
-		currentTime->setValue(time);
+		if (transportRevision.load() == change.revision) followTimeChange(change);
+		deliveredTimeChange = previous;
+		isSeeking = previousSeeking;
 	}
+}
 
-	isSeeking = false;
+bool Sequence::isFollowingPlayback() const
+{
+	return isPlaying->boolValue() && viewFollowTime->getValueDataAsEnum<ViewFollowMode>() != ViewFollowMode::Never;
+}
+
+void Sequence::followTimeChange(const TimeChange& change)
+{
+	if (isCurrentlyLoadingData || (Engine::mainEngine && Engine::mainEngine->isLoadingFile)) return;
+	const auto mode = viewFollowTime->getValueDataAsEnum<ViewFollowMode>();
+	if (mode == ViewFollowMode::Never) return;
+	if (mode != ViewFollowMode::Always && !change.playing
+		&& !(mode == ViewFollowMode::PlayingAndCues && change.kind == TimeChangeKind::Cue)) return;
+	const bool smooth = change.playing && change.kind == TimeChangeKind::Playback;
+	const float range = jlimit(jmin(minViewTime->floatValue(), totalTime->floatValue()), totalTime->floatValue(),
+		smooth ? followViewRange : viewEndTime->floatValue() - viewStartTime->floatValue());
+	followViewRange = range;
+	const float start = jlimit(0.f, totalTime->floatValue() - range, static_cast<float>(change.currentTime) - range / 2);
+	// Updating the start also changes the end parameter's allowed range.
+	// Compute both positions before that can crop the old end value.
+	const float nextStart = smooth ? static_cast<float>(viewStartTime->getLerpValueTo(start, .3f)) : start;
+	const float nextEnd = smooth ? static_cast<float>(viewEndTime->getLerpValueTo(start + range, .3f)) : start + range;
+	viewStartTime->setValue(nextStart);
+	viewEndTime->setValue(nextEnd);
 }
 
 void Sequence::handleCueAction(TimeCue* cue, TimeCue* originCue)
@@ -157,7 +253,7 @@ void Sequence::handleCueAction(TimeCue* cue, TimeCue* originCue)
 	{
 		pauseTrigger->trigger();
 		prevTime = currentTime->floatValue();
-		setCurrentTime(getNextFrameTimeForTime(cue->time->floatValue()));
+		setCurrentTime(getNextFrameTimeForTime(cue->time->doubleValue()), true, true, TimeChangeKind::Cue);
 		return;
 	default:
 		break;
@@ -170,7 +266,7 @@ void Sequence::handleCueAction(TimeCue* cue, TimeCue* originCue)
 		{
 			if (tc != cue && tc != originCue)
 			{
-				setCurrentTime(tc->time->floatValue(), true, true);
+				setCurrentTime(tc->time->floatValue(), true, true, TimeChangeKind::Cue);
 				TimeCue::CueAction a = cue->cueAction->getValueDataAsEnum<TimeCue::CueAction>();
 				if (a != TimeCue::NOTHING) handleCueAction(tc, originCue);
 			}
@@ -180,23 +276,25 @@ void Sequence::handleCueAction(TimeCue* cue, TimeCue* originCue)
 	}
 }
 
-int Sequence::getFrameForTime(float time, bool forceDirection, bool forcePrev)
+int Sequence::getFrameForTime(double time, bool forceDirection, bool forcePrev)
 {
-	float f = time * fps->floatValue() / (playSpeed->floatValue() != 0 ? playSpeed->floatValue() : 1.0f);
-	return forceDirection ? (forcePrev ? floorf(f) : ceilf(f)) : round(f);
+	const double speed = playSpeed->doubleValue();
+	const double f = time * fps->intValue() / (speed != 0.0 ? std::abs(speed) : 1.0);
+	return static_cast<int>(forceDirection ? (forcePrev ? std::floor(f) : std::ceil(f)) : std::round(f));
 }
 
-double Sequence::getTimeForFrame(float frame)
+double Sequence::getTimeForFrame(double frame)
 {
-	return frame * 1.0 / (fps->floatValue() / (playSpeed->floatValue() != 0 ? playSpeed->floatValue() : 1.0f));
+	const double speed = playSpeed->doubleValue();
+	return frame * (speed != 0.0 ? std::abs(speed) : 1.0) / fps->intValue();
 }
 
-double Sequence::getNextFrameTimeForTime(float time)
+double Sequence::getNextFrameTimeForTime(double time)
 {
 	return getTimeForFrame(getFrameForTime(time, true, false));
 }
 
-double Sequence::getPrevFrameTimeForTime(float time)
+double Sequence::getPrevFrameTimeForTime(double time)
 {
 	return getTimeForFrame(getFrameForTime(time, true, true));
 }
@@ -325,6 +423,31 @@ var Sequence::getJSONData(bool includeNonOverriden)
 
 void Sequence::loadJSONDataInternal(var data)
 {
+	// Earlier projects stored this option as a boolean under the same address.
+	if (auto* parameters = data.getProperty("parameters", var()).getArray())
+		for (auto& parameter : *parameters)
+			if (parameter.getProperty("controlAddress", "").toString() == "/viewFollowTime"
+				&& parameter["value"].isBool())
+			{
+				// The container has already loaded the generic parameters before
+				// calling this hook, so apply the migrated value explicitly.
+				viewFollowTime->setValue((bool)parameter["value"] ? "Playing Only" : "Never");
+			}
+	// The container skips parameters marked non-savable before loading their
+	// values. Restore this flag first so a saved current time is not discarded.
+	var parametersData = data.getProperty("parameters", var());
+	if (Array<var>* parameters = parametersData.getArray())
+	{
+		for (const var& parameter : *parameters)
+		{
+			if (parameter.getProperty("controlAddress", "").toString() == "/saveCurrentTime"
+				&& (bool)parameter.getProperty("value", false))
+			{
+				currentTime->isSavable = true;
+				break;
+			}
+		}
+	}
 	BaseItem::loadJSONDataInternal(data);
 	layerManager->loadJSONData(data.getProperty(layerManager->shortName, var()));
 	cueManager->loadJSONData(data.getProperty(cueManager->shortName, var()));
@@ -345,26 +468,59 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 	}
 	else if (p == currentTime)
 	{
-		if (isPlaying->boolValue() && !isSeeking)
+		const double updatePrevious = deliveredTimeChange ? deliveredTimeChange->previousTime : prevTime;
+		const double updateCurrent = deliveredTimeChange ? deliveredTimeChange->currentTime : currentTime->doubleValue();
+		if (isPlaying->boolValue() && !isSeeking && (!deliveredTimeChange || deliveredTimeChange->kind == TimeChangeKind::Playback))
 		{
-			float minTime = jmin<float>(prevTime, currentTime->floatValue());
-			float maxTime = jmax<float>(prevTime, currentTime->floatValue());
-			bool playingForward = playSpeed->floatValue() > 0;
+			float minTime = (float)jmin(updatePrevious, updateCurrent);
+			float maxTime = (float)jmax(updatePrevious, updateCurrent);
+			bool playingForward = updateCurrent >= updatePrevious;
 			Array<TimeCue*> cues = cueManager->getCuesInTimespan(minTime, maxTime, !playingForward, playingForward);
+			WeakReference<ControllableContainer> safeThis(this);
+			const auto revision = transportRevision.load();
 			if (cues.size() > 0) handleCueAction(cues[0]);
+			if (safeThis == nullptr || transportRevision.load() != revision) return;
 		}
 
 		if ((!isPlaying->boolValue() || isSeeking) && timeIsDrivenByAudio()) hiResAudioTime = currentTime->floatValue();
-		else if (getCurrentThreadId() != getThreadId())
+		else if (getCurrentThreadId() != getThreadId()
+			&& (!deliveredTimeChange || deliveredTimeChange->kind != TimeChangeKind::Playback))
 		{
-			millisAtSetTime = Time::getMillisecondCounterHiRes();
+			GenericScopedLock lock(sequenceTimeLock);
+			// Parameter feedback can arrive on the message thread after a playback
+			// tick. Only a value different from the thread's target is an external seek.
+			if (std::abs(currentTime->doubleValue() - targetTime) > 1.0e-9)
+			{
+				targetTime = currentTime->doubleValue();
+				millisAtSetTime = Time::getMillisecondCounterHiRes();
+				++playbackClockRevision;
+			}
 			//timeAtSetTime = timeIsDrivenByAudio() ? hiResAudioTime : currentTime->floatValue();
 		}
 
 		EvaluateMode e = evaluateOnSeek->getValueDataAsEnum<EvaluateMode>();
 		bool shouldEvaluate = e == ALWAYS || (e == ONLY_PLAYING && isPlaying->boolValue()) || (e == ONLY_NOT_PLAYING && !isPlaying->boolValue());
-		sequenceListeners.call(&SequenceListener::sequenceCurrentTimeChanged, this, (float)prevTime, shouldEvaluate);
-		prevTime = currentTime->floatValue();
+		const TimeChange change = deliveredTimeChange ? *deliveredTimeChange
+			: TimeChange { prevTime, currentTime->doubleValue(), TimeChangeKind::Seek, isPlaying->boolValue(), shouldEvaluate, transportRevision.load() };
+		// Commit before consequences, which may seek recursively.
+		prevTime = change.currentTime;
+		WeakReference<ControllableContainer> safeThis(this);
+		if (change.kind == TimeChangeKind::Loop)
+		{
+			sequenceListeners.call([safeThis, change](SequenceListener& listener)
+			{
+				auto* sequence = dynamic_cast<Sequence*>(safeThis.get());
+				if (sequence && !sequence->isClearing && sequence->transportRevision.load() == change.revision)
+					listener.sequenceLooped(sequence);
+			});
+			if (safeThis == nullptr || isClearing || transportRevision.load() != change.revision) return;
+		}
+		sequenceListeners.call([safeThis, change](SequenceListener& listener)
+		{
+			auto* sequence = dynamic_cast<Sequence*>(safeThis.get());
+			if (sequence && !sequence->isClearing && sequence->transportRevision.load() == change.revision)
+				listener.sequenceTimeChanged(sequence, change);
+		});
 	}
 	else if (p == totalTime)
 	{
@@ -386,10 +542,16 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 
 		if (isPlaying->boolValue())
 		{
-			if (currentTime->floatValue() >= totalTime->floatValue())
+			if (playSpeed->doubleValue() > 0.0
+				&& currentTime->doubleValue() >= totalTime->doubleValue())
 			{
 				hiResAudioTime = 0;
 				setCurrentTime(0, true, true); //if reached the end when hit play, go to 0
+			}
+			else if (playSpeed->doubleValue() < 0.0 && currentTime->doubleValue() <= 0.0)
+			{
+				hiResAudioTime = totalTime->doubleValue();
+				setCurrentTime(hiResAudioTime, true, true);
 			}
 
 			prevTime = currentTime->floatValue();
@@ -421,7 +583,7 @@ void Sequence::onContainerParameterChangedInternal(Parameter* p)
 
 	if (p == fps || p == playSpeed)
 	{
-		float steps = fps->floatValue() / (playSpeed->floatValue() != 0 ? playSpeed->floatValue() : 1.0f);
+		float steps = fps->floatValue() / (playSpeed->floatValue() != 0 ? std::abs(playSpeed->floatValue()) : 1.0f);
 		currentTime->unitSteps = steps;
 		totalTime->unitSteps = steps;
 
@@ -459,11 +621,11 @@ void Sequence::onContainerTriggerTriggered(Trigger* t)
 	}
 	else if (t == prevCue)
 	{
-		setCurrentTime(cueManager->getPrevCueForTime(currentTime->floatValue(), 1), true, true);
+		setCurrentTime(cueManager->getPrevCueForTime(currentTime->floatValue(), 1), true, true, TimeChangeKind::Cue);
 	}
 	else if (t == nextCue)
 	{
-		setCurrentTime(cueManager->getNextCueForTime(currentTime->floatValue()), true, true);
+		setCurrentTime(cueManager->getNextCueForTime(currentTime->floatValue()), true, true, TimeChangeKind::Cue);
 	}
 }
 
@@ -503,88 +665,109 @@ String Sequence::getPanelName() const
 
 void Sequence::run()
 {
-	millisAtSetTime = Time::getMillisecondCounterHiRes();
-	//timeAtSetTime = timeIsDrivenByAudio() ? hiResAudioTime : currentTime->floatValue();
-	prevMillis = Time::getMillisecondCounterHiRes();
+	const double startMillis = Time::getMillisecondCounterHiRes();
+	std::uint64_t observedClockRevision;
+	{
+		GenericScopedLock lock(sequenceTimeLock);
+		millisAtSetTime = startMillis;
+		targetTime = currentTime->doubleValue();
+		observedClockRevision = playbackClockRevision;
+	}
 
 	followViewRange = viewEndTime->floatValue() - viewStartTime->floatValue();
 
-	targetTime = currentTime->floatValue();
+	SequencePlaybackClock clock;
+	clock.reset(startMillis, currentTime->doubleValue(), fps->intValue(), playSpeed->doubleValue());
+	std::int64_t lastFrame = 0;
 
 	while (!threadShouldExit())
 	{
-
-		double millis = Time::getMillisecondCounterHiRes();
-		//double millisSinceSetTime = millis - millisAtSetTime;
-		double delta = millis - prevMillis;
-
-		targetTime += (delta / 1000.0) * playSpeed->floatValue();
-
-		prevMillis = millis;
-
-		//double absoluteTargetTime = timeAtSetTime + (millisSinceSetTime / 1000.0) * playSpeed->floatValue();
-
-		if (timeIsDrivenByAudio())
+		const double millis = Time::getMillisecondCounterHiRes();
+		double externalAnchorMillis;
+		std::uint64_t clockRevision;
 		{
-			//DBG("Diff (ms): " << abs(hiResAudioTime - currentTime->floatValue()));
-			//targetTime = hiResAudioTime;
+			GenericScopedLock lock(sequenceTimeLock);
+			externalAnchorMillis = millisAtSetTime;
+			clockRevision = playbackClockRevision;
+		}
+		const int currentFPS = fps->intValue();
+		const double currentSpeed = playSpeed->doubleValue();
+		if (clockRevision != observedClockRevision
+			|| currentFPS != clock.getFramesPerSecond()
+			|| currentSpeed != clock.getSpeed())
+		{
+			const bool externallyReanchored = clockRevision != observedClockRevision;
+			observedClockRevision = clockRevision;
+			const double anchorMillis = externallyReanchored ? externalAnchorMillis : millis;
+			clock.reset(anchorMillis, currentTime->doubleValue(), currentFPS, currentSpeed);
+			lastFrame = 0;
 		}
 
-		//DBG(deltaMillis << " : " << (targetTime - currentTime->floatValue()));
-
-		if (!isSeeking) setCurrentTime(targetTime);
-
-		if (viewFollowTime->boolValue())
+		const std::int64_t frame = clock.frameAt(millis);
+		if (frame > lastFrame)
 		{
-			float targetStart = jmax(currentTime->floatValue() - followViewRange / 2, 0.f);
-			float targetEnd = targetStart + followViewRange;
-			if (targetEnd > totalTime->floatValue())
+			lastFrame = frame;
+			const double frameTime = clock.timeForFrame(frame);
+			const double frameDeadlineMillis = clock.deadlineForFrame(frame);
 			{
-				targetEnd = totalTime->floatValue();
-				targetStart = targetEnd - followViewRange;
+				GenericScopedLock lock(sequenceTimeLock);
+				targetTime = frameTime;
 			}
 
-			viewStartTime->setValue(viewStartTime->getLerpValueTo(targetStart, .3f));
-			viewEndTime->setValue(viewEndTime->getLerpValueTo(targetEnd, .3f));
-		}
+			// A looping sequence must not briefly deactivate blocks at the clamped end point.
+			if (!isSeeking && (!loopParam->boolValue()
+				|| (frameTime > 0 && frameTime < totalTime->doubleValue())))
+				setCurrentTime(frameTime);
 
-		if (playSpeed->floatValue() > 0)
-		{
-			if (targetTime >= totalTime->floatValue())
+			double callbackTime;
 			{
-				if (loopParam->boolValue())
+				GenericScopedLock lock(sequenceTimeLock);
+				callbackTime = targetTime;
+			}
+			const bool cueSeeked = callbackTime != frameTime;
+			const double evaluatedTime = cueSeeked ? callbackTime : frameTime;
+			if (cueSeeked)
+			{
+				// A cue may seek from inside the current-time callback.
+				clock.reset(frameDeadlineMillis, evaluatedTime, currentFPS, currentSpeed);
+				lastFrame = 0;
+			}
+
+			if (currentSpeed > 0)
+			{
+				if (evaluatedTime >= totalTime->doubleValue())
 				{
-					float offset = targetTime - totalTime->floatValue();
-					sequenceListeners.call(&SequenceListener::sequenceLooped, this);
-					//setCurrentTime(0); //to change in trigger layer to avoid doing that
-					prevTime = 0;
-					setCurrentTime(offset, true, true);
+					if (loopParam->boolValue())
+					{
+						const double offset = std::fmod(evaluatedTime, totalTime->doubleValue());
+						setCurrentTime(offset, true, true, TimeChangeKind::Loop);
+						clock.reset(frameDeadlineMillis, offset, currentFPS, currentSpeed);
+						lastFrame = 0;
+					}
+					else finishTrigger->trigger();
 				}
-				else finishTrigger->trigger();
 			}
-		}
-		else
-		{
-			if (targetTime <= 0)
+			else if (currentSpeed < 0)
 			{
-				if (loopParam->boolValue())
+				if (evaluatedTime <= 0)
 				{
-					float offset = totalTime->floatValue() + targetTime;
-					sequenceListeners.call(&SequenceListener::sequenceLooped, this);
-					prevTime = totalTime->floatValue();
-					setCurrentTime(offset, true, true);
+					if (loopParam->boolValue())
+					{
+						double offset = std::fmod(evaluatedTime, totalTime->doubleValue());
+						if (offset <= 0) offset += totalTime->doubleValue();
+						setCurrentTime(offset, true, true, TimeChangeKind::Loop);
+						clock.reset(frameDeadlineMillis, offset, currentFPS, currentSpeed);
+						lastFrame = 0;
+					}
+					else finishTrigger->trigger();
 				}
-				else finishTrigger->trigger();
 			}
 		}
 
-
-		double millisPerCycle = 1000.0 / fps->floatValue();
-		double millisAfterProcess = Time::getMillisecondCounterHiRes();
-		double relAbsMillis = millisAfterProcess - millisAtSetTime;
-		double millisToWait = ceil(millisPerCycle - fmod(relAbsMillis, millisPerCycle));
-
-		if (millisToWait >= 0) wait(millisToWait);
+		const double millisToWait = clock.deadlineForFrame(lastFrame + 1)
+			- Time::getMillisecondCounterHiRes();
+		if (millisToWait > 0)
+			wait(jmax(1, static_cast<int>(std::floor(millisToWait))));
 	}
 }
 

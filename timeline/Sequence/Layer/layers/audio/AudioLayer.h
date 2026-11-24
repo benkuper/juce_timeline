@@ -10,6 +10,9 @@
 
 #pragma once
 
+#include <atomic>
+#include <vector>
+
 class AudioLayerProcessor;
 
 class AudioLayer :
@@ -55,8 +58,9 @@ public:
 	float volumeInterpolationTime;
 	bool stopAtVolumeInterpolationFinish;
 
-	//thread transportSource stop flag
-	bool clipIsStopping;
+	std::atomic<unsigned int> audioDiscontinuityCounter { 0 };
+	void requestAudioDeclick() { audioDiscontinuityCounter.fetch_add(1, std::memory_order_relaxed); }
+	std::atomic<bool> sequenceLoopPending { false };
 
 	FloatParameter* metronomeVolume;
 	FileParameter* bip1File;
@@ -76,6 +80,7 @@ public:
 	virtual void clearItem() override;
 
 	void setAudioProcessorGraph(AudioProcessorGraph* graph, AudioProcessorGraph::NodeID graphOutputID = AudioProcessorGraph::NodeID(2));
+	void refreshOutputChannels();
 	virtual AudioLayerProcessor* createAudioLayerProcessor();
 
 	virtual int getNodeGraphIDIncrement() { return graphIDIncrement++; }
@@ -118,6 +123,7 @@ public:
 	virtual SequenceLayerTimeline* getTimelineUI() override;
 
 	void sequenceCurrentTimeChanged(Sequence*, float prevTime, bool evaluatedSkippedData) override;
+	void sequenceLooped(Sequence*) override;
 	void sequencePlayStateChanged(Sequence*) override;
 	void sequencePlaySpeedChanged(Sequence*) override;
 	void sequencePlayDirectionChanged(Sequence*) override;
@@ -150,6 +156,15 @@ public:
 	int rmsCount;
 	float tempRMS;
 	float currentEnveloppe;
+
+	AudioBuffer<float> clipBuffer;
+	std::vector<float> lastOutputSamples;
+	std::vector<float> transitionStartSamples;
+	unsigned int lastAudioDiscontinuity = 0;
+	int declickSamples = 1;
+	int declickSamplesRemaining = 0;
+	void applyDeclick(AudioBuffer<float>& buffer);
+	void applyClipEdgeFade(AudioBuffer<float>& buffer, AudioLayerClip& clip, double sourcePosition, int startSample, int numSamples);
 
 	void clear();
 

@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 class SequenceLayerManager;
 class TimeCueManager;
 class TimeCue;
@@ -60,12 +62,21 @@ public:
 	double sampleRate;
 
 	bool isSeeking;
+	enum class TimeChangeKind { Automatic, Playback, Seek, Loop, Cue };
+	struct TimeChange
+	{
+		double previousTime, currentTime;
+		TimeChangeKind kind;
+		bool playing, evaluateSkippedData;
+		std::uint64_t revision;
+	};
+	std::atomic<std::uint64_t> transportRevision { 0 };
 
 	//Playback
 	double prevTime;
 	//double timeAtSetTime;
 	double millisAtSetTime;
-	double prevMillis;
+	std::uint64_t playbackClockRevision;
 	double targetTime;
 	float prevSpeed;
 
@@ -74,22 +85,27 @@ public:
 	FloatParameter * viewStartTime;
 	FloatParameter * viewEndTime;
 	FloatParameter* minViewTime;
-	BoolParameter* viewFollowTime;
-	float followViewRange;
+	enum class ViewFollowMode { Never, PlayingOnly, PlayingAndCues, Always };
+	EnumParameter* viewFollowTime;
+	float followViewRange = 30;
+	bool isFollowingPlayback() const;
+	void followTimeChange(const TimeChange& change);
 	bool isBeingEdited;
 
 	CriticalSection sequenceTimeLock;
 
 	virtual void clearItem() override;
 
-	void setCurrentTime(float time, bool forceOverPlaying = true, bool seekMode = false);
+	void setCurrentTime(double time, bool forceOverPlaying = true, bool seekMode = false,
+		TimeChangeKind kind = TimeChangeKind::Automatic);
+	void parameterValueChangedWithValue(Parameter*, const var&) override;
 
 	void handleCueAction(TimeCue* cue, TimeCue* originCue = nullptr);
 
-	int getFrameForTime(float time, bool forceDirection = false, bool forcePrev = true);
-	double getTimeForFrame(float fame);
-	double getNextFrameTimeForTime(float time);
-	double getPrevFrameTimeForTime(float time);
+	int getFrameForTime(double time, bool forceDirection = false, bool forcePrev = true);
+	double getTimeForFrame(double frame);
+	double getNextFrameTimeForTime(double time);
+	double getPrevFrameTimeForTime(double time);
 
 	void setBeingEdited(bool value);
 
@@ -145,6 +161,8 @@ public:
 		virtual ~SequenceListener() {}
 		virtual void sequencePlayStateChanged(Sequence *) {}
 		virtual void sequenceCurrentTimeChanged(Sequence *, float /*prevTime*/, bool /*evaluateSkippedData*/) {}
+		virtual void sequenceTimeChanged(Sequence* s, const TimeChange& change)
+		{ sequenceCurrentTimeChanged(s, (float)change.previousTime, change.evaluateSkippedData); }
 		virtual void sequenceFinished(Sequence*) {}
 		virtual void sequenceLooped(Sequence *) {}
 		virtual void sequencePlaySpeedChanged(Sequence*) {}
@@ -158,5 +176,8 @@ public:
 	DECLARE_ASYNC_EVENT(Sequence, Sequence, sequence, ENUM_LIST(EDITING_STATE_CHANGED, PLAY_STATE_CHANGED), EVENT_ITEM_CHECK);
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Sequence)
+	void deliverTimeChange(const TimeChange&);
+	const TimeChange* pendingTimeChange = nullptr;
+	const TimeChange* deliveredTimeChange = nullptr;
 
 };

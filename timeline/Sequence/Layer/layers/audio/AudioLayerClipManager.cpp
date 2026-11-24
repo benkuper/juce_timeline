@@ -15,7 +15,7 @@ AudioLayerClipManager::AudioLayerClipManager(AudioLayer * layer) :
 	audioLayer(layer)
 {
 	itemDataType = AudioLayerClip::getTypeStringStatic();
-	blocksCanOverlap = false;
+	blocksCanOverlap = true;
 
 	//isSelectable = false;
 }

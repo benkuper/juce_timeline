@@ -29,7 +29,9 @@ SequenceLayerManager::~SequenceLayerManager()
 
 void SequenceLayerManager::fileDropped(String file)
 {
-	if (file.endsWith("mp3") || file.endsWith("wav") || file.endsWith("aiff")) createAudioLayerForFile(file);
+	const auto lower = file.toLowerCase();
+	if (lower.endsWith(".mp3") || lower.endsWith(".wav") || lower.endsWith(".aiff") || lower.endsWith(".flac") || lower.endsWith(".ogg"))
+		createAudioLayerForFile(file);
 }
 
 SequenceLayer* SequenceLayerManager::createItem()
@@ -45,9 +47,9 @@ void SequenceLayerManager::createAudioLayerForFile(File f)
 		{
 			AudioLayer* layer = (AudioLayer*)factory.create(d);
 			AudioLayerClip* clip = new AudioLayerClip();
-			clip->filePath->setValue(f.getFullPathName());
 			layer->clipManager.addItem(clip, false, false);
 			addItem(layer, true, true);
+			clip->filePath->setValue(f.getFullPathName());
 			return;
 		}
 	}

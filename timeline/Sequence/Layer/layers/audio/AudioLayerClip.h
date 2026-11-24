@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include "TimelineAudioTransportSource.h"
+
 class AudioLayerClip :
 	public LayerBlock,
 	public Thread //async loading
@@ -21,7 +23,7 @@ public:
 	AudioFormatManager formatManager;
 	//AudioSampleBuffer buffer;
 	std::unique_ptr<AudioFormatReaderSource> readerSource;
-	AudioTransportSource transportSource;
+	TimelineAudioTransportSource transportSource;
 	ResamplingAudioSource resamplingAudioSource;
 	ChannelRemappingAudioSource channelRemapAudioSource;
 
@@ -45,14 +47,16 @@ public:
 	int numChannels;
 
 	bool isLoading;
-	bool shouldStop;
+	bool resizeSequenceOnLoad = true;
 
 	void start();
 	void stop();
 
 	void updateAudioSourceFile();
+    void loadJSONDataInternal(var data) override;
 	void onContainerTriggerTriggered(Trigger* t) override;
 	void onContainerParameterChangedInternal(Parameter *) override;
+    void parameterControlModeChanged(Parameter*) override;
 
 	void setCoreLength(float value, bool stretch, bool stickToCoreEnd = false) override;
 	void setStartTime(float value, bool stretch, bool stickToCoreEnd = false) override;

@@ -47,16 +47,19 @@ void AudioLayerClipManagerUI::mouseDoubleClick(const MouseEvent & e)
 
 void AudioLayerClipManagerUI::addClipWithFileChooserAt(float position)
 {
-	FileChooser* chooser(new FileChooser("Load an audio file", File::getCurrentWorkingDirectory(), "*.wav;*.mp3;*.ogg;*.aiff;*.flac"));
-	chooser->launchAsync(FileBrowserComponent::openMode | FileBrowserComponent::FileChooserFlags::canSelectFiles, [this, position](const FileChooser& fc)
+	AudioFormatManager formats;
+	formats.registerBasicFormats();
+	FileChooser* chooser(new FileChooser("Load an audio file", File::getCurrentWorkingDirectory(), formats.getWildcardForAllFormats()));
+	Component::SafePointer<AudioLayerClipManagerUI> safeThis(this);
+	chooser->launchAsync(FileBrowserComponent::openMode | FileBrowserComponent::FileChooserFlags::canSelectFiles, [safeThis, position](const FileChooser& fc)
 		{
 			File f = fc.getResult();
 			delete& fc;
-			if (f == File()) return;
+			if (f == File() || safeThis == nullptr) return;
 
-			float time = timeline->getTimeForX(position);
-			AudioLayerClip* clip = dynamic_cast<AudioLayerClip*>(manager->addBlockAt(time));
-			clip->filePath->setValue(f.getFullPathName());
+			const float time = safeThis->timeline->getTimeForX(position);
+			if (auto* clip = dynamic_cast<AudioLayerClip*>(safeThis->manager->addBlockAt(time)))
+				clip->filePath->setValue(f.getFullPathName());
 		}
 	);
 }
@@ -64,7 +67,10 @@ void AudioLayerClipManagerUI::addClipWithFileChooserAt(float position)
 bool AudioLayerClipManagerUI::isInterestedInFileDrag(const StringArray& files)
 {
 	if (files.size() == 0) return false;
-	return  files[0].endsWith("mp3") || files[0].endsWith("wav") || files[0].endsWith("aiff");
+	const auto extension = File(files[0]).getFileExtension();
+	AudioFormatManager formats;
+	formats.registerBasicFormats();
+	return formats.findFormatForFileExtension(extension) != nullptr;
 }
 
 void AudioLayerClipManagerUI::fileDragEnter(const StringArray& files, int x, int y)

@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include "BlockTransitions.h"
+
 
 class LayerBlock :
 	public BaseItem
@@ -22,6 +24,13 @@ public:
 	FloatParameter * coreLength;
 	FloatParameter * loopLength;
 	BoolParameter * isActive;
+
+	// Optional per-block overrides. Disabled edges use the layer's automatic fades.
+	FloatParameter* blockFadeIn = nullptr;
+	FloatParameter* blockFadeOut = nullptr;
+	void addFadeParameters(double defaultDuration = 0);
+	virtual BlockTransitions::Fades getEffectiveFades() const;
+	virtual double getFadeCurveValue(double weight) const { return weight; }
 
 	float getTotalLength();
 	float getCoreEndTime();

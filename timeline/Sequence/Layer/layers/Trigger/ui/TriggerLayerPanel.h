@@ -20,6 +20,7 @@ public:
 	TriggerLayer * triggerLayer;
 	std::unique_ptr<TriggerButtonUI> lockAllBT;
 	std::unique_ptr<TriggerButtonUI> unlockAllBT;
+	std::unique_ptr<TriggerButtonUI> triggerAllTrueBT, triggerAllFalseBT;
 
 	void resizedInternalContent(Rectangle<int> &r) override;
 

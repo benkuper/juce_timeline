@@ -13,7 +13,6 @@ SequenceBlockUI::SequenceBlockUI(SequenceBlock * _block) :
 	block(_block)
 {
 	dragAndDropEnabled = false;
-	bgColor = block->isActive->boolValue() ? BLUE_COLOR.brighter() : BG_COLOR.brighter(.1f);
 }
 
 SequenceBlockUI::~SequenceBlockUI()
@@ -34,10 +33,4 @@ void SequenceBlockUI::paint(Graphics& g)
 void SequenceBlockUI::controllableFeedbackUpdateInternal(Controllable* c)
 {
 	LayerBlockUI::controllableFeedbackUpdateInternal(c);
-
-	if (c == item->isActive)
-	{
-		bgColor = block->isActive->boolValue() ? BLUE_COLOR.brighter() : BG_COLOR.brighter(.1f);
-		repaint();
-	}
 }

@@ -21,6 +21,9 @@ public :
 	
 	Trigger * lockAll;
 	Trigger* unlockAll;
+	Trigger* triggerAllTrue;
+	Trigger* triggerAllFalse;
+	EnumParameter* forwardSeekPoints;
 	Trigger* goToNextKey;
 	Trigger * goToPrevKey;
 

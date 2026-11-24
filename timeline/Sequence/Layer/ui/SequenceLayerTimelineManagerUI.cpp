@@ -49,7 +49,8 @@ bool SequenceLayerTimelineManagerUI::isInterestedInFileDrag(const StringArray& f
 {
 	for (int i = 0; i < files.size(); ++i)
 	{
-		if (files[i].endsWith("mp3") || files[i].endsWith("wav") || files[i].endsWith("aiff")) return true;
+		const String lower = files[i].toLowerCase();
+		if (lower.endsWith(".mp3") || lower.endsWith(".wav") || lower.endsWith(".aiff") || lower.endsWith(".flac") || lower.endsWith(".ogg")) return true;
 	}
 
 	return false;

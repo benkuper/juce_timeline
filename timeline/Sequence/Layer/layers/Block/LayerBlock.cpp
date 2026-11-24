@@ -12,6 +12,8 @@ LayerBlock::LayerBlock(StringRef name) :
 	BaseItem(name, true, false)
 {
 	editorIsCollapsed = true;
+	setHasCustomColor(true);
+	itemColor->setDefaultValue(BG_COLOR.brighter(.1f));
 
 	time = addFloatParameter("Start Time", "Time of the start of the clip", 0, 0);
 	time->defaultUI = FloatParameter::TIME;
@@ -29,6 +31,37 @@ LayerBlock::LayerBlock(StringRef name) :
 
 LayerBlock::~LayerBlock()
 {
+}
+
+void LayerBlock::addFadeParameters(double duration)
+{
+	blockFadeIn = addFloatParameter("Fade In", "Enable to override the automatic incoming fade", duration, 0);
+	blockFadeOut = addFloatParameter("Fade Out", "Enable to override the automatic outgoing fade", duration, 0);
+	for (auto* p : { blockFadeIn, blockFadeOut })
+	{
+		p->defaultUI = FloatParameter::TIME;
+		p->canBeDisabledByUser = true;
+		p->setEnabled(false);
+	}
+}
+
+BlockTransitions::Fades LayerBlock::getEffectiveFades() const
+{
+	BlockTransitions::Fades result;
+	const double start = time->doubleValue(), end = start + coreLength->doubleValue();
+	if (auto* manager = dynamic_cast<LayerBlockManager*>(parentContainer.get()))
+		for (auto* other : manager->items)
+		{
+			if (other == this || !other->enabled->boolValue()) continue;
+			const double s = other->time->doubleValue(), e = s + other->coreLength->doubleValue();
+			const double crossing = BlockTransitions::overlap(start, end, s, e);
+			if (s < start) result.in = jmax(result.in, crossing);
+			if (s > start) result.out = jmax(result.out, crossing);
+		}
+	BlockTransitions::Fades manual;
+	if (blockFadeIn && blockFadeIn->enabled) { manual.in = blockFadeIn->doubleValue(); result.in = 0; }
+	if (blockFadeOut && blockFadeOut->enabled) { manual.out = blockFadeOut->doubleValue(); result.out = 0; }
+	return BlockTransitions::withReservedOverlaps(manual, coreLength->doubleValue(), result);
 }
 
 float LayerBlock::getTotalLength()
